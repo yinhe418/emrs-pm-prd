@@ -60,7 +60,7 @@
       <button class="btn btn-primary btn-block btn-lg" style="margin-top:20px;" id="payBtn" onclick="mockPay(event)">
         <span id="payBtnText">微信支付 —</span>
       </button>
-      <div style="margin-top:10px; font-size:11px; color:var(--ink-3); text-align:center;">
+      <div style="margin-top:10px; font-size:11px; color:var(--ink-3); text-align:center;" id="payHint">
         点击即视为同意本期 Mock 支付;真实通道 Q2 后启用
       </div>
 
@@ -96,7 +96,8 @@
       var btn = document.getElementById('payBtn');
       var txt = document.getElementById('payBtnText');
       btn.disabled = true;
-      txt.textContent = '支付中...';
+      btn.style.cursor = 'wait';
+      txt.textContent = '支付中…';
       setTimeout(function () {
         try {
           var id = getProjId();
@@ -107,13 +108,29 @@
           // 加入已订阅列表(home 用它判断是否显示任务)
           PROJECT_HELPERS.subscribe(id);
         } catch (e2) {}
-        txt.textContent = '支付成功';
+        // 成功态
         btn.style.background = '#2E7D32';
-        setTimeout(function () {
-          showToast('支付成功 · 进入个人中心');
-          setTimeout(function () { location.href = 'patient-home.html'; }, 600);
-        }, 500);
+        btn.style.cursor = 'default';
+        // 倒计时 3 → 2 → 1 → 跳转
+        var n = 3;
+        var hint = document.getElementById('payHint');
+        function tick() {
+          if (n > 0) {
+            txt.textContent = '支付成功 · ' + n + ' 秒后进入首页';
+            if (hint) hint.textContent = '点击下方按钮可立即进入';
+            n--;
+            setTimeout(tick, 1000);
+          } else {
+            location.href = 'patient-home.html';
+          }
+        }
+        tick();
       }, 2000);
+    }
+
+    // 立即进入(跳过倒计时)
+    function skipCountdown() {
+      location.href = 'patient-home.html';
     }
     // 启动时回填项目信息
     (function () {
