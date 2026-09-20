@@ -49,8 +49,13 @@
       </div>
 
       <div class="form-item" style="background:white; border-radius:12px; padding:14px;">
-        <span class="form-label">备注(选填)</span>
-        <textarea class="form-textarea" placeholder="如有任何不适、疑问或停药原因,请说明"></textarea>
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
+          <span class="form-label" style="margin-bottom:0;">备注(选填)</span>
+          <button type="button" class="quick-input-mini" onclick="mockMedVoice()" id="medVoiceBtn">
+            🎤 语音录入
+          </button>
+        </div>
+        <textarea class="form-textarea" id="medNote" placeholder="如有任何不适、疑问或停药原因,请说明"></textarea>
       </div>
 
       <div class="card" style="background:var(--info-bg); border:none; margin-top:12px;">
@@ -65,5 +70,35 @@
     </div>
   </div>
   <script src="assets/layout.js"></script>
+  <script>
+    var medToastEl = null;
+    function showMedToast(msg, loading) {
+      if (!medToastEl) {
+        medToastEl = document.createElement('div');
+        medToastEl.className = 'quick-input-toast';
+        document.body.appendChild(medToastEl);
+      }
+      medToastEl.className = 'quick-input-toast show' + (loading ? ' loading' : '');
+      medToastEl.textContent = msg;
+      if (!loading) {
+        setTimeout(function () {
+          if (medToastEl) medToastEl.className = 'quick-input-toast';
+        }, 2200);
+      }
+    }
+    function mockMedVoice() {
+      var btn = document.getElementById('medVoiceBtn');
+      btn.disabled = true;
+      btn.style.opacity = '0.55';
+      showMedToast('正在聆听 · 请说"昨晚漏服一次,有点恶心"', true);
+      setTimeout(function () {
+        document.getElementById('medNote').value =
+          '昨晚睡前忘了吃,今早起来有点头晕恶心,不确定是不是漏服的原因。';
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        showMedToast('识别成功 · 请确认内容');
+      }, 2500);
+    }
+  </script>
 </body>
 </html>

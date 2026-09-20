@@ -1639,7 +1639,114 @@ html.font-size-xl .step-indicator { font-size: 13px; }
   margin: 16px -16px 0;
 }
 
-/* 11. 演示重置浮动按钮(所有页可见) */
+/* 11. 老人友好快速录入(OCR / 语音) */
+.quick-input-card {
+  background: linear-gradient(135deg, var(--brand-light), #fff);
+  border: 1px dashed var(--brand);
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 16px;
+}
+.quick-input-title {
+  font-size: 13px;
+  color: var(--brand);
+  font-weight: var(--fw-sb);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.quick-input-row {
+  display: flex;
+  gap: 10px;
+}
+.quick-input-btn {
+  flex: 1;
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+  text-align: center;
+  color: var(--ink);
+}
+.quick-input-btn:hover {
+  border-color: var(--brand);
+  background: var(--brand-light);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(46, 125, 215, 0.12);
+}
+.quick-input-btn:active { transform: translateY(0); }
+.quick-input-btn .ico { font-size: 28px; line-height: 1; margin-bottom: 4px; }
+.quick-input-btn .lbl { font-size: 13px; font-weight: var(--fw-sb); }
+.quick-input-btn .sub { font-size: 11px; color: var(--ink-3); margin-top: 2px; }
+.quick-input-foot {
+  font-size: 11px;
+  color: var(--ink-3);
+  margin-top: 10px;
+  text-align: center;
+}
+/* 小号(用在 textarea 旁的紧凑按钮) */
+.quick-input-mini {
+  font-size: 12px;
+  color: var(--brand);
+  background: var(--brand-light);
+  border: 1px solid rgba(46, 125, 215, 0.2);
+  border-radius: 14px;
+  padding: 4px 12px;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+}
+.quick-input-mini:hover {
+  background: var(--brand);
+  color: white;
+}
+.quick-input-mini:disabled {
+  cursor: wait;
+}
+
+/* 简易 toast(快速录入反馈) */
+.quick-input-toast {
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(46, 125, 50, 0.95);
+  color: white;
+  padding: 10px 18px;
+  border-radius: 22px;
+  font-size: 13px;
+  z-index: 10000;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+  max-width: 80%;
+  text-align: center;
+}
+.quick-input-toast.show { opacity: 1; }
+.quick-input-toast.loading {
+  background: rgba(46, 125, 215, 0.95);
+}
+.quick-input-toast.loading::after {
+  content: '';
+  display: inline-block;
+  width: 12px;
+  text-align: left;
+  animation: dots 1.2s steps(4, end) infinite;
+}
+@keyframes dots {
+  0%   { content: ''; }
+  25%  { content: '·'; }
+  50%  { content: '··'; }
+  75%  { content: '···'; }
+  100% { content: ''; }
+}
+
+/* 老人友好快速录入(OCR / 语音) */
 .demo-reset-fab {
   position: fixed;
   right: 16px;

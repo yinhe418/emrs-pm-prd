@@ -26,22 +26,42 @@
         </div>
       </div>
 
+      <!-- 老人友好快速录入(OCR + 语音) -->
+      <div class="quick-input-card">
+        <div class="quick-input-title">🚀 快速录入(老人友好)</div>
+        <div class="quick-input-row">
+          <button type="button" class="quick-input-btn" onclick="mockOCR()" aria-label="上传血压计照片自动识别">
+            <div class="ico">📷</div>
+            <div class="lbl">上传照片识别</div>
+            <div class="sub">拍血压计即可</div>
+          </button>
+          <button type="button" class="quick-input-btn" onclick="mockVoice()" aria-label="语音录入">
+            <div class="ico">🎤</div>
+            <div class="lbl">语音录入</div>
+            <div class="sub">"135 82" 即可</div>
+          </button>
+        </div>
+        <div class="quick-input-foot">
+          Q2 真实接入(腾讯云 OCR / 腾讯云 ASR 16k_zh_medical) · 当前为 Mock
+        </div>
+      </div>
+
       <div class="group">
         <div class="form-item">
           <span class="form-label"><span class="req">*</span>收缩压(高压)</span>
-          <input class="form-input" type="number" placeholder="60-250" style="font-size:24px; font-weight:600;">
+          <input class="form-input" type="number" id="bpHigh" placeholder="60-250" style="font-size:24px; font-weight:600;">
         </div>
         <div class="form-item">
           <span class="form-label"><span class="req">*</span>舒张压(低压)</span>
-          <input class="form-input" type="number" placeholder="30-150" style="font-size:24px; font-weight:600;">
+          <input class="form-input" type="number" id="bpLow" placeholder="30-150" style="font-size:24px; font-weight:600;">
         </div>
         <div class="form-item">
           <span class="form-label">心率(选填)</span>
-          <input class="form-input" type="number" placeholder="30-220">
+          <input class="form-input" type="number" id="bpHr" placeholder="30-220">
         </div>
         <div class="form-item">
           <span class="form-label">测量时间</span>
-          <input class="form-input" type="datetime-local" value="2025-12-27T08:30">
+          <input class="form-input" type="datetime-local" id="bpTime" value="2025-12-27T08:30">
         </div>
         <div class="form-item">
           <span class="form-label">测量体位</span>
@@ -69,5 +89,62 @@
     </div>
   </div>
   <script src="assets/layout.js"></script>
+  <script>
+    // ─────────────────────────────────────────────
+    // 老人友好快速录入(Mock · Q2 真实接入)
+    // ─────────────────────────────────────────────
+    var toastEl = null;
+    function showToast(msg, loading) {
+      if (!toastEl) {
+        toastEl = document.createElement('div');
+        toastEl.className = 'quick-input-toast';
+        document.body.appendChild(toastEl);
+      }
+      toastEl.className = 'quick-input-toast show' + (loading ? ' loading' : '');
+      toastEl.textContent = msg;
+      if (!loading) {
+        setTimeout(function () {
+          if (toastEl) toastEl.className = 'quick-input-toast';
+        }, 2200);
+      }
+    }
+    function hideToast() {
+      if (toastEl) toastEl.className = 'quick-input-toast';
+    }
+
+    function setBusy(btn, busy) {
+      btn.disabled = busy;
+      btn.style.opacity = busy ? '0.55' : '1';
+      btn.style.cursor = busy ? 'wait' : 'pointer';
+    }
+
+    function mockOCR() {
+      var btn = document.querySelector('.quick-input-btn[onclick="mockOCR()"]');
+      setBusy(btn, true);
+      showToast('正在识别血压计照片', true);
+      setTimeout(function () {
+        document.getElementById('bpHigh').value = 135;
+        document.getElementById('bpLow').value = 82;
+        document.getElementById('bpHr').value = 76;
+        setBusy(btn, false);
+        hideToast();
+        showToast('识别成功 · 血压 135/82 · 请确认数值');
+      }, 2200);
+    }
+
+    function mockVoice() {
+      var btn = document.querySelector('.quick-input-btn[onclick="mockVoice()"]');
+      setBusy(btn, true);
+      showToast('正在聆听,请说"血压 135 82"', true);
+      setTimeout(function () {
+        document.getElementById('bpHigh').value = 135;
+        document.getElementById('bpLow').value = 82;
+        document.getElementById('bpHr').value = 76;
+        setBusy(btn, false);
+        hideToast();
+        showToast('识别成功 · "血压 135 82,心率 76"');
+      }, 2800);
+    }
+  </script>
 </body>
 </html>
