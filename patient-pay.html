@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>项目付费</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <div class="app">
+    <div class="navbar">
+      <button class="back" onclick="location.href='patient-signature.html'"><span style="font-size:22px; font-weight:700; line-height:1;">‹</span></button>
+      <div class="title">项目付费</div>
+      <div class="actions"></div>
+    </div>
+
+    <div class="page">
+      <div class="step-indicator">
+        <span class="done">认证</span>
+        <span class="sep"></span>
+        <span class="done">选项目</span>
+        <span class="sep"></span>
+        <span class="done">隐私</span>
+        <span class="sep"></span>
+        <span class="done">签署</span>
+        <span class="sep"></span>
+        <span class="active">付费</span>
+        <span class="sep"></span>
+        <span>主页</span>
+      </div>
+
+      <div class="banner banner-info">
+        <b>付款成功即开通服务</b>
+        本期仅 Mock,真实微信支付 / 退款规则待运营确认(§13.6 Q-PAY-2 / Q-PAY-3)。
+      </div>
+
+      <div class="section-title">订单</div>
+      <div class="card">
+        <div class="kv"><span class="k">项目</span><span class="v">90 天卒中连续健康管理</span></div>
+        <div class="kv"><span class="k">周期</span><span class="v">90 天 · D12 / 90</span></div>
+        <div class="kv"><span class="k">单价</span><span class="v">¥100.00</span></div>
+        <div class="divider"></div>
+        <div class="kv" style="font-size:18px;"><span class="k" style="color:var(--ink); font-weight:600;">应付</span><span class="v" style="color:var(--block); font-weight:700;">¥ 100.00</span></div>
+      </div>
+
+      <div class="section-title">支付方式</div>
+      <div class="group">
+        <label class="cell" style="background:var(--pass-bg);">
+          <div class="l">
+            <div class="icon" style="background:white; color:var(--pass);">微</div>
+            <div class="info"><b>微信支付</b><span>本期 Mock · 推荐</span></div>
+          </div>
+          <div class="r"><input type="radio" name="pay" checked></div>
+        </label>
+        <label class="cell" style="opacity:0.55;">
+          <div class="l">
+            <div class="icon" style="background:#ECEFF1; color:#607D8B;">银</div>
+            <div class="info"><b>银行卡 / 院内账户</b><span>本期未对接</span></div>
+          </div>
+          <div class="r"><input type="radio" name="pay" disabled></div>
+        </label>
+      </div>
+
+      <div class="card" style="background:var(--info-bg); border:none;">
+        <div style="font-size:12px; color:var(--info);">
+          <b>付费前功能</b>(§13.4):仅浏览;<b>联系医护按钮隐藏</b>。<br>
+          <b>付费后</b>:开通全部任务 / 联系 / 上传权限。<br>
+          <b>退款规则</b>(Q-PAY-2):待定 — 本期占位,实际不发起真实扣款。
+        </div>
+      </div>
+
+      <button class="btn btn-primary btn-block btn-lg" style="margin-top:20px;" id="payBtn" onclick="mockPay(event)">
+        <span id="payBtnText">微信支付 ¥100.00</span>
+      </button>
+      <div style="margin-top:10px; font-size:11px; color:var(--ink-3); text-align:center;">
+        点击即视为同意本期 Mock 支付;真实通道 Q2 后启用
+      </div>
+
+      <div class="card" style="margin-top:16px; background:#FFF8E1; border:none;">
+        <div style="font-size:12px; color:#8D6E00;">
+          <b>价格说明</b>(§13.1):90 天 = 100 元 / 180 天 = 200 元 / 365 天 = 待定。<br>
+          实际价格由医院 / 科室在使用前确定(C8 类比)。
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="assets/layout.js"></script>
+  <script>
+    function mockPay(e) {
+      var btn = document.getElementById('payBtn');
+      var txt = document.getElementById('payBtnText');
+      btn.disabled = true;
+      txt.textContent = '支付中...';
+      setTimeout(function () {
+        try {
+          localStorage.setItem('emrs_paid', '1');
+          localStorage.setItem('emrs_paid_amount', '100');
+          localStorage.setItem('emrs_paid_time', new Date().toISOString());
+        } catch (e2) {}
+        txt.textContent = '支付成功';
+        btn.style.background = '#2E7D32';
+        setTimeout(function () {
+          showToast('支付成功 · 进入个人主页');
+          setTimeout(function () { location.href = 'patient-home.html'; }, 600);
+        }, 500);
+      }, 2000);
+    }
+  </script>
+</body>
+</html>

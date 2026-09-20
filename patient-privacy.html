@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>项目隐私与安全</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <div class="app">
+    <div class="navbar">
+      <button class="back" onclick="location.href='patient-dual-project.html'"><span style="font-size:22px; font-weight:700; line-height:1;">‹</span></button>
+      <div class="title">项目隐私与安全</div>
+      <div class="actions"></div>
+    </div>
+
+    <div class="page">
+      <!-- 进度指示 -->
+      <div class="step-indicator">
+        <span class="done">认证</span>
+        <span class="sep"></span>
+        <span class="done">选项目</span>
+        <span class="sep"></span>
+        <span class="active">隐私</span>
+        <span class="sep"></span>
+        <span>签署</span>
+        <span class="sep"></span>
+        <span>付费</span>
+        <span class="sep"></span>
+        <span>主页</span>
+      </div>
+
+      <div class="banner">
+        <b>请仔细阅读 · 进入下一步前必须读完</b>
+        您的资料只用于本项目的随访工作,不向第三方营销,不提供无关人员(C10)。
+      </div>
+
+      <div class="section-title">谁能看到您的资料</div>
+      <div class="card">
+        <div class="kv"><span class="k">主管医生</span><span class="v">可见全部病历 / 用药 / 指标</span></div>
+        <div class="kv"><span class="k">主要联系护士</span><span class="v">可见随访所需内容</span></div>
+        <div class="kv"><span class="k">科室负责人</span><span class="v">只看汇总数据,不展示姓名</span></div>
+        <div class="kv"><span class="k">研究者(P1)</span><span class="v">仅在您加入研究时,可见脱敏资料</span></div>
+      </div>
+
+      <div class="section-title">数据用于</div>
+      <div class="card">
+        <div style="font-size:13px; color:var(--ink-2); line-height:1.7;">
+          • <b>90 天管理</b>:出院后随访、个体目标核对、异常发现与处理<br>
+          • <b>研究项目(P1)</b>:仅在您同意后,按伦理要求脱敏使用<br>
+          • 不用于产品广告 / 不向第三方营销 / 不提供给资助方名单
+        </div>
+      </div>
+
+      <div class="section-title">数据存哪里 / 谁能改</div>
+      <div class="card">
+        <div class="kv"><span class="k">存储位置</span><span class="v">H 市第一医院院内服务器</span></div>
+        <div class="kv"><span class="k">保存期限</span><span class="v">项目结束后 10 年(医疗档案法定)</span></div>
+        <div class="kv"><span class="k">修改 / 删除</span><span class="v">您可向主管医生提出申请</span></div>
+        <div class="kv"><span class="k">撤回同意</span><span class="v">随时可撤回,但已发生的随访记录保留</span></div>
+      </div>
+
+      <div class="section-title">紧急情况</div>
+      <div class="card" style="background:#FFF3E0; border:none;">
+        <div style="font-size:13px; color:var(--warn); line-height:1.7;">
+          <b>非急诊通道</b>(C2):本平台工作时段 8:00 - 17:00 回应;<b>夜间 / 疑似急症请立即拨打 120</b>,不等线上答复。
+        </div>
+      </div>
+
+      <div class="notice">
+        <b>读完下一步</b>:进入"知情同意书"页面签字。门控硬约束 — 未签不可进入任务列表(§7.1.0)。
+      </div>
+
+      <div style="display:flex; gap:8px; margin-top:20px;">
+        <button class="btn btn-outline" style="flex:1;" onclick="markRead()">我已通读</button>
+        <a href="patient-signature.html" class="btn btn-primary" style="flex:1;" id="nextBtn" onclick="return ensureRead(event)">下一步:签署同意</a>
+      </div>
+      <div style="margin-top:8px; font-size:11px; color:var(--ink-3); text-align:center;">
+        点击"我已通读"以解锁下一步
+      </div>
+    </div>
+  </div>
+  <script src="assets/layout.js"></script>
+  <script>
+    // 隐私页门控:必须先"我已通读"才放行
+    function markRead() {
+      try { localStorage.setItem('emrs_privacy_read', '1'); } catch (e) {}
+      showToast('已记录 · 请继续');
+    }
+    function ensureRead(e) {
+      try {
+        if (localStorage.getItem('emrs_privacy_read') !== '1') {
+          e.preventDefault();
+          showToast('请先点击"我已通读"');
+          return false;
+        }
+      } catch (e2) {}
+      return true;
+    }
+    // 启动时回填状态(可选 UX 增强)
+    (function () {
+      try {
+        if (localStorage.getItem('emrs_privacy_read') === '1') {
+          var btn = document.getElementById('nextBtn');
+          if (btn) btn.style.opacity = '1';
+        }
+      } catch (e) {}
+    })();
+  </script>
+</body>
+</html>

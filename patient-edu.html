@@ -11,7 +11,13 @@
     <div class="navbar">
       <button class="back" onclick="location.href='patient-home.html'"><span style="font-size:22px; font-weight:700; line-height:1;">‹</span></button>
       <div class="title">健康教育</div>
-      <div class="actions"></div>
+      <div class="actions">
+        <div class="font-toggle" id="fontToggle" aria-label="字号切换">
+          <button data-size="normal" onclick="setFontSize('normal', this)">小</button>
+          <button data-size="large" onclick="setFontSize('large', this)">中</button>
+          <button data-size="xl" onclick="setFontSize('xl', this)">大</button>
+        </div>
+      </div>
     </div>
 
     <div class="page">
@@ -80,5 +86,6 @@
     </div>
   </div>
   <script src="assets/layout.js"></script>
+  <script src="assets/font-size.js"></script>
 </body>
 </html>

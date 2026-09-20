@@ -15,9 +15,64 @@
     </div>
 
     <div class="page">
+      <!-- 进度指示 -->
+      <div class="step-indicator">
+        <span class="done">认证</span>
+        <span class="sep"></span>
+        <span class="active">选项目</span>
+        <span class="sep"></span>
+        <span>隐私</span>
+        <span class="sep"></span>
+        <span>签署</span>
+        <span class="sep"></span>
+        <span>付费</span>
+        <span class="sep"></span>
+        <span>主页</span>
+      </div>
+
       <div class="banner">
-        <b>同时参加 90 天管理 + 颈动脉研究</b>
-        您可以同时参加两项。同一次联系尽量合并;各自欠缺的资料仍可见;不重复检查。
+        <b>选择您要参加的项目(可多选)</b>
+        选择后 → 进入对应项目隐私页 → 签署同意 → 付费 → 进入个人主页。
+      </div>
+
+      <div class="section-title">可选项目</div>
+      <div class="group">
+        <label class="cell" style="background:var(--brand-light);">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-check.png" alt="✓" /></div>
+            <div class="info">
+              <b>90 天卒中连续健康管理</b>
+              <span>90 天 · 每日血压 / 3 次电话回访 / 个体目标</span>
+            </div>
+          </div>
+          <div class="r">
+            <span class="badge badge-brand" style="background:white; color:var(--block); font-weight:700;">¥ 100</span>
+            <input type="checkbox" checked style="margin-left:8px;">
+          </div>
+        </label>
+        <label class="cell" style="background:var(--purple-bg);">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-microscope.png" alt="研" /></div>
+            <div class="info">
+              <b>颈动脉斑块管理研究(P1)</b>
+              <span>365 天 · 12 月 LDL-C 跟踪 · 需研究者确认</span>
+            </div>
+          </div>
+          <div class="r">
+            <span class="badge" style="background:white; color:var(--ink-3); font-weight:700;">¥ 待定</span>
+            <input type="checkbox" checked style="margin-left:8px;">
+          </div>
+        </label>
+        <label class="cell" style="opacity:0.55;">
+          <div class="l">
+            <div class="icon" style="background:#ECEFF1; color:#607D8B;">+</div>
+            <div class="info">
+              <b>更多项目 · 后续开放</b>
+              <span>180 天项目(Q-PAY-1) 待医院 / 科室定价</span>
+            </div>
+          </div>
+          <div class="r"><input type="checkbox" disabled></div>
+        </label>
       </div>
 
       <div class="section-title">参加状态</div>
@@ -96,6 +151,13 @@
           <b>退出规则</b>(§3.3):退出其中一项,其他已同意的必要服务<b>不应随之取消</b>。
         </div>
       </div>
+
+      <a href="patient-privacy.html" class="btn btn-primary btn-block" style="margin-top:20px;" onclick="return goPrivacy(event)">
+        下一步:阅读隐私页
+      </a>
+      <div style="margin-top:8px; font-size:11px; color:var(--ink-3); text-align:center;">
+        选中的项目将进入隐私页(门控硬约束 §7.1.0)
+      </div>
     </div>
 
     <div class="tabbar">
@@ -106,5 +168,11 @@
     </div>
   </div>
   <script src="assets/layout.js"></script>
+  <script>
+    function goPrivacy(e) {
+      try { localStorage.setItem('emrs_projects_selected', '1'); } catch (e2) {}
+      return true;
+    }
+  </script>
 </body>
 </html>

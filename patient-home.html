@@ -12,12 +12,22 @@
       <div></div>
       <div class="title">患者端</div>
       <div class="actions">
+        <div class="font-toggle" id="fontToggle" aria-label="字号切换">
+          <button data-size="normal" onclick="setFontSize('normal', this)">小</button>
+          <button data-size="large" onclick="setFontSize('large', this)">中</button>
+          <button data-size="xl" onclick="setFontSize('xl', this)">大</button>
+        </div>
         <button onclick="location.href='patient-emergency.html'" style="color:var(--block); font-weight:600;">120</button>
         <button onclick="location.href='role-switch.html'"><span style="font-size:18px; font-weight:700; line-height:1;">切</span></button>
       </div>
     </div>
 
     <div class="page" style="padding-top:0;">
+      <!-- 付费前提示(7.1.0 + 13.4) -->
+      <div id="payGate" style="display:none; background:var(--warn-bg); color:var(--warn); padding:10px 16px; font-size:13px; border-bottom:1px solid var(--warn-bg);">
+        <b>未付费</b>(§13.4):联系护士 / 上传报告按钮已隐藏;任务仅可浏览不可操作。<a href="patient-pay.html" style="color:var(--warn); margin-left:8px; font-weight:600;">去付费 ›</a>
+      </div>
+
       <!-- 顶部身份 -->
       <div class="role-banner patient" style="border-radius:0 0 16px 16px; margin-bottom:0;">
         <div style="display:flex; align-items:center; gap:12px;">
@@ -36,6 +46,18 @@
       <!-- 我的医护(点击卡片进入详情页,评价入口在详情页) -->
       <div class="section-title" style="padding:0 16px; margin-top:16px;">我的医护</div>
       <div class="page" style="padding:16px; padding-top:0;">
+        <!-- 付费前门控遮罩 -->
+        <div id="medicGate" style="display:none;">
+          <div class="card" style="background:#FFEBEE; border:1px dashed var(--block); text-align:center;">
+            <div style="font-size:14px; color:var(--block);">
+              <b>未付费</b>(§13.4)· 联系医患按钮已隐藏
+            </div>
+            <div style="margin-top:8px;">
+              <a href="patient-pay.html" class="btn btn-block" style="background:var(--block); color:white;">立即付费 ¥100 ›</a>
+            </div>
+          </div>
+        </div>
+        <div id="medicReal">
         <a href="doctor-detail.html" class="card" style="padding:14px; display:flex; align-items:center; gap:12px; display:block; overflow:hidden;">
           <div style="display:flex; align-items:center; gap:12px;">
             <div class="icon"><img src="assets/icons-png/icon-avatar-doctor.png" alt="医" /></div>
@@ -62,6 +84,7 @@
             <span class="arrow" style="flex-shrink:0; color:var(--ink-4); font-size:18px;">›</span>
           </div>
         </a>
+        </div><!-- /medicReal -->
       </div>
 
       <!-- 个人目标展示(C5:个人目标 ≠ 通用) -->
@@ -137,10 +160,10 @@
             </div>
             <div class="r"><span class="arrow">›</span></div>
           </a>
-          <a href="patient-im.html" class="cell">
+          <a href="patient-im.html" class="cell" id="imLink">
             <div class="l">
               <div class="icon"><img src="assets/icons-png/icon-im.png" alt="信" /></div>
-              <div class="info"><b>联系护士</b><span>护士甲(主)· 护士乙(备)</span></div>
+              <div class="info"><b>联系护士</b><span id="imHint">护士甲(主)· 护士乙(备)</span></div>
             </div>
             <div class="r"><span class="arrow">›</span></div>
           </a>
@@ -199,5 +222,37 @@
     </div>
   </div>
   <script src="assets/layout.js"></script>
+  <script src="assets/font-size.js"></script>
+  <script>
+    // §7.1.0 硬流程门控 + §13.4 付费前隐藏
+    (function () {
+      var authed, signed, paid;
+      try {
+        authed = localStorage.getItem('emrs_authed') === '1';
+        signed = localStorage.getItem('emrs_signed') === '1';
+        paid   = localStorage.getItem('emrs_paid')   === '1';
+      } catch (e) {}
+
+      // 未认证 → patient-auth(老人 / 不会手机场景已在 §7.1 单独处理)
+      if (!authed) { location.replace('patient-auth.html'); return; }
+      // 未签署 → patient-privacy(门控硬约束:先读隐私再签)
+      if (!signed) { location.replace('patient-privacy.html'); return; }
+      // 未付费 → 不重定向(允许浏览),但联系按钮隐藏 + 顶部提示
+      if (!paid) {
+        var gate = document.getElementById('payGate');
+        var mg = document.getElementById('medicGate');
+        var mr = document.getElementById('medicReal');
+        var im = document.getElementById('imLink');
+        var hint = document.getElementById('imHint');
+        if (gate) gate.style.display = 'block';
+        if (mg && mr) { mg.style.display = 'block'; mr.style.display = 'none'; }
+        if (im) {
+          // 链接保留可见但点击跳转付费页
+          im.setAttribute('href', 'patient-pay.html');
+          if (hint) hint.textContent = '未付费 · 联系按钮暂不可用';
+        }
+      }
+    })();
+  </script>
 </body>
 </html>

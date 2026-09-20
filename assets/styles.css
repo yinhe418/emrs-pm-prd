@@ -1311,3 +1311,135 @@ body.preview-mode {
   .preview-nav,
   .preview-switch-bar { display: none !important; }
 }
+
+/* ============ §7.1.0 患者端硬流程门控进度条 ============ */
+.step-indicator {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 12px;
+  margin: 0 -16px 12px;
+  background: linear-gradient(135deg, var(--brand-light), var(--brand-2-light));
+  border-bottom: 1px solid var(--brand-light);
+  font-size: var(--fs-xs);
+  color: var(--ink-3);
+  font-weight: var(--fw-med);
+  overflow-x: auto;
+  white-space: nowrap;
+}
+.step-indicator span.done {
+  color: var(--pass);
+  font-weight: var(--fw-sb);
+}
+.step-indicator span.done::before {
+  content: "✓ ";
+  font-weight: var(--fw-bold);
+}
+.step-indicator span.active {
+  color: var(--brand);
+  font-weight: var(--fw-bold);
+  background: white;
+  padding: 2px 8px;
+  border-radius: var(--r-pill);
+  box-shadow: var(--shadow-xs);
+}
+.step-indicator .sep {
+  flex-shrink: 0;
+  width: 12px;
+  height: 1px;
+  background: var(--ink-4);
+}
+
+/* ============ §7.1.5 患者端三档字号 ============ */
+/* 仅作用于患者端 5 个核心页(在 <html> 上加 class 切换) */
+html.font-size-large {
+  font-size: 16px;        /* 默认 14 → 16 */
+}
+html.font-size-large body { font-size: 16px; }
+html.font-size-large .navbar .title { font-size: 18px; }
+html.font-size-large .banner { font-size: 14px; }
+html.font-size-large .cell .l .info b { font-size: 16px; }
+html.font-size-large .cell .l .info span { font-size: 13px; }
+html.font-size-large .form-input,
+html.font-size-large .form-textarea,
+html.font-size-large .form-select { font-size: 16px; }
+html.font-size-large .kv { font-size: 14px; }
+html.font-size-large .notice { font-size: 13px; }
+html.font-size-large .card { font-size: 14px; }
+html.font-size-large .feed-item .body { font-size: 14px; }
+html.font-size-large .im-bubble { font-size: 14px; }
+
+html.font-size-xl {
+  font-size: 18px;        /* 默认 14 → 18(老年友好) */
+}
+html.font-size-xl body { font-size: 18px; }
+html.font-size-xl .navbar { height: 60px; }
+html.font-size-xl .navbar .title { font-size: 22px; }
+html.font-size-xl .banner { font-size: 16px; }
+html.font-size-xl .cell { min-height: 68px; padding: 16px; }
+html.font-size-xl .cell .l .info b { font-size: 18px; font-weight: var(--fw-sb); }
+html.font-size-xl .cell .l .info span { font-size: 15px; }
+html.font-size-xl .form-input,
+html.font-size-xl .form-textarea,
+html.font-size-xl .form-select { font-size: 18px; }
+html.font-size-xl .form-label { font-size: 14px; }
+html.font-size-xl .kv { font-size: 16px; }
+html.font-size-xl .notice { font-size: 15px; }
+html.font-size-xl .card { font-size: 16px; }
+html.font-size-xl .feed-item .body { font-size: 16px; }
+html.font-size-xl .im-bubble { font-size: 16px; }
+html.font-size-xl .btn { min-height: 52px; font-size: 18px; padding: 14px 20px; }
+html.font-size-xl .step-indicator { font-size: 13px; }
+
+/* 字号切换控件(右上角 navbar actions 槽位) */
+.font-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  height: 30px;
+  border-radius: var(--r-pill);
+  background: var(--brand-light);
+  border: 1px solid rgba(46, 125, 215, 0.18);
+  padding: 2px;
+}
+.font-toggle button {
+  border: none;
+  background: transparent;
+  color: var(--brand);
+  font-size: 12px;
+  font-weight: var(--fw-sb);
+  padding: 2px 8px;
+  border-radius: var(--r-pill);
+  cursor: pointer;
+  line-height: 1;
+  height: 22px;
+  min-width: 24px;
+  transition: background var(--t-fast), color var(--t-fast);
+}
+.font-toggle button.active {
+  background: var(--brand);
+  color: #fff;
+}
+.font-toggle button:active { transform: scale(0.95); }
+
+/* ============ §13 付费 mock 状态样式 ============ */
+.pay-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: var(--r-pill);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-sb);
+}
+.pay-status.paid { background: var(--pass-bg); color: var(--pass); }
+.pay-status.unpaid { background: var(--warn-bg); color: var(--warn); }
+
+/* ============ §7.3.1 预约复查任务 UI ============ */
+.task-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+.task-meta-row .tag { font-size: 11px; }

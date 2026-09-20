@@ -17,7 +17,19 @@
     </div>
 
     <div class="page" style="padding:16px;">
-      <div class="group">
+      <!-- 付费前门控遮罩 -->
+      <div id="imPayGate" style="display:none;">
+        <div class="card" style="background:#FFEBEE; border:1px dashed var(--block); text-align:center;">
+          <div style="font-size:14px; color:var(--block);">
+            <b>未付费</b>(§13.4)· 联系医患按钮已隐藏
+          </div>
+          <div style="margin-top:8px;">
+            <a href="patient-pay.html" class="btn btn-block" style="background:var(--block); color:white;">立即付费 ¥100 ›</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="group" id="imNurseList">
         <a href="patient-im.html" class="cell">
           <div class="l">
             <div class="icon"><img src="assets/icons-png/icon-avatar-nurse.png" alt="护" /></div>
@@ -71,7 +83,7 @@
       </div>
 
       <!-- 输入区 -->
-      <div style="display:flex; gap:8px; margin-top:12px; align-items:center;">
+      <div id="imInput" style="display:flex; gap:8px; margin-top:12px; align-items:center;">
         <input class="form-input" placeholder="输入留言 · 仅工作时段回复" style="flex:1; background:white; border-radius:8px; padding:10px 14px; border:1px solid var(--line);">
         <button class="btn btn-primary btn-sm">发送</button>
       </div>
@@ -101,5 +113,22 @@
     </div>
   </div>
   <script src="assets/layout.js"></script>
+  <script>
+    // §13.4 付费前门控
+    (function () {
+      var paid = false;
+      try { paid = localStorage.getItem('emrs_paid') === '1'; } catch (e) {}
+      if (paid) return;
+      var g = document.getElementById('imPayGate');
+      var list = document.getElementById('imNurseList');
+      var input = document.getElementById('imInput');
+      if (g) g.style.display = 'block';
+      if (list) list.style.display = 'none';
+      if (input) {
+        input.style.opacity = '0.4';
+        input.style.pointerEvents = 'none';
+      }
+    })();
+  </script>
 </body>
 </html>

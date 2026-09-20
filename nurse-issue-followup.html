@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>预约复查 · 陈丙英</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <div class="app">
+    <div class="navbar">
+      <button class="back" onclick="location.href='nurse-issue-task.html'"><span style="font-size:22px; font-weight:700; line-height:1;">‹</span></button>
+      <div class="title">预约复查</div>
+      <div class="actions"></div>
+    </div>
+
+    <div class="page">
+      <div class="banner banner-warn">
+        <b>F-NURSE-1 预约复查</b><br>
+        录入复查日期 / 项目 / 备注。<b>本期不对接挂号系统</b>——护士需线下手动预留医生号(C-外部依赖)。
+      </div>
+
+      <!-- 患者快读 -->
+      <div class="card">
+        <div class="card-row">
+          <div>
+            <b>陈丙英 · 女 · 81 岁</b>
+            <div style="font-size:12px; color:var(--ink-3);">D12 / 90 · 90 天管理 + 颈动脉研究</div>
+          </div>
+          <span class="badge badge-pass">90 天</span>
+        </div>
+      </div>
+
+      <!-- 录入字段(§7.3.1 F-NURSE-1) -->
+      <div class="section-title">复查信息</div>
+      <div class="group">
+        <div class="form-item">
+          <span class="form-label"><span class="req">*</span>复查日期</span>
+          <input class="form-input" type="date" value="2026-02-12">
+        </div>
+        <div class="form-item">
+          <span class="form-label">预约时段</span>
+          <select class="form-select">
+            <option>上午</option>
+            <option>下午</option>
+          </select>
+        </div>
+        <div class="form-item">
+          <span class="form-label"><span class="req">*</span>复查项目(可多选)</span>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; padding-top:6px;">
+            <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" checked> 颈动脉超声</label>
+            <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox"> 血脂全套</label>
+            <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox"> 空腹血糖</label>
+            <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox"> MRI</label>
+            <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox"> CT</label>
+            <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox"> 心电图</label>
+          </div>
+        </div>
+        <div class="form-item">
+          <span class="form-label">备注(选填)</span>
+          <textarea class="form-textarea" placeholder="如:LDL-C 复查,与 30 天回访合并提醒患者来院..."></textarea>
+        </div>
+      </div>
+
+      <!-- 本期限制 -->
+      <div class="notice notice-warn">
+        <b>任务标记完成口径</b>:以"复查日期已到 + 患者到场"为准(护士手动确认);<br>
+        <b>"已预约挂号号"≠"已完成复查"</b>(§7.3.1)。
+      </div>
+
+      <!-- 临床约束 -->
+      <div class="notice notice-block">
+        <b>临床约束(C1)</b>:护士不能替代医生作临床判断。任务内容只能是"复查安排",不能含治疗建议。
+      </div>
+
+      <a href="nurse-patient-detail.html" class="btn btn-primary btn-block" style="margin-top:20px;" onclick="submitFollowup(event)">
+        下发预约复查任务
+      </a>
+      <div style="margin-top:8px; font-size:11px; color:var(--ink-3); text-align:center;">
+        提交后:患者任务列表新增置顶 + 主管医生 feed 流新增记录
+      </div>
+    </div>
+  </div>
+  <script src="assets/layout.js"></script>
+  <script>
+    function submitFollowup(e) {
+      try {
+        localStorage.setItem('emrs_followup_issued', '1');
+        localStorage.setItem('emrs_followup_date', '2026-02-12');
+      } catch (e2) {}
+      showToast('已下发 · 患者将收到任务提醒');
+      return true;
+    }
+  </script>
+</body>
+</html>

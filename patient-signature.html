@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>签署知情同意</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <div class="app">
+    <div class="navbar">
+      <button class="back" onclick="location.href='patient-privacy.html'"><span style="font-size:22px; font-weight:700; line-height:1;">‹</span></button>
+      <div class="title">签署知情同意</div>
+      <div class="actions"></div>
+    </div>
+
+    <div class="page">
+      <div class="step-indicator">
+        <span class="done">认证</span>
+        <span class="sep"></span>
+        <span class="done">选项目</span>
+        <span class="sep"></span>
+        <span class="done">隐私</span>
+        <span class="sep"></span>
+        <span class="active">签署</span>
+        <span class="sep"></span>
+        <span>付费</span>
+        <span class="sep"></span>
+        <span>主页</span>
+      </div>
+
+      <div class="banner">
+        <b>90 天卒中连续健康管理 · 知情同意</b>
+        签字仅代表同意参加此项目。医疗判断仍由主管医生负责,本软件不作治疗决策(C1)。
+      </div>
+
+      <div class="card">
+        <div style="font-size:13px; color:var(--ink-2); line-height:1.8;">
+          <b>一、项目目的</b><br>
+          在您出院后的 90 天内,由神经内科医护团队为您提供随访、个体目标核对、异常发现与处理。
+          <br><br>
+          <b>二、项目内容</b><br>
+          • 每日任务提醒(血压记录 / 用药反馈)<br>
+          • 3 次主动电话回访(D7 / D30 / D90)<br>
+          • 个人目标核对与必要的报告上传<br>
+          • 异常时的工作时段沟通
+          <br><br>
+          <b>三、可能的获益与不便</b><br>
+          获益:更规律地随访,异常更早被发现。<br>
+          不便:需配合记录血压 / 上传报告;**非 24 小时监护**,夜间留言工作日首次回应(C2)。
+          <br><br>
+          <b>四、您的权利</b><br>
+          • 随时退出(已发生的随访记录保留)<br>
+          • 拒绝任何单项任务<br>
+          • 资料保密,严格按 C10 条款使用<br>
+          • 紧急情况立即 120,不等线上答复(C2)
+        </div>
+      </div>
+
+      <div class="section-title">选择加入的项目</div>
+      <div class="group">
+        <label class="cell" style="background:var(--brand-light);">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-check.png" alt="✓" /></div>
+            <div class="info">
+              <b>90 天卒中连续健康管理</b>
+              <span>D12 / 90 · 已加入 · 90 天 · ¥100</span>
+            </div>
+          </div>
+          <div class="r"><input type="checkbox" checked disabled></div>
+        </label>
+        <label class="cell" style="background:var(--purple-bg);">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-microscope.png" alt="研" /></div>
+            <div class="info">
+              <b>颈动脉斑块管理研究(P1)</b>
+              <span>D12 / 365 · 已加入 · 365 天 · 价格待定</span>
+            </div>
+          </div>
+          <div class="r"><input type="checkbox" checked disabled></div>
+        </label>
+      </div>
+
+      <div class="section-title">签字</div>
+      <div class="group">
+        <div class="form-item">
+          <span class="form-label"><span class="req">*</span>本人签字</span>
+          <input class="form-input" id="signName" placeholder="请输入您的姓名">
+        </div>
+        <div class="form-item">
+          <label style="display:flex; align-items:center; gap:10px; padding:6px 0;">
+            <input type="checkbox" id="agreeBox">
+            <span>我已通读上述内容,<b>自愿参加</b>所选项目</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="notice notice-warn">
+        <b>门控</b>(§7.1.0):签署后进入付费页;<b>未付费前不可见"联系医护"按钮</b>(§13.4)。
+      </div>
+
+      <a href="patient-pay.html" class="btn btn-primary btn-block" style="margin-top:20px;" onclick="return submitSign(event)">
+        提交签字并继续
+      </a>
+      <div style="margin-top:8px; font-size:11px; color:var(--ink-3); text-align:center;">
+        点击即视同电子签字(本期 Mock,真实电子签 / CA 推迟到 Q2)
+      </div>
+    </div>
+  </div>
+  <script src="assets/layout.js"></script>
+  <script>
+    function submitSign(e) {
+      var name = (document.getElementById('signName').value || '').trim();
+      var ok = document.getElementById('agreeBox').checked;
+      if (!name) { e.preventDefault(); showToast('请输入本人姓名'); return false; }
+      if (!ok)   { e.preventDefault(); showToast('请勾选"自愿参加"'); return false; }
+      try {
+        localStorage.setItem('emrs_signed', '1');
+        localStorage.setItem('emrs_signed_name', name);
+        localStorage.setItem('emrs_signed_time', new Date().toISOString());
+      } catch (e2) {}
+      return true;
+    }
+    // 回填姓名(预填从认证页带入)
+    (function () {
+      try {
+        var n = localStorage.getItem('emrs_signed_name');
+        if (n) {
+          var el = document.getElementById('signName');
+          if (el && !el.value) el.value = n;
+        }
+      } catch (e) {}
+    })();
+  </script>
+</body>
+</html>

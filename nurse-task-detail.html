@@ -12,7 +12,7 @@
       <button class="back" onclick="location.href='nurse-tasks.html'">
         <span style="font-size:22px; font-weight:700; line-height:1;">‹</span>
       </button>
-      <div class="title">7 天电话回访</div>
+      <div class="title" id="taskTitle">7 天电话回访</div>
       <div class="actions">
         <button onclick="location.href='nurse-transfer.html'">转移</button>
       </div>
@@ -234,8 +234,79 @@
       <a href="nurse-transfer.html" class="btn btn-outline btn-block" style="margin-top:8px;">
         转移给主管医生
       </a>
+
+      <!-- =============== F-NURSE-1 预约复查分支 =============== -->
+      <div id="followupView" style="display:none;">
+        <div class="banner banner-warn">
+          <b>预约复查任务 · F-NURSE-1</b>
+          复查日期已到 + 患者到场后才算完成。"已预约挂号号"≠"已完成复查"。
+        </div>
+
+        <div class="card">
+          <div class="card-row">
+            <div>
+              <b>陈丙英 · 女 · 81 岁</b>
+              <div style="font-size:12px; color:var(--ink-3);">D12 / 90 · 90 天管理 + 颈动脉研究</div>
+            </div>
+            <span class="badge" style="background:#FFE082; color:#8D6E00;">复查</span>
+          </div>
+          <div class="divider"></div>
+          <div class="kv"><span class="k">复查日期</span><span class="v">2026-02-12(上午)</span></div>
+          <div class="kv"><span class="k">复查项目</span><span class="v">颈动脉超声 · 血脂全套 · 空腹血糖</span></div>
+          <div class="kv"><span class="k">预约号预留</span><span class="v" style="color:var(--warn);">需手动预留医生号</span></div>
+          <div class="kv"><span class="k">备注</span><span class="v">LDL-C 复查,与 30 天回访合并提醒患者来院</span></div>
+          <div class="kv"><span class="k">下发人</span><span class="v">护士甲 · 2026-01-08</span></div>
+        </div>
+
+        <div class="section-title">到场确认(护士手动)</div>
+        <div class="group">
+          <label class="cell">
+            <div class="l">
+              <div class="icon"><img src="assets/icons-png/icon-check.png" alt="✓" /></div>
+              <div class="info"><b>患者到场</b><span>实际到场时间(选填)</span></div>
+            </div>
+            <div class="r"><input type="checkbox"></div>
+          </label>
+          <label class="cell">
+            <div class="l">
+              <div class="icon"><img src="assets/icons-png/icon-document.png" alt="文" /></div>
+              <div class="info"><b>报告已上传</b><span>患者上传 / 现场给报告</span></div>
+            </div>
+            <div class="r"><input type="checkbox"></div>
+          </label>
+        </div>
+
+        <div class="notice notice-warn">
+          <b>提醒</b>:预约复查由护士发起,但发起时护士不能替代医生作临床判断(C1)。任务内容只能是"复查安排",不能含治疗建议。
+        </div>
+
+        <a href="nurse-tasks.html" class="btn btn-primary btn-block" style="margin-top:20px;">
+          标记完成
+        </a>
+        <a href="nurse-transfer.html" class="btn btn-outline btn-block" style="margin-top:8px;">
+          转移给主管医生
+        </a>
+      </div>
     </div>
   </div>
   <script src="assets/layout.js"></script>
+  <script>
+    // URL 参数 ?type=followup → 显示预约复查分支,隐藏电话回访主视图
+    (function () {
+      var p = new URLSearchParams(location.search);
+      var type = p.get('type');
+      if (type === 'followup') {
+        var page = document.querySelector('.page');
+        var kids = page ? page.children : [];
+        // 隐藏电话回访视图所有直接子元素,直到 followupView
+        for (var i = 0; i < kids.length; i++) {
+          if (kids[i].id === 'followupView') break;
+          kids[i].style.display = 'none';
+        }
+        document.getElementById('followupView').style.display = 'block';
+        document.getElementById('taskTitle').textContent = '预约复查 · 陈丙英';
+      }
+    })();
+  </script>
 </body>
 </html>

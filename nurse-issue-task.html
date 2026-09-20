@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>下发任务</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <div class="app">
+    <div class="navbar">
+      <button class="back" onclick="location.href='nurse-patient-detail.html'"><span style="font-size:22px; font-weight:700; line-height:1;">‹</span></button>
+      <div class="title">下发任务 · 陈丙英</div>
+      <div class="actions"></div>
+    </div>
+
+    <div class="page">
+      <div class="banner">
+        <b>任务库(task 库 · 护士版)</b>
+        护士可从任务库选择,生成患者任务或护士自身任务。<b>预约复查</b>(F-NURSE-1)为 §7.3.1 新增。
+      </div>
+
+      <div class="section-title">患者侧任务(患者执行)</div>
+      <div class="group">
+        <div class="cell" style="background:var(--brand-light);">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-info.png" alt="诊" /></div>
+            <div class="info"><b>记录血压</b><span>每日 1-3 次 · 自动对比目标</span></div>
+          </div>
+          <div class="r"><input type="checkbox" checked></div>
+        </div>
+        <div class="cell">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-bp.png" alt="血" /></div>
+            <div class="info"><b>复查血脂全套</b><span>选定日期 · 上传报告</span></div>
+          </div>
+          <div class="r"><input type="checkbox"></div>
+        </div>
+        <div class="cell">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-tab-drugs.png" alt="药" /></div>
+            <div class="info"><b>服药反馈</b><span>每日 · 医嘱 vs 实际</span></div>
+          </div>
+          <div class="r"><input type="checkbox" checked></div>
+        </div>
+        <div class="cell">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-transfer.png" alt="动" /></div>
+            <div class="info"><b>康复训练打卡</b><span>每日步行 · 患者打卡</span></div>
+          </div>
+          <div class="r"><input type="checkbox"></div>
+        </div>
+      </div>
+
+      <div class="section-title">护士侧任务(护士执行)</div>
+      <div class="group">
+        <div class="cell">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-call.png" alt="电" /></div>
+            <div class="info"><b>电话回访</b><span>7/30/90 天 · 护士完成</span></div>
+          </div>
+          <div class="r"><input type="checkbox"></div>
+        </div>
+        <!-- F-NURSE-1 新增预约复查 -->
+        <a href="nurse-issue-followup.html" class="cell" style="background:#FFF8E1;">
+          <div class="l">
+            <div class="icon" style="background:#FFE082; color:#8D6E00;">复</div>
+            <div class="info">
+              <b style="color:#8D6E00;">预约复查</b>
+              <span style="color:#8D6E00;">§7.3.1 F-NURSE-1 · 日期 / 项目 / 备注</span>
+            </div>
+          </div>
+          <div class="r"><span class="badge" style="background:#FFE082; color:#8D6E00;">新增</span><span class="arrow">›</span></div>
+        </a>
+      </div>
+
+      <div class="notice notice-warn">
+        <b>预约复查(本期限制)</b>:不对接医院挂号系统。护士需<b>手动预留医生号</b>(线下操作);系统只承担"提醒患者 + 同步给主管医生"的职责。
+      </div>
+
+      <a href="nurse-patient-detail.html" class="btn btn-primary btn-block" style="margin-top:20px;">
+        下发
+      </a>
+    </div>
+
+    <div class="tabbar">
+      <a href="nurse-home.html" class="tab"><span <img src="assets/icons-png/icon-tab-home.png" alt="首" />主页</a>
+      <a href="nurse-tasks.html" class="tab"><span <img src="assets/icons-png/icon-tab-tasks.png" alt="任" />任务</a>
+      <a href="nurse-patients.html" class="tab active"><span <img src="assets/icons-png/icon-tab-people.png" alt="患" />患者</a>
+      <a href="role-switch.html" class="tab"><span <img src="assets/icons-png/icon-tab-switch.png" alt="切" />切换</a>
+    </div>
+  </div>
+  <script src="assets/layout.js"></script>
+</body>
+</html>
