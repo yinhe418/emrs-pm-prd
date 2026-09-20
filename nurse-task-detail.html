@@ -121,31 +121,28 @@
         </div>
       </div>
 
-      <!-- 话术参考 -->
-      <div class="section-title">话术参考</div>
-      <div class="notice">
-        <b>① 寒暄</b>:陈阿姨您好,我是 H 市第一医院的护士甲,您出院 12 天了,今天做个电话回访,大概 5-10 分钟,好吗?<br>
-        <b>② 血压</b>:最近血压怎么样?在家测过吗?今天早上测了吗?<br>
-        <b>③ 用药</b>:阿司匹林、阿托伐他汀、缬沙坦、达比加群 4 种药,有按时吃吗?有没有漏服或不舒服?<br>
-        <b>④ 症状</b>:有没有头痛、肢体麻木、胸闷、出血倾向?<br>
-        <b>⑤ 复查</b>:LDL-C 复查报告 12-29 已经上传了,看到了。<br>
-        <b>⑥ 康复</b>:每天步行 30 分钟做了吗?<br>
-        <b>⑦ 下一步</b>:90 天后我们会安排 mRS 评估,届时门诊来一趟。
+      <!-- 一体化:话术参考(可折叠) + 本次记录(快捷选择) + 语音录入(大按钮) -->
+      <div class="section-title">本次回访</div>
+
+      <!-- 话术参考(顶部,可折叠,默认收起) -->
+      <div class="card" style="background:var(--info-bg); border:1px solid rgba(2, 119, 189, 0.15); padding:0; margin-bottom:12px; overflow:hidden;">
+        <div onclick="toggleScript()" style="display:flex; align-items:center; justify-content:space-between; padding:12px 14px; cursor:pointer; user-select:none;">
+          <span style="font-size:13px; color:var(--info); font-weight:600;">📋 话术参考(边沟通边参考,默认收起)</span>
+          <span id="scriptChevron" style="font-size:14px; color:var(--info); transition:transform 0.2s;">▼</span>
+        </div>
+        <div id="scriptContent" style="display:none; padding:0 14px 14px; border-top:1px dashed rgba(2, 119, 189, 0.25); font-size:12px; color:var(--ink-2); line-height:1.85;">
+          <div style="padding-top:10px;"><b style="color:var(--info);">① 寒暄:</b>陈阿姨您好,我是 H 市第一医院的护士甲,您出院 12 天了,今天做个电话回访,大概 5-10 分钟,好吗?</div>
+          <div><b style="color:var(--info);">② 血压:</b>最近血压怎么样?在家测过吗?今天早上测了吗?</div>
+          <div><b style="color:var(--info);">③ 用药:</b>阿司匹林、阿托伐他汀、缬沙坦、达比加群 4 种药,有按时吃吗?有没有漏服或不舒服?</div>
+          <div><b style="color:var(--info);">④ 症状:</b>有没有头痛、肢体麻木、胸闷、出血倾向?</div>
+          <div><b style="color:var(--info);">⑤ 复查:</b>LDL-C 复查报告 12-29 已经上传了,看到了。</div>
+          <div><b style="color:var(--info);">⑥ 康复:</b>每天步行 30 分钟做了吗?</div>
+          <div><b style="color:var(--info);">⑦ 下一步:</b>90 天后我们会安排 mRS 评估,届时门诊来一趟。</div>
+        </div>
       </div>
 
-      <!-- 语音录入区 -->
-      <div class="section-title">语音录入</div>
-      <div class="card" style="text-align:center; background:#FAFAFA;">
-        <button class="record-btn" style="margin:0 auto;">
-          录
-        </button>
-        <div style="font-size:13px; color:var(--ink-2); margin-top:12px;">点击开始录音</div>
-        <div style="font-size:11px; color:var(--ink-3); margin-top:4px;">边沟通边录,实时转写(占位)</div>
-      </div>
-
-      <!-- 录入表单(快捷选择 + 补充) -->
-      <div class="section-title">本次记录(快捷选择 + 补充)</div>
-      <div class="group">
+      <!-- 本次记录(快捷选择) -->
+      <div class="card">
         <div class="form-item">
           <span class="form-label">随访方式</span>
           <select class="form-select">
@@ -184,7 +181,11 @@
         </div>
         <div class="form-item">
           <span class="form-label">本次记录详情</span>
-          <textarea class="form-textarea" placeholder="如:BP 135/82 偏高但未超阈值,已告知患者继续观察..."></textarea>
+          <textarea class="form-textarea" id="followupNote" placeholder="如:BP 135/82 偏高但未超阈值,已告知患者继续观察..." style="min-height:96px;"></textarea>
+          <button type="button" class="voice-input-wide" onclick="mockVoiceFollowup()" id="voiceFollowupBtn" aria-label="语音录入本次回访">
+            <span class="ico">🎤</span>
+            <span>点击语音录入</span>
+          </button>
         </div>
       </div>
 
@@ -307,6 +308,54 @@
         document.getElementById('taskTitle').textContent = '预约复查 · 陈丙英';
       }
     })();
+
+    // 话术参考:折叠展开
+    function toggleScript() {
+      var content = document.getElementById('scriptContent');
+      var chev = document.getElementById('scriptChevron');
+      if (content.style.display === 'none') {
+        content.style.display = 'block';
+        chev.style.transform = 'rotate(180deg)';
+      } else {
+        content.style.display = 'none';
+        chev.style.transform = 'rotate(0deg)';
+      }
+    }
+
+    // 语音录入(本次回访详情)— Mock
+    var followupToastEl = null;
+    function showFollowupToast(msg) {
+      if (!followupToastEl) {
+        followupToastEl = document.createElement('div');
+        followupToastEl.className = 'quick-input-toast';
+        followupToastEl.style.background = 'rgba(46, 125, 50, 0.95)';
+        document.body.appendChild(followupToastEl);
+      }
+      followupToastEl.className = 'quick-input-toast show';
+      followupToastEl.textContent = msg;
+      setTimeout(function () {
+        if (followupToastEl) followupToastEl.className = 'quick-input-toast';
+      }, 2200);
+    }
+    function mockVoiceFollowup() {
+      var btn = document.getElementById('voiceFollowupBtn');
+      btn.disabled = true;
+      btn.querySelector('.ico').textContent = '⏳';
+      btn.querySelector('span:last-child').textContent = '正在聆听…(请说)';
+      setTimeout(function () {
+        document.getElementById('followupNote').value =
+          '电话接通,通话约 18 分钟。陈阿姨自述出院后状态尚可,'
+          + '今早测血压 135/82,偏高但未超过 140,继续观察。'
+          + '4 种药物按时服用,无漏服、无明显不适。'
+          + '每天散步 30 分钟已坚持。'
+          + '对 LDL-C 复查结果有点担心,已解释他汀 20mg 一般需 4-6 周稳定,'
+          + '嘱 30 天后复查血脂全套;若仍有不适或血压连续 3 天 > 140 提前联系。';
+        btn.disabled = false;
+        btn.querySelector('.ico').textContent = '🎤';
+        btn.querySelector('span:last-child').textContent = '点击语音录入';
+        showFollowupToast('识别成功 · 请确认内容');
+      }, 2500);
+    }
   </script>
 </body>
 </html>
