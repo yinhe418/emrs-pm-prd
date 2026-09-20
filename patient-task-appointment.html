@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>复查预约</title>
+  <link rel="stylesheet" href="assets/styles.css">
+  <style>
+    .appt-hero {
+      background: linear-gradient(135deg, #2E7D57, #43A047);
+      color: white;
+      padding: 20px 16px 24px;
+      text-align: center;
+      border-radius: 0 0 16px 16px;
+    }
+    .appt-hero .label {
+      font-size: 12px;
+      opacity: 0.85;
+      letter-spacing: 1px;
+    }
+    .appt-hero .date-big {
+      font-size: 36px;
+      font-weight: 700;
+      line-height: 1.2;
+      margin-top: 6px;
+      font-variant-numeric: tabular-nums;
+    }
+    .appt-hero .weekday {
+      font-size: 14px;
+      opacity: 0.9;
+      margin-top: 4px;
+    }
+    .appt-hero .countdown {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 4px 12px;
+      background: rgba(255, 255, 255, 0.18);
+      border-radius: 14px;
+      font-size: 12px;
+    }
+
+    .appt-no {
+      background: linear-gradient(135deg, #FFF8E1, #FFFDE7);
+      border: 2px dashed #F9A825;
+      border-radius: 12px;
+      padding: 16px;
+      margin: 16px;
+      text-align: center;
+    }
+    .appt-no .label {
+      font-size: 12px;
+      color: #8D6E00;
+      letter-spacing: 1px;
+    }
+    .appt-no .no-big {
+      font-size: 28px;
+      font-weight: 700;
+      color: #5D4037;
+      font-family: 'SF Mono', 'Consolas', monospace;
+      letter-spacing: 2px;
+      margin-top: 6px;
+    }
+    .appt-no .tip {
+      font-size: 12px;
+      color: var(--ink-3);
+      margin-top: 8px;
+    }
+
+    .nurse-card {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px;
+      margin: 0 16px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 2px 8px rgba(46, 125, 50, 0.06);
+    }
+    .nurse-card .avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: var(--brand-light);
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+    .nurse-card .avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .nurse-card .info { flex: 1; min-width: 0; }
+    .nurse-card .info .role {
+      font-size: 11px;
+      color: var(--brand);
+      background: var(--brand-light);
+      padding: 2px 8px;
+      border-radius: 10px;
+      display: inline-block;
+      margin-bottom: 4px;
+    }
+    .nurse-card .info .name { font-size: 16px; font-weight: 600; color: var(--ink); }
+    .nurse-card .info .meta {
+      font-size: 12px;
+      color: var(--ink-3);
+      margin-top: 2px;
+      line-height: 1.5;
+    }
+    .nurse-card .phone {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--brand);
+      color: white;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      text-decoration: none;
+      font-size: 18px;
+    }
+
+    .checklist {
+      margin: 0 16px 16px;
+    }
+    .checklist .item {
+      display: flex;
+      gap: 10px;
+      padding: 8px 0;
+      font-size: 13px;
+      color: var(--ink-2);
+      line-height: 1.6;
+    }
+    .checklist .item .dot {
+      flex-shrink: 0;
+      color: var(--brand);
+      font-weight: 700;
+    }
+
+    .action-row {
+      display: flex;
+      gap: 10px;
+      padding: 0 16px 20px;
+    }
+    .action-row .btn { flex: 1; }
+
+    .meta-line {
+      font-size: 12px;
+      color: var(--ink-3);
+      text-align: center;
+      padding: 4px 16px 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="navbar">
+      <button class="back" onclick="location.href='patient-tasks.html'"><span style="font-size:22px; font-weight:700; line-height:1;">‹</span></button>
+      <div class="title">复查预约详情</div>
+      <div class="actions"></div>
+    </div>
+
+    <div class="page" style="padding-top:0;">
+
+      <!-- 大日期区 -->
+      <div class="appt-hero">
+        <div class="label">已为您预约</div>
+        <div class="date-big">2026-02-12</div>
+        <div class="weekday">星期四 · 上午 09:30</div>
+        <div class="countdown">距今 47 天</div>
+      </div>
+
+      <!-- 预约号 — 突出 -->
+      <div class="appt-no">
+        <div class="label">您的预约号</div>
+        <div class="no-big">A-2026-0212-0073</div>
+        <div class="tip">请到院后凭此号到神经内科分诊台报到</div>
+      </div>
+
+      <!-- 主管护士 — 突出 -->
+      <div class="nurse-card">
+        <div class="avatar">
+          <img src="assets/icons-png/icon-avatar-nurse.png" alt="护士甲">
+        </div>
+        <div class="info">
+          <span class="role">为您预约的主管护士</span>
+          <div class="name">护士甲</div>
+          <div class="meta">神经内科 · 随访岗<br>工作时段 8:00 - 17:00</div>
+        </div>
+        <a href="patient-im.html" class="phone" title="联系护士">📞</a>
+      </div>
+
+      <!-- 复查项目 -->
+      <div class="section-title">本次复查项目</div>
+      <div class="card" style="margin: 0 16px 16px;">
+        <div class="kv"><span class="k">颈动脉超声</span><span class="v">评估斑块变化</span></div>
+        <div class="kv"><span class="k">血脂全套</span><span class="v">TC / TG / LDL-C / HDL-C</span></div>
+        <div class="kv"><span class="k">空腹血糖</span><span class="v">监测代谢指标</span></div>
+      </div>
+
+      <!-- 就诊信息 -->
+      <div class="section-title">就诊信息</div>
+      <div class="card" style="margin: 0 16px 16px;">
+        <div class="kv"><span class="k">医院</span><span class="v">H 市第一医院</span></div>
+        <div class="kv"><span class="k">科室</span><span class="v">神经内科</span></div>
+        <div class="kv"><span class="k">位置</span><span class="v">门诊楼 3F · 神经内科诊室</span></div>
+        <div class="kv"><span class="k">需携带</span><span class="v">身份证 / 医保卡 / 既往报告</span></div>
+      </div>
+
+      <!-- 准备事项 -->
+      <div class="section-title">复查前准备</div>
+      <div class="checklist">
+        <div class="item"><span class="dot">·</span><span>前一晚 22:00 后禁食(血脂需空腹,水可少量饮用)</span></div>
+        <div class="item"><span class="dot">·</span><span>携带既往检查报告,便于医生对比变化趋势</span></div>
+        <div class="item"><span class="dot">·</span><span>正常服用晨起降压药(用一小口水送服)</span></div>
+        <div class="item"><span class="dot">·</span><span>建议提前 15 分钟到院,迟到需重新排队</span></div>
+      </div>
+
+      <!-- 重要提示 -->
+      <div class="card" style="background:#FFEBEE; border:none; margin: 0 16px 16px;">
+        <div style="font-size:12px; color:var(--block); line-height:1.7;">
+          <b>复查前出现以下情况请提前联系护士</b>(§6 异常处理):<br>
+          · 血压持续 &gt; 180/110 mmHg<br>
+          · 出现新的肢体无力 / 口角歪斜 / 言语不清<br>
+          · 严重头晕、视物模糊、胸闷
+        </div>
+      </div>
+
+      <!-- 底部按钮 -->
+      <div class="action-row">
+        <a href="#" class="btn btn-outline" onclick="addToCalendar(); return false;">📅 加入日历</a>
+        <a href="patient-tasks.html" class="btn btn-primary">我知道了</a>
+      </div>
+      <div class="meta-line">预约由主管护士护士甲于 2025-12-27 代您办理</div>
+    </div>
+
+    <div class="tabbar">
+      <a href="patient-home.html" class="tab"><span <img src="assets/icons-png/icon-tab-home.png" alt="首" />首页</a>
+      <a href="patient-tasks.html" class="tab active"><span <img src="assets/icons-png/icon-tab-tasks.png" alt="任" />任务</a>
+      <a href="patient-im.html" class="tab"><span <img src="assets/icons-png/icon-im.png" alt="信" />联系</a>
+      <a href="patient-emergency.html" class="tab" style="color:var(--block);"><span <img src="assets/icons-png/icon-sos.png" alt="急" />紧急</a>
+    </div>
+  </div>
+  <script src="assets/layout.js"></script>
+  <script>
+    var toastEl = null;
+    function showToast(msg) {
+      if (!toastEl) {
+        toastEl = document.createElement('div');
+        toastEl.className = 'quick-input-toast';
+        toastEl.style.background = 'rgba(46, 125, 50, 0.95)';
+        document.body.appendChild(toastEl);
+      }
+      toastEl.className = 'quick-input-toast show';
+      toastEl.textContent = msg;
+      setTimeout(function () {
+        if (toastEl) toastEl.className = 'quick-input-toast';
+      }, 2000);
+    }
+    function addToCalendar() {
+      showToast('已加入日历 · 2026-02-12 09:30 复查');
+    }
+  </script>
+</body>
+</html>
