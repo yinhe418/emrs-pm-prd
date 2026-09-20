@@ -113,17 +113,14 @@
         </div>
       </div>
 
-      <!-- 项目总结(可编辑 + 语音录入) -->
+      <!-- 项目总结(仅展示 · 录入入口在 director-evaluation.html) -->
       <div class="section-title">项目总结</div>
       <div class="card">
-        <textarea class="form-textarea" id="projectSummary" style="min-height:140px;"
-          placeholder="如:已完成 X 例 90 天管理 / 工作量统计 / 急症复盘 / 下一步建议...">已完成 3 例 90 天管理,均按 C7 安排复诊 / 基层接续,无脱落。
-前 30 例实际工作量统计:医生平均 22 分钟 / 例,护士 35 分钟 / 例(§8 前 30 例检验)。
-急症逐例复盘:本月 1 例(患者 D25 转主任接诊),处理及时,无遗漏。</textarea>
-        <button type="button" class="voice-input-wide" onclick="mockVoiceProjectSummary()" id="voiceSummaryBtn" aria-label="语音录入项目总结">
-          <span class="ico">🎤</span>
-          <span>点击语音录入</span>
-        </button>
+        <div style="font-size:13px; color:var(--ink-2); line-height:1.7;">
+          已完成 3 例 90 天管理,均按 C7 安排复诊 / 基层接续,无脱落。<br>
+          前 30 例实际工作量统计:医生平均 22 分钟 / 例,护士 35 分钟 / 例(§8 前 30 例检验)。<br>
+          急症逐例复盘:本月 1 例(患者 D25 转主任接诊),处理及时,无遗漏。
+        </div>
       </div>
 
       <a href="director-evaluation.html" class="btn btn-primary btn-block" style="margin-top:16px;">
@@ -145,47 +142,5 @@
     </div>
   </div>
   <script src="assets/layout.js"></script>
-  <script>
-    var dirToastEl = null;
-    function showDirToast(msg) {
-      if (!dirToastEl) {
-        dirToastEl = document.createElement('div');
-        dirToastEl.className = 'quick-input-toast';
-        dirToastEl.style.background = 'rgba(46, 125, 50, 0.95)';
-        document.body.appendChild(dirToastEl);
-      }
-      dirToastEl.className = 'quick-input-toast show';
-      dirToastEl.textContent = msg;
-      setTimeout(function () {
-        if (dirToastEl) dirToastEl.className = 'quick-input-toast';
-      }, 2200);
-    }
-
-    function mockVoiceProjectSummary() {
-      var btn = document.getElementById('voiceSummaryBtn');
-      btn.disabled = true;
-      btn.querySelector('.ico').textContent = '⏳';
-      btn.querySelector('span:last-child').textContent = '正在录入…(请说)';
-      setTimeout(function () {
-        document.getElementById('projectSummary').value =
-          '项目运行 60 天阶段性总结:已完成 3 例 90 天全程管理,'
-          + '均按 C7 安排复诊与基层接续,无脱落。前 30 例工作量统计 '
-          + '(§8 前 30 例检验):医生平均 22 分钟 / 例,护士 35 分钟 / 例,'
-          + '符合预期,护士甲负荷偏高(已记录,后续需调配)。\n\n'
-          + '急症逐例复盘:本月 1 例(患者 D25 突发血压 180/110,转主任接诊),'
-          + '15 分钟内启动应急流程,处理及时,无遗漏,患者预后良好。\n\n'
-          + '经验教训:1) 患者血压反弹需加强 D30 前瞻性提醒;'
-          + '2) 他汀剂量调整需更密切监测 LDL-C 趋势;'
-          + '3) 老年患者服药依从性可通过语音录入降低录入门槛。\n\n'
-          + '下一步建议:继续扩大入组(目标 Q1 末 50 例),'
-          + '加强护士负荷平衡,优化血脂异常处置流程,'
-          + '争取 90 天结案率维持 ≥ 95%。';
-        btn.disabled = false;
-        btn.querySelector('.ico').textContent = '🎤';
-        btn.querySelector('span:last-child').textContent = '点击语音录入';
-        showDirToast('识别成功 · 请确认内容');
-      }, 2800);
-    }
-  </script>
 </body>
 </html>
