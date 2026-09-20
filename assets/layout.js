@@ -370,10 +370,53 @@
     return html;
   }
 
+  // ─────────────────────────────────────────────
+  // 演示重置:清空所有 emrs_* localStorage
+  // ─────────────────────────────────────────────
+  window.resetDemo = function () {
+    if (!confirm('确认清空演示状态?\n所有认证、订阅、签署、支付状态都会被重置。')) return;
+    var cleared = [];
+    try {
+      for (var i = localStorage.length - 1; i >= 0; i--) {
+        var k = localStorage.key(i);
+        if (k && k.indexOf('emrs_') === 0) {
+          cleared.push(k);
+          localStorage.removeItem(k);
+        }
+      }
+    } catch (e) { /* localStorage 可能被禁用 */ }
+    if (cleared.length === 0) {
+      alert('演示状态本来就是空的。');
+      return;
+    }
+    alert('已重置 ' + cleared.length + ' 项:\n' + cleared.join(', ') + '\n\n页面即将刷新');
+    location.reload();
+  };
+
+  // 注入右下角浮动重置按钮(在所有页面都可点)
+  function injectResetFab() {
+    if (document.getElementById('demoResetFab')) return;
+    var btn = document.createElement('button');
+    btn.id = 'demoResetFab';
+    btn.type = 'button';
+    btn.className = 'demo-reset-fab';
+    btn.title = '重置演示状态(清空所有 emrs_* localStorage)';
+    btn.setAttribute('aria-label', '重置演示状态');
+    btn.innerHTML =
+      '<img src="assets/icons-png/icon-refresh.png" alt="" />' +
+      '<span class="demo-reset-label">重置</span>';
+    btn.addEventListener('click', window.resetDemo);
+    document.body.appendChild(btn);
+  }
+
   // 监听 DOMContentLoaded 后才执行
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', applyPreview);
+    document.addEventListener('DOMContentLoaded', function () {
+      injectResetFab();
+      applyPreview();
+    });
   } else {
+    injectResetFab();
     applyPreview();
   }
 
