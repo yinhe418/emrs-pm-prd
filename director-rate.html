@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>项目成员打分</title>
+  <link rel="stylesheet" href="assets/styles.css">
+  <style>
+    /* 弹层修正:
+       - 原 .modal-mask 是 position:fixed;inset:0,在桌面预览模式下,
+         .phone-screen 被 transform:scale() 缩放,fixed 元素以 viewport 为锚点,
+         会覆盖整个浏览器窗口(而非 phone-screen),导致弹层"溢出/变形"。
+       - 改为:默认 position:fixed(覆盖全屏,移动端正常);
+              在 .phone-screen 包裹时(.app 上溯到 .phone-screen 是 positioned),
+              改用 position:absolute 并把 phone-screen 设为定位祖先。
+       - 弹层宽度限定 max-width,避免超出 phone-screen(414px)。 */
+    .modal-mask {
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,0.45);
+      z-index: var(--z-modal);
+      display: none;
+      align-items: center; justify-content: center;
+      backdrop-filter: blur(2px);
+      -webkit-backdrop-filter: blur(2px);
+      animation: fadeIn var(--t-base);
+    }
+    .modal-mask.show { display: flex; }
+    .modal {
+      max-width: calc(100vw - 32px);
+      width: 320px;
+    }
+    /* 桌面预览模式:.app 被 .phone-screen 包裹,
+       phone-screen 已是 position:relative + overflow:hidden,
+       把弹层切到 absolute,以 phone-screen 为锚点 → 始终落在屏幕内 */
+    .phone-screen .modal-mask {
+      position: absolute;
+      max-width: 100%;
+    }
+
+    /* 项目头部 */
+    .proj-head {
+      background: linear-gradient(135deg, var(--role-director), #6B4BA0);
+      color: #fff;
+      padding: 16px 14px;
+      margin: 0 0 12px;
+      border-radius: 0 0 var(--r-lg) var(--r-lg);
+      max-width: 100%;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+    .proj-head b { font-size: 15px; display: block; font-weight: var(--fw-sb); margin-bottom: 4px; line-height: 1.4; }
+    .proj-head span { font-size: 11px; opacity: 0.9; line-height: 1.4; }
+    .proj-head .meta { display: flex; gap: 12px; margin-top: 10px; font-size: 10px; opacity: 0.85; }
+
+    /* 成员卡片 */
+    .member-card {
+      background: var(--bg-2);
+      border-radius: var(--r-lg);
+      padding: 14px;
+      margin-bottom: 10px;
+      border: 1px solid var(--line-3);
+      box-shadow: var(--shadow-xs);
+    }
+    .member-card .top {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    .member-card .avatar {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      display: grid; place-items: center;
+    }
+    .member-card .avatar svg { width: 44px; height: 44px; }
+    .member-card .info { flex: 1; min-width: 0; }
+    .member-card .info b { font-size: var(--fs-base); font-weight: var(--fw-sb); display: block; }
+    .member-card .info span { font-size: var(--fs-xs); color: var(--ink-3); }
+    .member-card .role-tag {
+      padding: 2px 8px;
+      border-radius: var(--r-pill);
+      font-size: 10px;
+      font-weight: var(--fw-med);
+    }
+
+    .score-block {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      padding: 10px 0;
+      border-top: 1px dashed var(--line);
+      border-bottom: 1px dashed var(--line);
+      margin-bottom: 10px;
+    }
+    .score-block .col { text-align: center; }
+    .score-block .col .num {
+      font-size: var(--fs-lg);
+      font-weight: var(--fw-bold);
+      color: var(--ink);
+      line-height: 1.2;
+    }
+    .score-block .col .num.composite { color: var(--brand); }
+    .score-block .col .num.low { color: var(--block); }
+    .score-block .col .lbl { font-size: 10px; color: var(--ink-3); margin-top: 2px; }
+
+    .member-card .actions { display: flex; gap: 8px; }
+    .member-card .actions .btn { flex: 1; padding: 8px; min-height: 36px; font-size: var(--fs-md); }
+
+    /* 五角星 */
+    .star-row {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      padding: 8px 0;
+    }
+    .star-row.lg .star { width: 44px; height: 44px; }
+    .star-row.sm .star { width: 16px; height: 16px; }
+    .star {
+      width: 40px;
+      height: 40px;
+      cursor: pointer;
+      transition: transform var(--t-fast);
+    }
+    .star:active { transform: scale(0.9); }
+    .star svg { width: 100%; height: 100%; display: block; }
+    .star.active .star-shape { fill: var(--brand); stroke: var(--brand-dark); }
+    .star .star-shape { fill: var(--line); stroke: var(--ink-5); transition: fill var(--t-base); }
+
+    .comment-box {
+      width: 100%;
+      min-height: 70px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--r-base);
+      font-family: inherit;
+      font-size: var(--fs-base);
+      color: var(--ink);
+      resize: none;
+      outline: none;
+      transition: border-color var(--t-fast), box-shadow var(--t-fast);
+    }
+    .comment-box:focus { border-color: var(--brand); box-shadow: var(--shadow-ring); }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="navbar">
+      <button class="back" onclick="location.href='director-project-detail.html'"><span style="font-size:22px; font-weight:700; line-height:1;">‹</span></button>
+      <div class="title">项目成员打分</div>
+      <div class="actions">
+        <a href="leaderboard.html?role=director" style="display:inline-block; color:var(--brand); font-size:13px; padding:6px 10px; font-weight:var(--fw-med);">排行榜</a>
+      </div>
+    </div>
+
+    <!-- 项目头部 -->
+    <div class="proj-head">
+      <b>90 天卒中连续健康管理</b>
+      <span>项目周期 D60 / D152 · 已进行 39%</span>
+      <div class="meta">
+        <span>在管患者 18</span>
+        <span>成员 5 人</span>
+      </div>
+    </div>
+
+    <div class="page" style="padding-top:0;">
+
+      <!-- 权重说明(Q-VOTE-1 已确认) -->
+      <div class="card" style="background:var(--info-bg); border:none; padding:12px;">
+        <div style="font-size:12px; color:var(--info); line-height:1.7;">
+          <b>综合得分规则</b>(Q-VOTE-1 已确认):<br>
+          综合 = 病患均值 × 30% + 主任均值 × 70%
+        </div>
+      </div>
+
+      <!-- 维度切换 -->
+      <div style="display:flex; gap:8px; margin:16px 0 12px;">
+        <button class="btn btn-primary btn-sm" style="flex:1;">医生</button>
+        <button class="btn btn-outline btn-sm" style="flex:1;">护士</button>
+      </div>
+
+      <!-- 医生成员列表 -->
+      <div class="section-title">项目医生</div>
+
+      <!-- 医生甲 -->
+      <div class="member-card">
+        <div class="top">
+          <div class="icon"><img src="assets/icons-png/icon-avatar-doctor.png" alt="医" /></div>
+          <div class="info">
+            <b>医生甲(您)</b>
+            <span>主管医生 · 在管 8 例</span>
+          </div>
+          <span class="role-tag" style="background:var(--brand-light); color:var(--brand);">本人</span>
+        </div>
+        <div class="score-block">
+          <div class="col">
+            <div class="num composite">4.6</div>
+            <div class="lbl">综合</div>
+          </div>
+          <div class="col">
+            <div class="num">4.5</div>
+            <div class="lbl">病患均值</div>
+          </div>
+          <div class="col">
+            <div class="num">4.7</div>
+            <div class="lbl">主任打分</div>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="btn btn-outline" onclick="openRate('doctor-1')">打分</button>
+          <button class="btn btn-ghost">查看明细</button>
+        </div>
+      </div>
+
+      <!-- 医生乙 -->
+      <div class="member-card">
+        <div class="top">
+          <div class="icon"><img src="assets/icons-png/icon-avatar-doctor.png" alt="医" /></div>
+          <div class="info">
+            <b>医生乙</b>
+            <span>项目医生 · 在管 12 例</span>
+          </div>
+        </div>
+        <div class="score-block">
+          <div class="col">
+            <div class="num composite">4.4</div>
+            <div class="lbl">综合</div>
+          </div>
+          <div class="col">
+            <div class="num">4.3</div>
+            <div class="lbl">病患均值</div>
+          </div>
+          <div class="col">
+            <div class="num">4.5</div>
+            <div class="lbl">主任打分</div>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="btn btn-outline" onclick="openRate('doctor-2')">打分</button>
+          <button class="btn btn-ghost">查看明细</button>
+        </div>
+      </div>
+
+      <!-- 医生丙(低分警示) -->
+      <div class="member-card" style="border-left:3px solid var(--block);">
+        <div class="top">
+          <div class="icon"><img src="assets/icons-png/icon-avatar-doctor.png" alt="医" /></div>
+          <div class="info">
+            <b>医生丙</b>
+            <span>项目医生 · 在管 6 例</span>
+          </div>
+          <span class="role-tag" style="background:var(--block-bg); color:var(--block);">低分</span>
+        </div>
+        <div class="score-block">
+          <div class="col">
+            <div class="num composite low">3.2</div>
+            <div class="lbl">综合</div>
+          </div>
+          <div class="col">
+            <div class="num low">2.8</div>
+            <div class="lbl">病患均值</div>
+          </div>
+          <div class="col">
+            <div class="num">3.5</div>
+            <div class="lbl">主任打分</div>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="btn btn-outline" onclick="openRate('doctor-3')">打分</button>
+          <button class="btn btn-ghost">查看明细</button>
+        </div>
+      </div>
+
+      <!-- 护士分组 -->
+      <div class="section-title">项目护士</div>
+
+      <!-- 护士甲 -->
+      <div class="member-card">
+        <div class="top">
+          <div class="icon"><img src="assets/icons-png/icon-avatar-nurse.png" alt="护" /></div>
+          <div class="info">
+            <b>护士甲</b>
+            <span>主要联系护士 · 在管 12 例</span>
+          </div>
+        </div>
+        <div class="score-block">
+          <div class="col">
+            <div class="num composite">4.7</div>
+            <div class="lbl">综合</div>
+          </div>
+          <div class="col">
+            <div class="num">4.6</div>
+            <div class="lbl">病患均值</div>
+          </div>
+          <div class="col">
+            <div class="num">4.8</div>
+            <div class="lbl">主任打分</div>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="btn btn-outline" onclick="openRate('nurse-1')">打分</button>
+          <button class="btn btn-ghost">查看明细</button>
+        </div>
+      </div>
+
+      <!-- 护士乙 -->
+      <div class="member-card">
+        <div class="top">
+          <div class="icon"><img src="assets/icons-png/icon-avatar-nurse.png" alt="护" /></div>
+          <div class="info">
+            <b>护士乙</b>
+            <span>项目护士 · 在管 10 例</span>
+          </div>
+        </div>
+        <div class="score-block">
+          <div class="col">
+            <div class="num composite">4.3</div>
+            <div class="lbl">综合</div>
+          </div>
+          <div class="col">
+            <div class="num">4.2</div>
+            <div class="lbl">病患均值</div>
+          </div>
+          <div class="col">
+            <div class="num">4.4</div>
+            <div class="lbl">主任打分</div>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="btn btn-outline" onclick="openRate('nurse-2')">打分</button>
+          <button class="btn btn-ghost">查看明细</button>
+        </div>
+      </div>
+
+      <!-- 说明 -->
+      <div class="card" style="background:var(--brand-soft); border:none; margin-top:12px;">
+        <div style="font-size:12px; color:var(--brand-dark); line-height:1.7;">
+          <b>说明</b><br>
+          · 主任打分仅作为项目内部参考(C1)<br>
+          · 病患打分 < N 时不计入分母(待 N 确认)<br>
+          · 评分不直接联动绩效(§12.5)
+        </div>
+      </div>
+    </div>
+
+    <!-- 打分弹窗 -->
+    <div class="modal-mask" id="rateModal">
+      <div class="modal" style="width:340px; padding:24px 22px 18px;">
+        <h3 id="modalTitle" style="text-align:center;">为医生乙打分</h3>
+        <p style="text-align:center; font-size:12px; color:var(--ink-3); margin-bottom:14px;">总评星(5 星制)</p>
+        <div class="star-row lg" id="starRow">
+          <div class="star" data-val="1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon class="star-shape" points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+          <div class="star" data-val="2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon class="star-shape" points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+          <div class="star" data-val="3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon class="star-shape" points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+          <div class="star" data-val="4"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon class="star-shape" points="12 2 15.09 8.26 22 9.27 17 14.14 18.18, 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+          <div class="star" data-val="5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon class="star-shape" points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+        </div>
+        <div style="font-size:11px; color:var(--ink-3); text-align:center; margin-top:6px;">轻点星星评分</div>
+
+        <div style="margin-top:18px;">
+          <div style="font-size:12px; color:var(--ink-2); margin-bottom:6px;">打分评语(可选)</div>
+          <textarea class="comment-box" id="commentBox" placeholder="如:本月随访跟进积极,患者反馈好。" maxlength="200"></textarea>
+          <div style="text-align:right; font-size:10px; color:var(--ink-4); margin-top:2px;"><span id="cnt">0</span> / 200</div>
+        </div>
+
+        <div class="modal-actions" style="margin-top:18px;">
+          <button class="btn btn-ghost" onclick="closeRate()">取消</button>
+          <button class="btn btn-primary" onclick="submitRate()">提交</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 角色入口 -->
+    <div class="tabbar">
+      <a href="director-home.html" class="tab"><span <img src="assets/icons-png/icon-tab-home.png" alt="首" />首页</a>
+      <a href="director-project-detail.html" class="tab"><span <img src="assets/icons-png/icon-tab-projects.png" alt="项" />项目</a>
+      <a href="leaderboard.html?role=director" class="tab"><span <img src="assets/icons-png/icon-tab-eval.png" alt="评" />排行</a>
+      <a href="patient-rate.html" class="tab"><span <img src="assets/icons-png/icon-info.png" alt="详" />患者视图</a>
+    </div>
+  </div>
+
+  <script>
+    let currentVal = 0;
+    const titles = {
+      'doctor-1': '为医生甲(您)打分',
+      'doctor-2': '为医生乙打分',
+      'doctor-3': '为医生丙打分',
+      'nurse-1': '为护士甲打分',
+      'nurse-2': '为护士乙打分'
+    };
+    function openRate(id){
+      document.getElementById('rateModal').classList.add('show');
+      document.getElementById('modalTitle').textContent = titles[id] || '打分';
+      currentVal = 0;
+      document.querySelectorAll('#starRow .star').forEach(s => s.classList.remove('active'));
+      document.getElementById('commentBox').value = '';
+      document.getElementById('cnt').textContent = '0';
+    }
+    function closeRate(){
+      document.getElementById('rateModal').classList.remove('show');
+    }
+    document.querySelectorAll('#starRow .star').forEach(star => {
+      star.addEventListener('click', function(){
+        currentVal = parseInt(this.dataset.val);
+        document.querySelectorAll('#starRow .star').forEach(s => {
+          s.classList.toggle('active', parseInt(s.dataset.val) <= currentVal);
+        });
+      });
+    });
+    document.getElementById('commentBox').addEventListener('input', function(){
+      document.getElementById('cnt').textContent = this.value.length;
+    });
+    function submitRate(){
+      if (currentVal === 0){ alert('请选择星数'); return; }
+      alert('已提交 ' + currentVal + ' 星评价');
+      closeRate();
+      location.href = 'director-rate.html';
+    }
+  </script>
+  <script src="assets/layout.js"></script>
+</body>
+</html>

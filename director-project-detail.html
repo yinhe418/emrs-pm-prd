@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>项目详情 · 90 天管理</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <div class="app">
+    <div class="navbar">
+      <button class="back" onclick="location.href='director-home.html'"><span style="font-size:22px; font-weight:700; line-height:1;">‹</span></button>
+      <div class="title">项目详情</div>
+      <div class="actions"></div>
+    </div>
+
+    <div class="page">
+      <div class="banner">
+        <b>90 天卒中连续健康管理</b>
+        2025-10-01 ~ 2026-03-31 · 主负责医生:科室主任
+      </div>
+
+      <!-- (顶部打分主入口已移除:改为在 director-evaluation.html 项目总结上方出现) -->
+
+      <!-- 进度 -->
+      <div class="section-title">项目进度</div>
+      <div class="card">
+        <div style="font-size:12px; color:var(--ink-3); margin-bottom:8px;">
+          已进行 60 / 152 天
+        </div>
+        <div style="height:8px; background:var(--line-2); border-radius:4px; overflow:hidden;">
+          <div style="height:100%; width:39%; background:linear-gradient(90deg, var(--brand), var(--brand-2));"></div>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--ink-3); margin-top:6px;">
+          <span>2025-10-01</span>
+          <span>2026-03-31</span>
+        </div>
+      </div>
+
+      <!-- 关键指标 -->
+      <div class="section-title">项目指标</div>
+      <div class="card">
+        <div class="kv"><span class="k">入组患者</span><span class="v">18 例 / 计划 200 例</span></div>
+        <div class="kv"><span class="k">完成 90 天管理</span><span class="v" style="color:var(--pass);">3 例已结案</span></div>
+        <div class="kv"><span class="k">建档率</span><span class="v" style="color:var(--pass);">100%</span></div>
+        <div class="kv"><span class="k">有效随访率</span><span class="v" style="color:var(--pass);">93%(目标 ≥ 90%)</span></div>
+        <div class="kv"><span class="k">异常处置率</span><span class="v" style="color:var(--pass);">100%(目标 100%)</span></div>
+      </div>
+
+      <!-- 试点评价口径 -->
+      <div class="section-title">试点评价口径(§8)</div>
+      <div class="card">
+        <div style="font-size:12px; color:var(--ink-2); line-height:1.8;">
+          ✓ 完整建档率:97% ≥ 95%<br>
+          ✓ 有效核心随访 + 90 天核实:93% ≥ 90%<br>
+          ✓ 存活卒中 mRS 完成率:90% ≥ 90%<br>
+          ✓ 所有急症 100% 升级处理<br>
+          <span style="color:var(--block);">✗</span> 失联 / 未到期 / 仅"已读"已剔除,不计完成
+        </div>
+      </div>
+
+      <!-- 任务完成度(按医生 / 护士) -->
+      <div class="section-title">医生任务完成度</div>
+      <div class="group">
+        <div class="cell">
+          <div class="l">
+            <div class="icon" style="background:var(--brand-light); color:var(--brand);">甲</div>
+            <div class="info"><b>主管医生(您) · 医生甲</b><span>在管 8 · 完成 27</span></div>
+          </div>
+          <div class="r" style="display:flex; align-items:center; gap:8px;">
+            <span class="badge badge-pass">高</span>
+          </div>
+        </div>
+        <div class="cell">
+          <div class="l">
+            <div class="icon">乙</div>
+            <div class="info"><b>医生乙</b><span>在管 12 · 完成 31</span></div>
+          </div>
+          <div class="r" style="display:flex; align-items:center; gap:8px;">
+            <span class="badge badge-pass">高</span>
+          </div>
+        </div>
+        <div class="cell">
+          <div class="l">
+            <div class="icon">丙</div>
+            <div class="info"><b>医生丙</b><span>在管 6 · 完成 18</span></div>
+          </div>
+          <div class="r" style="display:flex; align-items:center; gap:8px;">
+            <span class="badge badge-gray">中</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title">护士任务完成度</div>
+      <div class="group">
+        <div class="cell">
+          <div class="l">
+            <div class="icon" style="background:#E8F5E9; color:var(--role-nurse);">甲</div>
+            <div class="info"><b>护士甲</b><span>在管 12 · 完成 28 · 近一月</span></div>
+          </div>
+          <div class="r" style="display:flex; align-items:center; gap:8px;">
+            <span class="badge badge-warn">高负荷</span>
+          </div>
+        </div>
+        <div class="cell">
+          <div class="l">
+            <div class="icon">丙</div>
+            <div class="info"><b>护士丙</b><span>在管 10 · 完成 22</span></div>
+          </div>
+          <div class="r" style="display:flex; align-items:center; gap:8px;">
+            <span class="badge badge-pass">正常</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 项目总结 -->
+      <div class="section-title">项目总结</div>
+      <div class="card">
+        <div style="font-size:13px; color:var(--ink-2); line-height:1.7;">
+          已完成 3 例 90 天管理,均按 C7 安排复诊 / 基层接续,无脱落。<br>
+          前 30 例实际工作量统计:医生平均 22 分钟 / 例,护士 35 分钟 / 例(§8 前 30 例检验)。<br>
+          急症逐例复盘:本月 1 例(患者 D25 转主任接诊),处理及时,无遗漏。
+        </div>
+      </div>
+
+      <a href="director-evaluation.html" class="btn btn-primary btn-block" style="margin-top:16px;">
+        进入项目评定
+      </a>
+
+      <div class="card" style="background:var(--info-bg); border:none; margin-top:12px;">
+        <div style="font-size:12px; color:var(--info);">
+          <b>每月抽查 ≥ 10% 服务记录</b>(§8):上月抽查 18 份,合格率 100%。
+        </div>
+      </div>
+    </div>
+
+    <div class="tabbar">
+      <a href="director-home.html" class="tab"><span <img src="assets/icons-png/icon-tab-home.png" alt="首" />主页</a>
+      <a href="director-project-detail.html" class="tab active"><span <img src="assets/icons-png/icon-document.png" alt="表" />项目</a>
+      <a href="director-evaluation.html" class="tab"><span <img src="assets/icons-png/icon-tab-eval.png" alt="评" />评定</a>
+      <a href="role-switch.html" class="tab"><span <img src="assets/icons-png/icon-tab-switch.png" alt="切" />切换</a>
+    </div>
+  </div>
+  <script src="assets/layout.js"></script>
+</body>
+</html>

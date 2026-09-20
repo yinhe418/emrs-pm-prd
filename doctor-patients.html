@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>患者列表</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <div class="app">
+    <div class="navbar">
+      <button class="back" onclick="location.href='doctor-home.html'"><span style="font-size:22px; font-weight:700; line-height:1;">‹</span></button>
+      <div class="title">患者列表</div>
+      <div class="actions">
+        <button onclick="location.href='doctor-issue-task.html'">+ 下发</button>
+      </div>
+    </div>
+
+    <div class="page" style="padding-top:0;">
+      <!-- 搜索 -->
+      <div style="padding:12px 16px; background:white; border-bottom:1px solid var(--line);">
+        <input class="form-input" placeholder="搜索患者姓名" style="background:var(--bg); border-radius:8px; padding:10px 14px; border:1px solid var(--line);">
+      </div>
+
+      <!-- 筛选 -->
+      <div style="display:flex; gap:8px; padding:12px 16px; overflow-x:auto; background:white;">
+        <button class="btn btn-sm btn-primary">全部 8</button>
+        <button class="btn btn-sm btn-outline">90 天管理 6</button>
+        <button class="btn btn-sm btn-outline" style="border-color:var(--purple); color:var(--purple);">颈动脉研究 3</button>
+        <button class="btn btn-sm btn-outline" style="border-color:var(--warn); color:var(--warn);">未分配护士 1</button>
+      </div>
+
+      <div class="page">
+        <!-- 待处理患者 -->
+        <div class="section-title">待处理(2)</div>
+        <div class="group">
+          <a href="doctor-patient-detail.html" class="cell" style="background:#FFEBEE;">
+            <div class="l">
+              <div class="icon"><img src="assets/icons-png/icon-alert.png" alt="!" /></div>
+              <div class="info">
+                <b>陈丙英 · 81 岁</b>
+                <span>LDL-C 1.95 异常 · 需判断 · D12</span>
+              </div>
+            </div>
+            <div class="r"><span class="badge badge-block">需判断</span><span class="arrow">›</span></div>
+          </a>
+          <a href="doctor-patient-detail.html" class="cell" style="background:#FFEBEE;">
+            <div class="l">
+              <div class="icon"><img src="assets/icons-png/icon-alert.png" alt="!" /></div>
+              <div class="info">
+                <b>刘文 · 72 岁</b>
+                <span>阿司匹林胃部不适 · D25</span>
+              </div>
+            </div>
+            <div class="r"><span class="badge badge-block">需判断</span><span class="arrow">›</span></div>
+          </a>
+        </div>
+
+        <!-- 90 天管理 -->
+        <div class="section-title">90 天管理(6)</div>
+        <div class="group">
+          <a href="doctor-patient-detail.html" class="cell">
+            <div class="l">
+              <div class="icon"><img src="assets/icons-png/icon-avatar-patient.png" alt="陈" /></div>
+              <div class="info"><b>陈丙英 · 81 岁</b><span>D12 · BP 135/82 · LDL 1.95</span></div>
+            </div>
+            <div class="r"><span class="badge badge-pass">90天</span></div>
+          </a>
+          <a href="doctor-patient-detail.html" class="cell">
+            <div class="l">
+              <div class="icon">张</div>
+              <div class="info"><b>张桂兰 · 76 岁</b><span>D30 · 待 mRS 评估</span></div>
+            </div>
+            <div class="r"><span class="badge badge-pass">90天</span><span class="badge" style="background:var(--purple-bg); color:var(--purple);">研究</span></div>
+          </a>
+          <a href="doctor-patient-detail.html" class="cell">
+            <div class="l">
+              <div class="icon">刘</div>
+              <div class="info"><b>刘文 · 72 岁</b><span>D25 · 阿司匹林不良反应</span></div>
+            </div>
+            <div class="r"><span class="badge badge-pass">90天</span></div>
+          </a>
+          <a href="doctor-patient-detail.html" class="cell">
+            <div class="l">
+              <div class="icon">王</div>
+              <div class="info"><b>王强 · 65 岁</b><span>D65 · 血压达标</span></div>
+            </div>
+            <div class="r"><span class="badge badge-pass">90天</span></div>
+          </a>
+          <a href="doctor-patient-detail.html" class="cell">
+            <div class="l">
+              <div class="icon">李</div>
+              <div class="info"><b>李明 · 58 岁</b><span>D82 · 临近 90 天结案</span></div>
+            </div>
+            <div class="r"><span class="badge badge-pass">90天</span></div>
+          </a>
+          <a href="doctor-patient-detail.html" class="cell">
+            <div class="l">
+              <div class="icon">赵</div>
+              <div class="info"><b>赵慧 · 69 岁</b><span>D45 · 各项达标</span></div>
+            </div>
+            <div class="r"><span class="badge badge-pass">90天</span><span class="badge" style="background:var(--purple-bg); color:var(--purple);">研究</span></div>
+          </a>
+        </div>
+
+        <!-- 未分配护士 -->
+        <div class="section-title" style="color:var(--warn);">未分配护士(1)· 待办</div>
+        <div class="group">
+          <a href="doctor-patient-detail.html" class="cell" style="background:#FFF3E0;">
+            <div class="l">
+              <div class="icon"><img src="assets/icons-png/icon-alert.png" alt="!" /></div>
+              <div class="info">
+                <b>周芳 · 67 岁</b>
+                <span>昨天出院 · 需分配主管护士</span>
+              </div>
+            </div>
+            <div class="r"><span class="badge badge-warn">待分配</span><span class="arrow">›</span></div>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="tabbar">
+      <a href="doctor-home.html" class="tab"><span <img src="assets/icons-png/icon-tab-home.png" alt="首" />主页</a>
+      <a href="doctor-tasks.html" class="tab"><span <img src="assets/icons-png/icon-tab-tasks.png" alt="任" />任务</a>
+      <a href="doctor-patients.html" class="tab active"><span <img src="assets/icons-png/icon-tab-people.png" alt="患" />患者</a>
+      <a href="role-switch.html" class="tab"><span <img src="assets/icons-png/icon-tab-switch.png" alt="切" />切换</a>
+    </div>
+  </div>
+  <script src="assets/layout.js"></script>
+</body>
+</html>

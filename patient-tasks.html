@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>任务中心</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <div class="app">
+    <div class="navbar">
+      <button class="back" onclick="location.href='patient-home.html'"><span style="font-size:22px; font-weight:700; line-height:1;">‹</span></button>
+      <div class="title">任务中心</div>
+      <div class="actions"></div>
+    </div>
+
+    <div class="page" style="padding-top:0;">
+      <!-- 筛选 -->
+      <div style="display:flex; gap:8px; padding:12px 16px; background:white; border-bottom:1px solid var(--line); overflow-x:auto;">
+        <button class="btn btn-sm btn-primary">全部 4</button>
+        <button class="btn btn-sm btn-outline">未完成 3</button>
+        <button class="btn btn-sm btn-outline">已完成 1</button>
+        <button class="btn btn-sm btn-outline">逾期 2</button>
+      </div>
+
+      <div class="page">
+        <div class="banner" style="background:var(--block-bg); color:var(--block);">
+          <b style="color:var(--block);">2 项任务逾期,请尽快完成</b>
+          系统会通知您的护士协助。
+        </div>
+
+        <!-- 逾期未完成(置顶) -->
+        <div class="section-title">逾期未完成</div>
+        <div class="group">
+          <a href="patient-task-bp.html" class="cell" style="background:#FFEBEE;">
+            <div class="l">
+              <div class="icon"><img src="assets/icons-png/icon-alert.png" alt="!" /></div>
+              <div class="info">
+                <b style="color:var(--block);">记录血压(早上)</b>
+                <span style="color:var(--block);">每日 09:00 前 · 连续 3 天未记录</span>
+              </div>
+            </div>
+            <div class="r"><span class="badge badge-block">逾期</span><span class="arrow">›</span></div>
+          </a>
+          <a href="patient-task-upload.html" class="cell" style="background:#FFEBEE;">
+            <div class="l">
+              <div class="icon" style="background:var(--block-bg); color:var(--block);">↑</div>
+              <div class="info">
+                <b style="color:var(--block);">LDL-C 复查报告上传</b>
+                <span style="color:var(--block);">D30 复查 · 截止 2025-12-31 · 已逾期 2 天</span>
+              </div>
+            </div>
+            <div class="r"><span class="badge badge-block">逾期</span><span class="arrow">›</span></div>
+          </a>
+        </div>
+
+        <!-- 今日待办 -->
+        <div class="section-title">今日待办</div>
+        <div class="group">
+          <a href="patient-task-med.html" class="cell">
+            <div class="l">
+              <div class="icon"><img src="assets/icons-png/icon-tab-drugs.png" alt="药" /></div>
+              <div class="info"><b>服药反馈 · 阿托伐他汀 20mg</b><span>睡前服用 · 记录实际服用情况</span></div>
+            </div>
+            <div class="r"><span class="arrow">›</span></div>
+          </a>
+          <a href="patient-task-followup.html" class="cell">
+            <div class="l">
+              <div class="icon"><img src="assets/icons-png/icon-call.png" alt="电" /></div>
+              <div class="info"><b>护士电话回访 · 7 天随访</b><span>今日 15:00 - 17:00 · 护士甲</span></div>
+            </div>
+            <div class="r"><span class="badge badge-brand">待接听</span><span class="arrow">›</span></div>
+          </a>
+        </div>
+
+        <!-- 周期任务 -->
+        <div class="section-title">周期任务(后续)</div>
+        <div class="group">
+          <div class="cell">
+            <div class="l">
+              <div class="icon"><img src="assets/icons-png/icon-calendar.png" alt="历" /></div>
+              <div class="info"><b>30 天复查 · 血脂全套</b><span>D30 · 2025-01-14 · 距今 18 天</span></div>
+            </div>
+            <div class="r"><span class="badge badge-gray">未到期</span></div>
+          </div>
+          <div class="cell">
+            <div class="l">
+              <div class="icon"><img src="assets/icons-png/icon-calendar.png" alt="历" /></div>
+              <div class="info"><b>90 天 mRS 评估</b><span>D90 · 2025-03-14 · 由医生安排</span></div>
+            </div>
+            <div class="r"><span class="badge badge-gray">未到期</span></div>
+          </div>
+        </div>
+
+        <!-- 已完成 -->
+        <div class="section-title">最近已完成</div>
+        <div class="group">
+          <div class="cell" style="opacity:0.7;">
+            <div class="l">
+              <div class="icon"><img src="assets/icons-png/icon-check.png" alt="✓" /></div>
+              <div class="info"><b>记录血压(昨晚)</b><span>2025-12-26 21:30 · 135/82</span></div>
+            </div>
+            <div class="r"><span class="badge badge-pass">已完成</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tabbar">
+      <a href="patient-home.html" class="tab"><span <img src="assets/icons-png/icon-tab-home.png" alt="首" />首页</a>
+      <a href="patient-tasks.html" class="tab active"><span <img src="assets/icons-png/icon-tab-tasks.png" alt="任" />任务</a>
+      <a href="patient-im.html" class="tab"><span <img src="assets/icons-png/icon-im.png" alt="信" />联系</a>
+      <a href="patient-emergency.html" class="tab" style="color:var(--block);"><span <img src="assets/icons-png/icon-sos.png" alt="急" />紧急</a>
+    </div>
+  </div>
+  <script src="assets/layout.js"></script>
+</body>
+</html>

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>编辑任务组件</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <div class="app">
+    <div class="navbar">
+      <button class="back" onclick="location.href='admin-task-lib.html'"><span style="font-size:22px; font-weight:700; line-height:1;">‹</span></button>
+      <div class="title">编辑任务组件</div>
+      <div class="actions"></div>
+    </div>
+
+    <div class="page">
+      <div class="banner">
+        <b>任务组件配置</b>
+        定义组件的录入字段。字段定义后,医生"下发任务"和患者"任务中心"自动按此呈现。
+      </div>
+
+      <div class="section-title">基本信息</div>
+      <div class="group">
+        <div class="form-item">
+          <span class="form-label"><span class="req">*</span>组件名称</span>
+          <input class="form-input" value="记录血压">
+        </div>
+        <div class="form-item">
+          <span class="form-label">组件编码</span>
+          <input class="form-input" value="TASK_BP" readonly>
+        </div>
+        <div class="form-item">
+          <span class="form-label">图标</span>
+          <input class="form-input" value="stethoscope">
+        </div>
+        <div class="form-item">
+          <span class="form-label">说明</span>
+          <textarea class="form-textarea">患者每日记录血压值,可与个人目标对比</textarea>
+        </div>
+      </div>
+
+      <div class="section-title">字段定义</div>
+      <div class="card">
+        <table style="width:100%; font-size:13px;">
+          <thead>
+            <tr style="background:var(--bg);">
+              <th style="text-align:left; padding:8px;">字段名</th>
+              <th style="text-align:left; padding:8px;">类型</th>
+              <th style="text-align:left; padding:8px;">必填</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-top:1px solid var(--line);">
+              <td style="padding:8px;">收缩压</td>
+              <td style="padding:8px;">数值(60-250)</td>
+              <td style="padding:8px;"><span class="badge badge-block">必填</span></td>
+            </tr>
+            <tr style="border-top:1px solid var(--line);">
+              <td style="padding:8px;">舒张压</td>
+              <td style="padding:8px;">数值(30-150)</td>
+              <td style="padding:8px;"><span class="badge badge-block">必填</span></td>
+            </tr>
+            <tr style="border-top:1px solid var(--line);">
+              <td style="padding:8px;">心率</td>
+              <td style="padding:8px;">数值(30-220)</td>
+              <td style="padding:8px;"><span class="badge badge-gray">选填</span></td>
+            </tr>
+            <tr style="border-top:1px solid var(--line);">
+              <td style="padding:8px;">测量时间</td>
+              <td style="padding:8px;">日期时间</td>
+              <td style="padding:8px;"><span class="badge badge-info">自动</span></td>
+            </tr>
+            <tr style="border-top:1px solid var(--line);">
+              <td style="padding:8px;">测量体位</td>
+              <td style="padding:8px;">枚举(坐/卧/站)</td>
+              <td style="padding:8px;"><span class="badge badge-gray">选填</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <a href="admin-task-lib.html" class="btn btn-primary btn-block" style="margin-top:20px;">
+        保存组件
+      </a>
+    </div>
+  </div>
+  <script src="assets/layout.js"></script>
+</body>
+</html>

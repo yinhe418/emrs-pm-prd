@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>科室负责人主页</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <div class="app">
+    <div class="navbar">
+      <div></div>
+      <div class="title">科室负责人</div>
+      <div class="actions">
+        <button onclick="location.href='role-switch.html'"><span style="font-size:18px; font-weight:700; line-height:1;">切</span></button>
+      </div>
+    </div>
+
+    <div class="page" style="padding:16px; padding-top:0;">
+      <div class="role-banner director" style="border-radius:0 0 16px 16px; margin-bottom:0;">
+        <b>科室主任 · 神经内科</b>
+        <span>2025-12-27 · 工作时段 8:00-17:00</span>
+        <div style="margin-top:10px; display:flex; gap:8px;">
+          <span class="badge" style="background:rgba(255,255,255,0.3); color:white;">医生 6</span>
+          <span class="badge" style="background:rgba(255,255,255,0.3); color:white;">护士 8</span>
+          <span class="badge" style="background:rgba(255,255,255,0.3); color:white;">患者 156</span>
+        </div>
+      </div>
+        <!-- 总体指标 -->
+        <div class="section-title">总体概览</div>
+        <div class="card">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <div>
+              <div style="font-size:11px; color:var(--ink-3);">在管患者</div>
+              <div class="big-number" style="font-size:26px;">156</div>
+              <div style="font-size:11px; color:var(--ink-3);">较上月 +12</div>
+            </div>
+            <div>
+              <div style="font-size:11px; color:var(--ink-3);">建档率</div>
+              <div class="big-number" style="font-size:26px; color:var(--pass);">97<span class="unit">%</span></div>
+              <div style="font-size:11px; color:var(--ink-3);">目标 ≥ 95%</div>
+            </div>
+            <div>
+              <div style="font-size:11px; color:var(--ink-3);">有效随访率</div>
+              <div class="big-number" style="font-size:26px; color:var(--pass);">93<span class="unit">%</span></div>
+              <div style="font-size:11px; color:var(--ink-3);">目标 ≥ 90%</div>
+            </div>
+            <div>
+              <div style="font-size:11px; color:var(--ink-3);">异常处置率</div>
+              <div class="big-number" style="font-size:26px; color:var(--pass);">100<span class="unit">%</span></div>
+              <div style="font-size:11px; color:var(--ink-3);">目标 100%</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 关键警示 -->
+        <div class="section-title" style="color:var(--block);">需关注(3)</div>
+        <div class="group">
+          <a href="director-home.html" class="cell" style="background:#FFEBEE;">
+            <div class="l">
+              <div class="icon"><img src="assets/icons-png/icon-alert.png" alt="!" /></div>
+              <div class="info">
+                <b style="color:var(--block);">未接通积压</b>
+                <span style="color:var(--block);">7 天未接通 4 例 · 需复查原因</span>
+              </div>
+            </div>
+            <div class="r"><span class="badge badge-block">4</span><span class="arrow">›</span></div>
+          </a>
+          <a href="director-home.html" class="cell" style="background:#FFEBEE;">
+            <div class="l">
+              <div class="icon"><img src="assets/icons-png/icon-alert.png" alt="!" /></div>
+              <div class="info">
+                <b style="color:var(--block);">未分配护士患者</b>
+                <span style="color:var(--block);">3 例 · 需指派</span>
+              </div>
+            </div>
+            <div class="r"><span class="badge badge-block">3</span><span class="arrow">›</span></div>
+          </a>
+          <a href="director-home.html" class="cell" style="background:#FFF3E0;">
+            <div class="l">
+              <div class="icon"><img src="assets/icons-png/icon-alert.png" alt="⚠" /></div>
+              <div class="info">
+                <b>护士甲工作量偏高</b>
+                <span>在管 12 例 · 近一月完成 28 个任务</span>
+              </div>
+            </div>
+            <div class="r"><span class="badge badge-warn">关注</span><span class="arrow">›</span></div>
+          </a>
+        </div>
+
+        <!-- 研究项目 -->
+        <div class="section-title">研究项目</div>
+        <a href="director-project-detail.html" class="card" style="display:block; overflow:hidden;">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+            <div style="flex:1; min-width:0;">
+              <div style="font-size:15px; font-weight:600; line-height:1.4;">90 天卒中连续健康管理</div>
+              <div style="font-size:12px; color:var(--ink-3); margin-top:4px;">2025-10-01 ~ 2026-03-31</div>
+            </div>
+            <span class="badge badge-pass" style="flex-shrink:0;">进行中</span>
+          </div>
+          <div style="margin-top:10px; font-size:12px; color:var(--ink-2); line-height:1.5;">
+            进度:<b>18</b> 例 / 计划 <b>200</b> 例(9%)
+          </div>
+          <div style="margin-top:8px; width:100%; height:6px; background:var(--line-2); border-radius:3px; overflow:hidden;">
+            <div style="height:100%; width:9%; background:var(--brand); border-radius:3px;"></div>
+          </div>
+        </a>
+        <a href="director-project-detail.html" class="card" style="display:block;">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+            <div style="flex:1; min-width:0;">
+              <div style="font-size:15px; font-weight:600; line-height:1.4;">颈动脉斑块管理研究</div>
+              <div style="font-size:12px; color:var(--ink-3); margin-top:4px;">P1 · 2026-Q1 启动</div>
+            </div>
+            <span class="badge" style="background:var(--purple-bg); color:var(--purple); flex-shrink:0;">P1</span>
+          </div>
+          <div style="margin-top:10px; font-size:12px; color:var(--ink-3); line-height:1.5;">
+            启动准备中 · 待伦理审批
+          </div>
+        </a>
+
+        <!-- 医生 / 护士工作量 -->
+        <div class="section-title">医生工作量(本月)</div>
+        <div class="card">
+          <div style="font-size:13px; color:var(--ink-2);">
+            <div class="kv"><span class="k">主管医生(您) · 医生甲</span><span class="v">在管 8 / 完成 27</span></div>
+            <div class="kv"><span class="k">医生乙</span><span class="v">在管 12 / 完成 31</span></div>
+            <div class="kv"><span class="k">医生丙</span><span class="v">在管 6 / 完成 18</span></div>
+            <div class="kv"><span class="k">...</span><span class="v">+ 3 名医生</span></div>
+          </div>
+        </div>
+
+        <div class="section-title">护士任务完成(近 30 日 · 饼图占位)</div>
+        <div class="card">
+          <div style="display:flex; align-items:center; justify-content:space-around; padding:16px 0;">
+            <div style="width:100px; height:100px; border-radius:50%; background:conic-gradient(var(--brand) 0% 35%, var(--brand-2) 35% 60%, var(--purple) 60% 85%, var(--ink-4) 85% 100%);"></div>
+            <div style="font-size:12px; color:var(--ink-2); line-height:1.7;">
+              <div>■ 护士甲 35%</div>
+              <div>■ 护士丙 25%</div>
+              <div>■ 护士乙 25%</div>
+              <div>■ 其他 15%</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="background:var(--info-bg); border:none;">
+          <div style="font-size:12px; color:var(--info);">
+            <b>目标</b>:发现漏管、积压、人员投入问题,<b>不只是显示好看的完成率</b>(F10)。
+          </div>
+        </div>
+    </div>
+
+    <div class="tabbar">
+      <a href="director-home.html" class="tab active"><span <img src="assets/icons-png/icon-tab-home.png" alt="首" />主页</a>
+      <a href="director-project-detail.html" class="tab"><span <img src="assets/icons-png/icon-document.png" alt="表" />项目</a>
+      <a href="director-evaluation.html" class="tab"><span <img src="assets/icons-png/icon-tab-eval.png" alt="评" />评定</a>
+      <a href="role-switch.html" class="tab"><span <img src="assets/icons-png/icon-tab-switch.png" alt="切" />切换</a>
+    </div>
+  </div>
+  <script src="assets/layout.js"></script>
+</body>
+</html>

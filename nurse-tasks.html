@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>任务列表</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <div class="app">
+    <div class="navbar">
+      <button class="back" onclick="location.href='nurse-home.html'"><span style="font-size:22px; font-weight:700; line-height:1;">‹</span></button>
+      <div class="title">任务列表</div>
+      <div class="actions"></div>
+    </div>
+
+    <div class="page" style="padding-top:0;">
+      <div style="display:flex; gap:8px; padding:12px 16px; background:white; border-bottom:1px solid var(--line); overflow-x:auto;">
+        <button class="btn btn-sm btn-primary">未完成 5</button>
+        <button class="btn btn-sm btn-outline">已完成</button>
+        <button class="btn btn-sm btn-outline" style="border-color:var(--block); color:var(--block);">逾期 1</button>
+        <button class="btn btn-sm btn-outline">全部</button>
+      </div>
+
+      <div class="page">
+        <div class="section-title" style="color:var(--block);">逾期(1)</div>
+        <div class="group">
+          <a href="nurse-task-detail.html" class="cell" style="background:#FFEBEE;">
+            <div class="l">
+              <div class="icon"><img src="assets/icons-png/icon-alert.png" alt="!" /></div>
+              <div class="info">
+                <b style="color:var(--block);">刘文 · 7 天回访</b>
+                <span style="color:var(--block);">已逾期 3 天 · 多次未接通</span>
+              </div>
+            </div>
+            <div class="r"><span class="badge badge-block">逾期</span><span class="arrow">›</span></div>
+          </a>
+        </div>
+
+        <div class="section-title" style="color:var(--warn);">今日(4)</div>
+        <div class="group">
+          <a href="nurse-task-detail.html" class="cell">
+            <div class="l">
+              <div class="icon"><img src="assets/icons-png/icon-alert.png" alt="!" /></div>
+              <div class="info">
+                <b>陈丙英 · LDL-C 转交医生</b>
+                <span>复查 1.95 · 需转交主管医生判断</span>
+              </div>
+            </div>
+            <div class="r"><span class="badge badge-block">需转交</span><span class="arrow">›</span></div>
+          </a>
+          <a href="nurse-task-detail.html" class="cell">
+            <div class="l">
+              <div class="icon"><img src="assets/icons-png/icon-call.png" alt="电" /></div>
+              <div class="info"><b>陈丙英 · 7 天电话回访</b><span>15:00-17:00 · 已预约</span></div>
+            </div>
+            <div class="r"><span class="badge badge-warn">今日</span><span class="arrow">›</span></div>
+          </a>
+          <a href="nurse-task-detail.html" class="cell">
+            <div class="l">
+              <div class="icon"><img src="assets/icons-png/icon-document.png" alt="文" /></div>
+              <div class="info"><b>张桂兰 · 30 天回访</b><span>需查看上次资料并安排</span></div>
+            </div>
+            <div class="r"><span class="badge badge-warn">今日</span><span class="arrow">›</span></div>
+          </a>
+          <a href="nurse-task-detail.html" class="cell">
+            <div class="l">
+              <div class="icon"><img src="assets/icons-png/icon-tab-eval.png" alt="评" /></div>
+              <div class="info"><b>赵慧 · 45 天复核反馈</b><span>向患者告知医生复核结果</span></div>
+            </div>
+            <div class="r"><span class="badge badge-warn">今日</span><span class="arrow">›</span></div>
+          </a>
+        </div>
+
+        <div class="section-title">近 30 日完成(28)</div>
+        <div class="card">
+          <div style="font-size:12px; color:var(--ink-3); text-align:center; padding:20px;">
+            滑动查看历史完成记录 →
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tabbar">
+      <a href="nurse-home.html" class="tab"><span <img src="assets/icons-png/icon-tab-home.png" alt="首" />主页</a>
+      <a href="nurse-tasks.html" class="tab active"><span <img src="assets/icons-png/icon-tab-tasks.png" alt="任" />任务</a>
+      <a href="nurse-patients.html" class="tab"><span <img src="assets/icons-png/icon-tab-people.png" alt="患" />患者</a>
+      <a href="role-switch.html" class="tab"><span <img src="assets/icons-png/icon-tab-switch.png" alt="切" />切换</a>
+    </div>
+  </div>
+  <script src="assets/layout.js"></script>
+</body>
+</html>

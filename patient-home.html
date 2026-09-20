@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>个人中心</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <div class="app">
+    <div class="navbar">
+      <div></div>
+      <div class="title">患者端</div>
+      <div class="actions">
+        <button onclick="location.href='patient-emergency.html'" style="color:var(--block); font-weight:600;">120</button>
+        <button onclick="location.href='role-switch.html'"><span style="font-size:18px; font-weight:700; line-height:1;">切</span></button>
+      </div>
+    </div>
+
+    <div class="page" style="padding-top:0;">
+      <!-- 顶部身份 -->
+      <div class="role-banner patient" style="border-radius:0 0 16px 16px; margin-bottom:0;">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div class="icon"><img src="assets/icons-png/icon-avatar-patient.png" alt="陈" /></div>
+          <div>
+            <b>陈丙英 女士</b>
+            <span style="display:block;">81 岁 · 出院 12 天 · 90 天管理期 D12</span>
+          </div>
+        </div>
+        <div style="margin-top:10px; display:flex; gap:8px;">
+          <span class="badge" style="background:rgba(255,255,255,0.3); color:white;">90 天管理</span>
+          <span class="badge" style="background:rgba(255,255,255,0.3); color:white;">房颤二级预防</span>
+        </div>
+      </div>
+
+      <!-- 我的医护(点击卡片进入详情页,评价入口在详情页) -->
+      <div class="section-title" style="padding:0 16px; margin-top:16px;">我的医护</div>
+      <div class="page" style="padding:16px; padding-top:0;">
+        <a href="doctor-detail.html" class="card" style="padding:14px; display:flex; align-items:center; gap:12px; display:block; overflow:hidden;">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div class="icon"><img src="assets/icons-png/icon-avatar-doctor.png" alt="医" /></div>
+            <div style="flex:1; min-width:0;">
+              <b style="font-size:15px; display:block;">医生甲 · 主管医生</b>
+              <div style="font-size:12px; color:var(--ink-3); margin-top:2px;">神经内科 · 主治医师</div>
+              <div style="font-size:11px; color:var(--pass); margin-top:4px;">
+                <span style="display:inline-block; width:6px; height:6px; background:var(--pass); border-radius:50%; margin-right:4px; vertical-align:middle;"></span>在线 · 工作时段 8:00-17:00
+              </div>
+            </div>
+            <span class="arrow" style="flex-shrink:0; color:var(--ink-4); font-size:18px;">›</span>
+          </div>
+        </a>
+        <a href="nurse-detail.html" class="card" style="padding:14px; display:flex; align-items:center; gap:12px; display:block; overflow:hidden; margin-top:10px;">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div class="icon"><img src="assets/icons-png/icon-avatar-nurse.png" alt="护" /></div>
+            <div style="flex:1; min-width:0;">
+              <b style="font-size:15px; display:block;">护士甲 · 主要联系护士</b>
+              <div style="font-size:12px; color:var(--ink-3); margin-top:2px;">神经内科 · 随访组</div>
+              <div style="font-size:11px; color:var(--pass); margin-top:4px;">
+                <span style="display:inline-block; width:6px; height:6px; background:var(--pass); border-radius:50%; margin-right:4px; vertical-align:middle;"></span>在岗 · 工作时段 8:00-17:00
+              </div>
+            </div>
+            <span class="arrow" style="flex-shrink:0; color:var(--ink-4); font-size:18px;">›</span>
+          </div>
+        </a>
+      </div>
+
+      <!-- 个人目标展示(C5:个人目标 ≠ 通用) -->
+      <div class="page" style="padding:16px;">
+        <div class="card" style="background:linear-gradient(135deg, var(--brand-light), var(--brand-2-light)); border:none;">
+          <div style="font-size:12px; color:var(--brand-dark); margin-bottom:6px;">陈医生为您设定的个人目标</div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <div>
+              <div style="font-size:11px; color:var(--ink-3);">血压</div>
+              <div class="big-number" style="font-size:22px;">130/80<span class="unit">mmHg 以下</span></div>
+            </div>
+            <div>
+              <div style="font-size:11px; color:var(--ink-3);">LDL-C</div>
+              <div class="big-number" style="font-size:22px;">1.8<span class="unit">mmol/L 以下</span></div>
+            </div>
+          </div>
+          <div style="margin-top:10px; font-size:11px; color:var(--ink-2);">
+            <a href="patient-plan.html" style="color:var(--brand-dark);">查看完整计划 ›</a>
+          </div>
+        </div>
+
+        <!-- 今日任务 -->
+        <div class="section-title">今日任务 · 未完成置顶</div>
+        <div class="group">
+          <a href="patient-tasks.html" class="cell" style="background:#FFEBEE;">
+            <div class="l">
+              <div class="icon"><img src="assets/icons-png/icon-alert.png" alt="!" /></div>
+              <div class="info">
+                <b style="color:var(--block);">记录血压(早上)</b>
+                <span style="color:var(--block);">截止 09:00 · 已逾期 3 小时</span>
+              </div>
+            </div>
+            <div class="r"><span class="badge badge-block">逾期</span><span class="arrow">›</span></div>
+          </a>
+          <a href="patient-tasks.html" class="cell">
+            <div class="l">
+              <div class="icon"><img src="assets/icons-png/icon-tab-drugs.png" alt="药" /></div>
+              <div class="info"><b>服药反馈 · 阿托伐他汀 20mg</b><span>睡前服用 · 实际服用反馈</span></div>
+            </div>
+            <div class="r"><span class="arrow">›</span></div>
+          </a>
+          <a href="patient-tasks.html" class="cell">
+            <div class="l">
+              <div class="icon" style="background:var(--brand-light); color:var(--brand);">回</div>
+              <div class="info"><b>护士电话回访 · 7 天随访</b><span>预计今日下午 15:00 - 17:00</span></div>
+            </div>
+            <div class="r"><span class="arrow">›</span></div>
+          </a>
+        </div>
+
+        <!-- 周期截止未完成任务 -->
+        <div class="section-title">周期任务 · 临近截止</div>
+        <div class="group">
+          <a href="patient-tasks.html" class="cell" style="background:#FFF3E0;">
+            <div class="l">
+              <div class="icon"><img src="assets/icons-png/icon-alert.png" alt="⚠" /></div>
+              <div class="info">
+                <b>LDL-C 复查报告上传</b>
+                <span style="color:var(--warn);">D30 复查 · 截止 12-31 · 已逾期 2 天</span>
+              </div>
+            </div>
+            <div class="r"><span class="badge badge-warn">逾期</span><span class="arrow">›</span></div>
+          </a>
+        </div>
+
+        <!-- 快捷入口 -->
+        <div class="section-title">常用</div>
+        <div class="group">
+          <a href="patient-plan.html" class="cell">
+            <div class="l">
+              <div class="icon"><img src="assets/icons-png/icon-document.png" alt="文" /></div>
+              <div class="info"><b>个人计划</b><span>用药 · 复查 · 康复</span></div>
+            </div>
+            <div class="r"><span class="arrow">›</span></div>
+          </a>
+          <a href="patient-im.html" class="cell">
+            <div class="l">
+              <div class="icon"><img src="assets/icons-png/icon-im.png" alt="信" /></div>
+              <div class="info"><b>联系护士</b><span>护士甲(主)· 护士乙(备)</span></div>
+            </div>
+            <div class="r"><span class="arrow">›</span></div>
+          </a>
+          <a href="patient-emergency.html" class="cell">
+            <div class="l">
+              <div class="icon"><img src="assets/icons-png/icon-sos.png" alt="急" /></div>
+              <div class="info"><b style="color:var(--block);">紧急情况 · 立即 120</b><span>疑似卒中再发 / 严重出血</span></div>
+            </div>
+            <div class="r"><span class="arrow">›</span></div>
+          </a>
+          <a href="patient-edu.html" class="cell">
+            <div class="l">
+              <div class="icon" style="background:var(--brand-2-light); color:var(--role-patient);">教</div>
+              <div class="info"><b>健康教育</b><span>用药 · 饮食 · 康复</span></div>
+            </div>
+            <div class="r"><span class="arrow">›</span></div>
+          </a>
+          <a href="patient-research.html" class="cell">
+            <div class="l">
+              <div class="icon"><img src="assets/icons-png/icon-microscope.png" alt="研" /></div>
+              <div class="info"><b>参与研究</b><span>颈动脉斑块研究(P1 占位)</span></div>
+            </div>
+            <div class="r"><span class="arrow">›</span></div>
+          </a>
+          <a href="patient-dual-project.html" class="cell">
+            <div class="l">
+              <div class="icon" style="background:#E1BEE7; color:#6A1B9A;">↻</div>
+              <div class="info"><b>双项目参加</b><span>90 天管理 + 颈动脉研究(S5)</span></div>
+            </div>
+            <div class="r"><span class="arrow">›</span></div>
+          </a>
+          <a href="patient-elderly-help.html" class="cell">
+            <div class="l">
+              <div class="icon"><img src="assets/icons-png/icon-avatar-elder.png" alt="家" /></div>
+              <div class="info"><b>家属授权协助</b><span>81 岁 · 儿子陈大伟已授权(S7)</span></div>
+            </div>
+            <div class="r"><span class="arrow">›</span></div>
+          </a>
+        </div>
+
+        <!-- C2 重要提示 -->
+        <div class="card" style="background:var(--info-bg); border:none;">
+          <div style="font-size:12px; color:var(--info);">
+            <b>请知悉</b>:本软件是您的随访助手,<b>不是 24 小时监护</b>(C2)。
+            工作时段 8:00-17:00 内的咨询会有护士跟进;夜间/周末留言,工作日首次回应。
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tabbar">
+      <a href="patient-home.html" class="tab active"><span <img src="assets/icons-png/icon-tab-home.png" alt="首" />首页</a>
+      <a href="patient-tasks.html" class="tab"><span <img src="assets/icons-png/icon-tab-tasks.png" alt="任" />任务</a>
+      <a href="patient-im.html" class="tab"><span <img src="assets/icons-png/icon-im.png" alt="信" />联系</a>
+      <a href="patient-emergency.html" class="tab danger"><span <img src="assets/icons-png/icon-sos.png" alt="急" />紧急</a>
+    </div>
+  </div>
+  <script src="assets/layout.js"></script>
+</body>
+</html>

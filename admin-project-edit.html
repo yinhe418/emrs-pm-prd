@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>编辑项目</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <div class="app">
+    <div class="navbar">
+      <button class="back" onclick="location.href='admin-projects.html'"><span style="font-size:22px; font-weight:700; line-height:1;">‹</span></button>
+      <div class="title">编辑项目</div>
+      <div class="actions"></div>
+    </div>
+
+    <div class="page">
+      <div class="banner">
+        <b>项目配置</b>
+        配置主题 / 周期 / 任务模板。任务从任务库挑选,组合成项目流程。
+      </div>
+
+      <div class="section-title">基本信息</div>
+      <div class="group">
+        <div class="form-item">
+          <span class="form-label"><span class="req">*</span>项目主题</span>
+          <input class="form-input" value="90 天卒中连续健康管理">
+        </div>
+        <div class="form-item">
+          <span class="form-label"><span class="req">*</span>主负责医生</span>
+          <select class="form-select">
+            <option>科室主任</option>
+            <option>主管医生(您)</option>
+            <option>医生乙</option>
+          </select>
+        </div>
+        <div class="form-item">
+          <span class="form-label"><span class="req">*</span>项目周期</span>
+          <select class="form-select">
+            <option>90 天</option>
+            <option>180 天</option>
+            <option>365 天</option>
+          </select>
+        </div>
+        <div class="form-item">
+          <span class="form-label"><span class="req">*</span>开始日期</span>
+          <input class="form-input" type="date" value="2025-10-01">
+        </div>
+        <div class="form-item">
+          <span class="form-label"><span class="req">*</span>结束日期</span>
+          <input class="form-input" type="date" value="2026-03-31">
+        </div>
+      </div>
+
+      <div class="section-title">任务模板(从任务库组合)</div>
+      <div class="group">
+        <div class="cell" style="background:var(--brand-light);">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-document.png" alt="文" /></div>
+            <div class="info"><b>出院前 · 完成病患口述病例</b><span>负责人:主管医生 · 截止入院 D0</span></div>
+          </div>
+          <div class="r"><input type="checkbox" checked></div>
+        </div>
+        <div class="cell" style="background:var(--brand-light);">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-document.png" alt="文" /></div>
+            <div class="info"><b>出院前 · 完成药物清单</b><span>负责人:主管医生</span></div>
+          </div>
+          <div class="r"><input type="checkbox" checked></div>
+        </div>
+        <div class="cell" style="background:var(--brand-light);">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-document.png" alt="文" /></div>
+            <div class="info"><b>出院前 · 完成检查计划</b><span>负责人:主管医生</span></div>
+          </div>
+          <div class="r"><input type="checkbox" checked></div>
+        </div>
+        <div class="cell" style="background:var(--brand-light);">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-document.png" alt="文" /></div>
+            <div class="info"><b>出院前 · 患者信息授权</b><span>负责人:患者</span></div>
+          </div>
+          <div class="r"><input type="checkbox" checked></div>
+        </div>
+        <div class="cell" style="background:var(--brand-light);">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-call.png" alt="电" /></div>
+            <div class="info"><b>D7 · 电话回访</b><span>负责人:护士 · 7±2</span></div>
+          </div>
+          <div class="r"><input type="checkbox" checked></div>
+        </div>
+        <div class="cell" style="background:var(--brand-light);">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-call.png" alt="电" /></div>
+            <div class="info"><b>D30 · 复查指标 + 上传报告</b><span>负责人:患者 · LDL-C/sdLDL-C/颈动脉超声</span></div>
+          </div>
+          <div class="r"><input type="checkbox" checked></div>
+        </div>
+        <div class="cell" style="background:var(--brand-light);">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-call.png" alt="电" /></div>
+            <div class="info"><b>D30 · 电话回访</b><span>负责人:护士 · 30±7</span></div>
+          </div>
+          <div class="r"><input type="checkbox" checked></div>
+        </div>
+        <div class="cell" style="background:var(--brand-light);">
+          <div class="l">
+            <div class="icon">每日</div>
+            <div class="info"><b>每日 · 血压 / 血糖记录</b><span>负责人:患者</span></div>
+          </div>
+          <div class="r"><input type="checkbox" checked></div>
+        </div>
+        <div class="cell" style="background:var(--brand-light);">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-call.png" alt="电" /></div>
+            <div class="info"><b>D90 · 复核回访 + 标记阶段完成</b><span>负责人:主管医生 · 90±14</span></div>
+          </div>
+          <div class="r"><input type="checkbox" checked></div>
+        </div>
+        <div class="cell" style="background:var(--brand-light);">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-call.png" alt="电" /></div>
+            <div class="info"><b>D90 · 电话回访 + 安排接续</b><span>负责人:护士</span></div>
+          </div>
+          <div class="r"><input type="checkbox" checked></div>
+        </div>
+        <a href="admin-task-lib.html?from=project-edit&project=90day" class="cell">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-plus.png" alt="＋" /></div>
+            <div class="info" style="color:var(--brand);"><b>从任务库添加更多组件</b><span>点击进入任务库,勾选后返回此处</span></div>
+          </div>
+          <div class="r"><span class="arrow">›</span></div>
+        </a>
+      </div>
+
+      <div class="card" style="background:var(--info-bg); border:none;">
+        <div style="font-size:12px; color:var(--info);">
+          <b>任务标记规则</b>:每个事项有"完成"选项 + 负责人;<br>
+          未在指定时间完成 → 标记为<b>待处理事项</b>(§7.5)。
+        </div>
+      </div>
+
+      <a href="admin-projects.html" class="btn btn-primary btn-block" style="margin-top:20px;">
+        保存项目
+      </a>
+    </div>
+  </div>
+  <script src="assets/layout.js"></script>
+</body>
+</html>

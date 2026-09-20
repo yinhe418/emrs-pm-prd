@@ -1,0 +1,601 @@
+<!-- EMRS · 图标 sprite(集中管理)
+     用法: <svg class="icon-inline"><use href="assets/icons.svg#icon-home"/></svg>
+     命名: kebab-case。所有图标统一 stroke 1.75, round caps, viewBox 24x24。
+-->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+
+  <!-- 通用 -->
+  <symbol id="icon-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 11.5 12 4l9 7.5"/>
+    <path d="M5 10.5V20h14v-9.5"/>
+    <path d="M10 20v-5h4v5"/>
+  </symbol>
+
+  <symbol id="icon-switch" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 8h13"/>
+    <path d="m13 4 4 4-4 4"/>
+    <path d="M21 16H8"/>
+    <path d="m11 20-4-4 4-4"/>
+  </symbol>
+
+  <symbol id="icon-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M15 6l-6 6 6 6"/>
+  </symbol>
+
+  <symbol id="icon-arrow-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M9 6l6 6-6 6"/>
+  </symbol>
+
+  <symbol id="icon-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 5v14M5 12h14"/>
+  </symbol>
+
+  <symbol id="icon-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="11" cy="11" r="7"/>
+    <path d="m21 21-4.3-4.3"/>
+  </symbol>
+
+  <symbol id="icon-more" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+    <circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/>
+  </symbol>
+
+  <symbol id="icon-edit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M14 4l6 6L9 21H3v-6L14 4z"/>
+    <path d="m13 5 6 6"/>
+  </symbol>
+
+  <symbol id="icon-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M4 12l5 5L20 6"/>
+  </symbol>
+
+  <symbol id="icon-check-circle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="9"/>
+    <path d="m8 12 3 3 5-6"/>
+  </symbol>
+
+  <symbol id="icon-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 3 2 20h20L12 3z"/>
+    <path d="M12 10v5"/>
+    <circle cx="12" cy="18" r="0.7" fill="currentColor"/>
+  </symbol>
+
+  <symbol id="icon-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="9"/>
+    <path d="M12 8v0"/>
+    <path d="M12 11v6"/>
+  </symbol>
+
+  <symbol id="icon-stop" viewBox="0 0 24 24" fill="currentColor">
+    <rect x="6" y="6" width="12" height="12" rx="2"/>
+  </symbol>
+
+  <symbol id="icon-record" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="9" y="3" width="6" height="11" rx="3"/>
+    <path d="M5 11a7 7 0 0 0 14 0"/>
+    <path d="M12 18v3"/>
+    <path d="M9 21h6"/>
+  </symbol>
+
+  <!-- Tab 专用 -->
+  <symbol id="icon-tab-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 11.5 12 4l9 7.5"/>
+    <path d="M5 10.5V20h14v-9.5"/>
+    <path d="M10 20v-5h4v5"/>
+  </symbol>
+
+  <symbol id="icon-tab-tasks" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="4" y="4" width="16" height="17" rx="2.5"/>
+    <path d="m8 12 2.5 2.5L16 9"/>
+    <path d="M8 4v4M16 4v4"/>
+  </symbol>
+
+  <symbol id="icon-tab-people" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="9" cy="9" r="3.5"/>
+    <path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/>
+    <circle cx="17" cy="8" r="2.5"/>
+    <path d="M14.5 13c2.5.4 4.5 2.5 4.5 5"/>
+  </symbol>
+
+  <symbol id="icon-tab-im" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 12a8 8 0 1 1-3-6.2L21 4l-1 4h-2"/>
+    <path d="M8 11h8"/>
+    <path d="M8 14h5"/>
+  </symbol>
+
+  <symbol id="icon-tab-sos" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M6 4l1.5 6L4 14l3 6 4-1 1.5-5L16 16l4-3-4-3 2-4-5-2-3 4-4-1z"/>
+  </symbol>
+
+  <symbol id="icon-tab-projects" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="3" y="5" width="18" height="15" rx="2"/>
+    <path d="M3 10h18"/>
+    <path d="M8 5V3h8v2"/>
+    <path d="M9 14h6M9 17h4"/>
+  </symbol>
+
+  <symbol id="icon-tab-tasklib" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="3"/>
+    <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h.1a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v.1a1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>
+  </symbol>
+
+  <symbol id="icon-tab-drugs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="3" y="9" width="18" height="6" rx="3" transform="rotate(-45 12 12)"/>
+    <path d="M8.5 8.5l7 7"/>
+  </symbol>
+
+  <symbol id="icon-tab-eval" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/>
+    <path d="M14 3v5h5"/>
+    <path d="M9 13h6M9 17h4"/>
+  </symbol>
+
+  <symbol id="icon-tab-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 21h18"/>
+    <rect x="6" y="11" width="3" height="8" rx="0.6"/>
+    <rect x="11" y="7" width="3" height="12" rx="0.6"/>
+    <rect x="16" y="14" width="3" height="5" rx="0.6"/>
+  </symbol>
+
+  <symbol id="icon-tab-switch" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M16 4h5v5"/>
+    <path d="M3 20l18-16"/>
+    <path d="M3 14v6h6"/>
+    <path d="M21 10V4"/>
+  </symbol>
+
+  <!-- 角色头像字符 -->
+  <symbol id="icon-role-patient" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="8" r="4"/>
+    <path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/>
+  </symbol>
+
+  <symbol id="icon-role-doctor" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M7 21v-2a4 4 0 0 1 1-2.8L12 12l4 4.2A4 4 0 0 1 17 19v2"/>
+    <path d="M5 3h14v4a7 7 0 0 1-14 0V3z"/>
+    <path d="M9 8h2M13 8h2M9 11h6"/>
+  </symbol>
+
+  <symbol id="icon-role-nurse" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 3v18"/>
+    <path d="M3 12h18"/>
+    <circle cx="12" cy="12" r="9"/>
+  </symbol>
+
+  <symbol id="icon-role-director" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 19l5-7 4 5 4-8 5 10z"/>
+    <path d="M3 21h18"/>
+    <circle cx="16" cy="6" r="2"/>
+  </symbol>
+
+  <symbol id="icon-role-admin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="9" r="4"/>
+    <path d="M5 21c0-3.9 3.1-7 7-7s7 3.1 7 7"/>
+    <path d="M19 6l1.5 1.5L23 5"/>
+  </symbol>
+
+  <!-- 临床业务 -->
+  <symbol id="icon-bp" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M4 14h4l2-5 4 10 2-5h4"/>
+  </symbol>
+
+  <symbol id="icon-blood" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 3c4 5 7 8 7 12a7 7 0 0 1-14 0c0-4 3-7 7-12z"/>
+    <path d="M9 14h.01"/>
+  </symbol>
+
+  <symbol id="icon-blood-drop" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 3c-3 5-6 8-6 12a6 6 0 0 0 12 0c0-4-3-7-6-12z"/>
+  </symbol>
+
+  <symbol id="icon-pill" viewBox="0 0 64 64">
+    <!-- 简化的胶囊图标(用于导航/小尺寸,带填充感) -->
+    <ellipse cx="32" cy="56" rx="14" ry="2.5" fill="rgba(0,0,0,0.1)"/>
+    <g transform="rotate(-45 32 32)">
+      <rect x="14" y="22" width="36" height="20" rx="10" fill="white" stroke="currentColor" stroke-width="2"/>
+      <path d="M32 22 H24 a10 10 0 0 0 0 20 H32 Z" fill="currentColor"/>
+      <line x1="32" y1="22" x2="32" y2="42" stroke="currentColor" stroke-width="2"/>
+    </g>
+  </symbol>
+
+  <symbol id="icon-stethoscope" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M5 3v6a4 4 0 0 0 8 0V3"/>
+    <path d="M9 13v3a4 4 0 0 0 4 4h2a4 4 0 0 0 4-4v-2"/>
+    <circle cx="19" cy="11" r="2"/>
+  </symbol>
+
+  <symbol id="icon-call" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M22 16.9v3a2 2 0 0 1-2.2 2A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7l1 4a2 2 0 0 1-.5 2L8 11a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2-.5l4 1a2 2 0 0 1 1.7 2z"/>
+  </symbol>
+
+  <symbol id="icon-camera" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 7h4l2-3h6l2 3h4v13H3z"/>
+    <circle cx="12" cy="13" r="3.5"/>
+  </symbol>
+
+  <symbol id="icon-run" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="14" cy="5" r="2"/>
+    <path d="M9 20l3-6-2-3 3-4 4 3 3 1"/>
+    <path d="M5 14l3 1 3 5"/>
+  </symbol>
+
+  <symbol id="icon-im" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 12a8 8 0 1 1-3-6.2L21 4l-1 4h-2"/>
+    <path d="M8 11h8"/>
+    <path d="M8 14h5"/>
+  </symbol>
+
+  <symbol id="icon-sos" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M5 4h3l2 5 2-5h2l2 5 2-5h3"/>
+    <path d="M3 9h2M19 9h2"/>
+    <path d="M6 13c0-3 3-5 6-5s6 2 6 5v6a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2z"/>
+    <path d="M12 14v6"/>
+    <path d="M10 14h4"/>
+  </symbol>
+
+  <symbol id="icon-no-smoke" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="3" y="11" width="14" height="8" rx="1"/>
+    <path d="M17 13h2a2 2 0 1 1 0 4h-1"/>
+    <path d="M6 8c1-1 3-1 4 0"/>
+    <path d="M5 5l14 14"/>
+  </symbol>
+
+  <symbol id="icon-utensils" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M7 3v8a2 2 0 0 0 4 0V3"/>
+    <path d="M9 3v18"/>
+    <path d="M15 3c-1 2-2 4-2 7a3 3 0 0 0 6 0V3h-2"/>
+    <path d="M17 13v8"/>
+  </symbol>
+
+  <symbol id="icon-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M4 4h7a3 3 0 0 1 3 3v13a3 3 0 0 0-3-3H4z"/>
+    <path d="M20 4h-7a3 3 0 0 0-3 3v13a3 3 0 0 1 3-3h7z"/>
+  </symbol>
+
+  <symbol id="icon-family" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="7" cy="6" r="2.5"/>
+    <circle cx="17" cy="6" r="2.5"/>
+    <circle cx="12" cy="11" r="2.5"/>
+    <path d="M3 21v-2a4 4 0 0 1 4-4 4 4 0 0 1 4 4v2"/>
+    <path d="M13 21v-2a4 4 0 0 1 4-4 4 4 0 0 1 4 4v2"/>
+    <path d="M8 17h8"/>
+  </symbol>
+
+  <symbol id="icon-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 12a9 9 0 1 1-3-6.7"/>
+    <path d="M21 4v5h-5"/>
+  </symbol>
+
+  <symbol id="icon-microscope" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M6 18h10"/>
+    <path d="M9 21h6"/>
+    <path d="M11 9l4 4"/>
+    <path d="m14 4 4 4-3 3-4-4z"/>
+    <path d="M5 18l5-5"/>
+    <path d="M11 9 8 6"/>
+  </symbol>
+
+  <symbol id="icon-folder" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 7a2 2 0 0 1 2-2h4l2 3h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+  </symbol>
+
+  <symbol id="icon-document" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/>
+    <path d="M14 3v5h5"/>
+    <path d="M9 13h6M9 17h4"/>
+  </symbol>
+
+  <symbol id="icon-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="3" y="5" width="18" height="16" rx="2"/>
+    <path d="M3 10h18"/>
+    <path d="M8 3v4M16 3v4"/>
+  </symbol>
+
+  <symbol id="icon-warning" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="9"/>
+    <path d="M12 7v6"/>
+    <circle cx="12" cy="17" r="0.7" fill="currentColor"/>
+  </symbol>
+
+  <symbol id="icon-transfer" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M17 3l4 4-4 4"/>
+    <path d="M21 7H8"/>
+    <path d="M7 21l-4-4 4-4"/>
+    <path d="M3 17h13"/>
+  </symbol>
+
+  <!-- 字符头像兜底(角色名) -->
+  <symbol id="icon-bullet" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="3"/>
+  </symbol>
+
+  <!-- 空状态 -->
+  <symbol id="icon-empty-box" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 7l9-4 9 4-9 4-9-4z"/>
+    <path d="M3 12l9 4 9-4"/>
+    <path d="M3 17l9 4 9-4"/>
+  </symbol>
+
+  <!-- ============ 角色人像(viewBox 0 0 64 64) ============
+       用法: <div class="avatar" style="background:var(--role-xxx)">
+               <svg><use href="assets/icons.svg#icon-avatar-xxx"/></svg>
+             </div>
+       设计: 几何简化风格(类似 Notion / Figma 人物 illustration)。
+       脸 = 肤色填充(透过 currentColor 背景),头发/衣物/装饰 = currentColor 主色 + 白色高光。
+       每个角色有辨识度:医生=眼镜+听诊器 / 主任=细框眼镜+领带 /
+                       护士=护士帽+红十字 / admin=耳机+手势 /
+                       患者=围巾 / 家属=老花镜+老人衫
+  -->
+
+  <!-- 患者:圆脸 + 短卷发 + 围巾 / 暖橙色调 -->
+  <symbol id="icon-avatar-patient" viewBox="0 0 64 64">
+    <!-- 背景圆(底色) -->
+    <circle cx="32" cy="32" r="32" fill="#FFE0B2"/>
+    <!-- 头发(蓬松短卷发) -->
+    <path d="M14 26c0-10 8-16 18-16s18 6 18 16v6H14z" fill="#E65100"/>
+    <!-- 刘海卷 -->
+    <path d="M16 24c2-5 8-9 16-9s14 4 16 9c-3-2-7-3-16-3s-13 1-16 3z" fill="#BF360C"/>
+    <!-- 脸(肤色) -->
+    <circle cx="32" cy="30" r="13" fill="#FFE0B2"/>
+    <!-- 眼(点) -->
+    <circle cx="27" cy="30" r="1.4" fill="#3E2723"/>
+    <circle cx="37" cy="30" r="1.4" fill="#3E2723"/>
+    <!-- 嘴 -->
+    <path d="M28 36 Q32 38, 36 36" stroke="#3E2723" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+    <!-- 脖子 -->
+    <rect x="28" y="41" width="8" height="5" fill="#FFE0B2"/>
+    <!-- 围巾(暖橙 V 形) -->
+    <path d="M16 64 C16 50, 48 50, 48 64 Z" fill="#E65100"/>
+    <path d="M22 46 L32 58 L42 46" fill="none" stroke="#BF360C" stroke-width="1.5"/>
+    <!-- 围巾纹路(白色斜线) -->
+    <path d="M20 56 L26 50 M30 60 L36 54 M40 64 L46 58" stroke="#FFE0B2" stroke-width="1.2" opacity="0.6"/>
+  </symbol>
+
+  <!-- 医生:短发 + 眼镜 + 白大褂 + 听诊器 / 深蓝专业 -->
+  <symbol id="icon-avatar-doctor" viewBox="0 0 64 64">
+    <!-- 背景圆(底色) -->
+    <circle cx="32" cy="32" r="32" fill="#BBDEFB"/>
+    <!-- 头发(短发) -->
+    <path d="M14 26c0-9 7-15 18-15s18 6 18 15v4H14z" fill="#1565C0"/>
+    <!-- 脸(肤色) -->
+    <circle cx="32" cy="30" r="13" fill="#FFE0B2"/>
+    <!-- 眼镜框(双圆 + 鼻梁) -->
+    <circle cx="26" cy="30" r="4.5" fill="none" stroke="#1565C0" stroke-width="1.6"/>
+    <circle cx="38" cy="30" r="4.5" fill="none" stroke="#1565C0" stroke-width="1.6"/>
+    <line x1="30.5" y1="30" x2="33.5" y2="30" stroke="#1565C0" stroke-width="1.4"/>
+    <!-- 眼(点) -->
+    <circle cx="26" cy="30" r="1.2" fill="#1565C0"/>
+    <circle cx="38" cy="30" r="1.2" fill="#1565C0"/>
+    <!-- 嘴 -->
+    <path d="M28 36 Q32 38, 36 36" stroke="#1565C0" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+    <!-- 脖子 -->
+    <rect x="28" y="41" width="8" height="5" fill="#FFE0B2"/>
+    <!-- 白大褂(白色填充) -->
+    <path d="M12 64 C12 48, 52 48, 52 64 Z" fill="white"/>
+    <!-- 大褂领口 V 形 -->
+    <path d="M24 48 L32 56 L40 48" fill="none" stroke="#1565C0" stroke-width="1.6"/>
+    <!-- 听诊器(挂脖子,绕到胸前) -->
+    <path d="M28 48 Q32 52, 36 48" fill="none" stroke="#1565C0" stroke-width="1.6" stroke-linecap="round"/>
+    <line x1="32" y1="52" x2="32" y2="58" stroke="#1565C0" stroke-width="1.6"/>
+    <circle cx="32" cy="60" r="2.5" fill="none" stroke="#1565C0" stroke-width="1.5"/>
+    <circle cx="32" cy="60" r="0.8" fill="#1565C0"/>
+    <!-- 听诊器耳件(双侧) -->
+    <circle cx="28" cy="50" r="1.2" fill="#1565C0"/>
+    <circle cx="36" cy="50" r="1.2" fill="#1565C0"/>
+  </symbol>
+
+  <!-- 护士:短发/扎发 + 护士帽(红十字) + 口罩挂耳 / 暖绿亲和 -->
+  <symbol id="icon-avatar-nurse" viewBox="0 0 64 64">
+    <!-- 背景圆(底色) -->
+    <circle cx="32" cy="32" r="32" fill="#C8E6C9"/>
+    <!-- 头发(扎发,左右两侧露出) -->
+    <path d="M16 28c0-2 4-5 16-5s16 3 16 5v3H16z" fill="#2E7D32"/>
+    <!-- 脸(肤色) -->
+    <circle cx="32" cy="30" r="13" fill="#FFE0B2"/>
+    <!-- 护士帽(白色,带红十字) -->
+    <rect x="18" y="6" width="28" height="10" rx="2.5" fill="white" stroke="#2E7D32" stroke-width="1.4"/>
+    <!-- 红十字 -->
+    <rect x="31" y="9" width="2" height="4.5" fill="#E53935"/>
+    <rect x="29.75" y="10.25" width="4.5" height="2" fill="#E53935"/>
+    <!-- 帽顶弧线 -->
+    <path d="M18 14 Q32 10, 46 14" fill="none" stroke="#2E7D32" stroke-width="1.2"/>
+    <!-- 帽顶遮住头顶的头发 -->
+    <path d="M14 22c0-3 8-5 18-5s18 2 18 5v3H14z" fill="#2E7D32"/>
+    <!-- 眼(点,温柔感) -->
+    <circle cx="27" cy="30" r="1.4" fill="#1B5E20"/>
+    <circle cx="37" cy="30" r="1.4" fill="#1B5E20"/>
+    <!-- 口罩挂耳(细线从耳朵到下巴) -->
+    <path d="M20 28 L21 38" stroke="#2E7D32" stroke-width="1.4" fill="none"/>
+    <path d="M44 28 L43 38" stroke="#2E7D32" stroke-width="1.4" fill="none"/>
+    <!-- 嘴(微笑,口罩上方) -->
+    <path d="M28 35 Q32 37, 36 35" stroke="#1B5E20" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+    <!-- 脖子 -->
+    <rect x="28" y="41" width="8" height="5" fill="#FFE0B2"/>
+    <!-- 工作服肩(白色,绿色镶边) -->
+    <path d="M12 64 C12 48, 52 48, 52 64 Z" fill="white"/>
+    <!-- 镶边 V 领 -->
+    <path d="M24 48 L32 56 L40 48" fill="none" stroke="#2E7D32" stroke-width="1.6"/>
+    <!-- 胸口口袋 -->
+    <rect x="36" y="50" width="6" height="4" rx="0.5" fill="none" stroke="#2E7D32" stroke-width="0.8"/>
+    <!-- 笔(白色细线) -->
+    <line x1="37" y1="51" x2="37" y2="53" stroke="#2E7D32" stroke-width="0.8"/>
+  </symbol>
+
+  <!-- 主任:灰白短发 + 细框眼镜 + 西装领带 / 深紫权威 -->
+  <symbol id="icon-avatar-director" viewBox="0 0 64 64">
+    <!-- 背景圆(底色) -->
+    <circle cx="32" cy="32" r="32" fill="#E1BEE7"/>
+    <!-- 灰白头发(短,发际线明显) -->
+    <path d="M14 26c0-9 7-15 18-15s18 6 18 15v3H14z" fill="#9E9E9E"/>
+    <!-- 发际线阴影 -->
+    <path d="M16 24c2-4 8-7 16-7s14 3 16 7c-3-2-7-2-16-2s-13 0-16 2z" fill="#6A1B9A" opacity="0.4"/>
+    <!-- 脸(肤色) -->
+    <circle cx="32" cy="30" r="13" fill="#FFE0B2"/>
+    <!-- 细框眼镜 -->
+    <rect x="20" y="27" width="10" height="7" rx="3.5" fill="none" stroke="#6A1B9A" stroke-width="1.3"/>
+    <rect x="34" y="27" width="10" height="7" rx="3.5" fill="none" stroke="#6A1B9A" stroke-width="1.3"/>
+    <line x1="30" y1="30.5" x2="34" y2="30.5" stroke="#6A1B9A" stroke-width="1.2"/>
+    <!-- 眼(点,透过镜片) -->
+    <circle cx="25" cy="30.5" r="1.1" fill="#6A1B9A"/>
+    <circle cx="39" cy="30.5" r="1.1" fill="#6A1B9A"/>
+    <!-- 嘴(稳重微笑) -->
+    <path d="M28 36 Q32 38, 36 36" stroke="#6A1B9A" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+    <!-- 脖子 -->
+    <rect x="28" y="41" width="8" height="5" fill="#FFE0B2"/>
+    <!-- 西装肩(深紫填充) -->
+    <path d="M10 64 C10 48, 54 48, 54 64 Z" fill="#6A1B9A"/>
+    <!-- 衬衫领(白色 V) -->
+    <path d="M22 48 L32 56 L42 48" fill="white" stroke="#6A1B9A" stroke-width="1"/>
+    <!-- 领带(深色) -->
+    <path d="M30 52 L32 50 L34 52 L33 64 L31 64 Z" fill="#4A148C"/>
+    <!-- 西装翻领线 -->
+    <path d="M22 48 L18 64" stroke="#4A148C" stroke-width="1.2" fill="none"/>
+    <path d="M42 48 L46 64" stroke="#4A148C" stroke-width="1.2" fill="none"/>
+  </symbol>
+
+  <!-- 系统维护:中等发 + 耳机(戴头上) / 中性灰技术感 -->
+  <symbol id="icon-avatar-admin" viewBox="0 0 64 64">
+    <!-- 背景圆(底色) -->
+    <circle cx="32" cy="32" r="32" fill="#CFD8DC"/>
+    <!-- 中等发(略长) -->
+    <path d="M14 26c0-9 8-15 18-15s18 6 18 15v4H14z" fill="#37474F"/>
+    <!-- 刘海 -->
+    <path d="M16 22c3-4 9-7 16-7s13 3 16 7c-3-1-9-2-16-2s-13 1-16 2z" fill="#263238"/>
+    <!-- 脸(肤色) -->
+    <circle cx="32" cy="30" r="13" fill="#FFE0B2"/>
+    <!-- 眼(点) -->
+    <circle cx="27" cy="30" r="1.4" fill="#263238"/>
+    <circle cx="37" cy="30" r="1.4" fill="#263238"/>
+    <!-- 嘴(技术感微笑) -->
+    <path d="M28 36 Q32 38, 36 36" stroke="#263238" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+    <!-- 脖子 -->
+    <rect x="28" y="41" width="8" height="5" fill="#FFE0B2"/>
+    <!-- 耳机(头戴式,横过头顶) -->
+    <path d="M14 30 Q32 8, 50 30" fill="none" stroke="#37474F" stroke-width="2.5" stroke-linecap="round"/>
+    <!-- 左耳罩 -->
+    <rect x="11" y="28" width="6" height="9" rx="2" fill="#37474F"/>
+    <rect x="12" y="30" width="4" height="5" rx="1" fill="#546E7A"/>
+    <!-- 右耳罩 -->
+    <rect x="47" y="28" width="6" height="9" rx="2" fill="#37474F"/>
+    <rect x="48" y="30" width="4" height="5" rx="1" fill="#546E7A"/>
+    <!-- 工作服 -->
+    <path d="M12 64 C12 48, 52 48, 52 64 Z" fill="#ECEFF1"/>
+    <!-- V 领 -->
+    <path d="M24 48 L32 56 L40 48" fill="none" stroke="#37474F" stroke-width="1.5"/>
+    <!-- 工牌挂绳 -->
+    <line x1="32" y1="48" x2="32" y2="56" stroke="#37474F" stroke-width="0.8"/>
+    <rect x="30" y="56" width="6" height="5" rx="0.6" fill="#37474F"/>
+    <rect x="31" y="57" width="4" height="3" fill="#CFD8DC"/>
+  </symbol>
+
+  <!-- 老年家属:满头白发 + 老花镜 + 老人衫(盘扣) / 棕红慈祥 -->
+  <symbol id="icon-avatar-elder" viewBox="0 0 64 64">
+    <!-- 背景圆(底色) -->
+    <circle cx="32" cy="32" r="32" fill="#FFCCBC"/>
+    <!-- 满头白发(蓬松) -->
+    <path d="M10 26c0-11 10-18 22-18s22 7 22 18v6H10z" fill="white"/>
+    <!-- 头顶白发纹理 -->
+    <path d="M12 24c3-5 11-9 20-9s17 4 20 9c-4-2-10-3-20-3s-16 1-20 3z" fill="#BF360C" opacity="0.3"/>
+    <!-- 脸(肤色) -->
+    <circle cx="32" cy="30" r="13" fill="#FFE0B2"/>
+    <!-- 皱纹(眼旁) -->
+    <path d="M20 26 L22 28" stroke="#BF360C" stroke-width="0.8" fill="none" opacity="0.5"/>
+    <path d="M44 26 L42 28" stroke="#BF360C" stroke-width="0.8" fill="none" opacity="0.5"/>
+    <path d="M20 33 L22 33" stroke="#BF360C" stroke-width="0.8" fill="none" opacity="0.4"/>
+    <path d="M44 33 L42 33" stroke="#BF360C" stroke-width="0.8" fill="none" opacity="0.4"/>
+    <!-- 老花镜(椭圆,半框) -->
+    <ellipse cx="26" cy="30" rx="5" ry="3.8" fill="none" stroke="#BF360C" stroke-width="1.4"/>
+    <ellipse cx="38" cy="30" rx="5" ry="3.8" fill="none" stroke="#BF360C" stroke-width="1.4"/>
+    <line x1="31" y1="30" x2="33" y2="30" stroke="#BF360C" stroke-width="1.3"/>
+    <!-- 眼(点,透过镜片) -->
+    <circle cx="26" cy="30" r="1" fill="#3E2723"/>
+    <circle cx="38" cy="30" r="1" fill="#3E2723"/>
+    <!-- 嘴(慈祥微笑) -->
+    <path d="M27 36 Q32 39, 37 36" stroke="#BF360C" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+    <!-- 脖子 -->
+    <rect x="28" y="41" width="8" height="5" fill="#FFE0B2"/>
+    <!-- 老人衫(深 V 领) -->
+    <path d="M12 64 C12 48, 52 48, 52 64 Z" fill="#FFCCBC"/>
+    <!-- V 领(露出内衬白) -->
+    <path d="M22 48 L32 60 L42 48" fill="white" stroke="#BF360C" stroke-width="1.5"/>
+    <!-- 盘扣(领口中央) -->
+    <circle cx="32" cy="58" r="1.8" fill="#BF360C"/>
+    <circle cx="32" cy="58" r="0.8" fill="#FFCCBC"/>
+    <!-- 第二颗盘扣 -->
+    <circle cx="32" cy="64" r="1.8" fill="#BF360C"/>
+    <circle cx="32" cy="64" r="0.8" fill="#FFCCBC"/>
+  </symbol>
+
+  <!-- ============ 药品图标(viewBox 0 0 64 64) ============
+       设计: 立体质感 + 白色高光 + 软阴影。
+       icon-drug-tablet   圆形药片(片剂):阿司匹林、阿托伐他汀等
+       icon-drug-capsule  两段色胶囊:缬沙坦、达比加群等
+       icon-drug-package  长方形药盒 + 顶部标签 + 条形码
+  -->
+
+  <!-- 圆形药片 -->
+  <symbol id="icon-drug-tablet" viewBox="0 0 64 64">
+    <!-- 软阴影 -->
+    <ellipse cx="32" cy="56" rx="22" ry="3" fill="rgba(0,0,0,0.12)"/>
+    <!-- 药片主体 -->
+    <circle cx="32" cy="32" r="22" fill="#FF7043" stroke="#BF360C" stroke-width="2"/>
+    <!-- 中央分割线(可掰开) -->
+    <line x1="10" y1="32" x2="54" y2="32" stroke="#BF360C" stroke-width="2"/>
+    <!-- 高光(左上) -->
+    <ellipse cx="22" cy="22" rx="8" ry="4" fill="rgba(255,255,255,0.55)"/>
+    <!-- 小高光点 -->
+    <circle cx="42" cy="20" r="1.5" fill="rgba(255,255,255,0.4)"/>
+  </symbol>
+
+  <!-- 胶囊 -->
+  <symbol id="icon-drug-capsule" viewBox="0 0 64 64">
+    <!-- 软阴影 -->
+    <ellipse cx="32" cy="56" rx="18" ry="3" fill="rgba(0,0,0,0.12)"/>
+    <!-- 胶囊旋转 45° -->
+    <g transform="rotate(-45 32 32)">
+      <!-- 主体(白底) -->
+      <rect x="14" y="22" width="36" height="20" rx="10" fill="#FFFFFF" stroke="#37474F" stroke-width="1.5"/>
+      <!-- 左半段(蓝色) -->
+      <path d="M24 22 H14 a10 10 0 0 0 0 20 H24 Z" fill="#42A5F5"/>
+      <!-- 中央盖线 -->
+      <line x1="32" y1="22" x2="32" y2="42" stroke="#37474F" stroke-width="1.5"/>
+      <!-- 高光(左半) -->
+      <ellipse cx="20" cy="26" rx="3" ry="1.5" fill="rgba(255,255,255,0.7)"/>
+      <!-- 高光(右半) -->
+      <ellipse cx="40" cy="26" rx="3" ry="1.5" fill="rgba(255,255,255,0.7)"/>
+    </g>
+  </symbol>
+
+  <!-- 药盒 -->
+  <symbol id="icon-drug-package" viewBox="0 0 64 64">
+    <!-- 软阴影 -->
+    <ellipse cx="32" cy="60" rx="22" ry="2.5" fill="rgba(0,0,0,0.12)"/>
+    <!-- 立体药盒(前面 + 顶面 + 右面) -->
+    <!-- 顶面 -->
+    <polygon points="12,18 52,18 58,12 18,12" fill="#90CAF9"/>
+    <!-- 右面 -->
+    <polygon points="52,18 58,12 58,54 52,58" fill="#1976D2"/>
+    <!-- 前面(主面) -->
+    <rect x="12" y="18" width="40" height="40" fill="#42A5F5"/>
+    <!-- 前面右侧高光(暗示立体感) -->
+    <rect x="50" y="18" width="2" height="40" fill="rgba(255,255,255,0.25)"/>
+    <!-- 顶部 Rx 标签(白色框) -->
+    <rect x="18" y="22" width="28" height="7" fill="white"/>
+    <text x="32" y="27.5" text-anchor="middle" font-size="5.5" fill="#1565C0" font-weight="bold" font-family="sans-serif">Rx</text>
+    <!-- 条形码 -->
+    <g fill="white" transform="translate(18, 36)">
+      <rect x="0" y="0" width="1.2" height="14"/>
+      <rect x="2.4" y="0" width="2.4" height="14"/>
+      <rect x="6" y="0" width="1" height="14"/>
+      <rect x="8.2" y="0" width="3.2" height="14"/>
+      <rect x="12.6" y="0" width="1" height="14"/>
+      <rect x="14.8" y="0" width="2.2" height="14"/>
+      <rect x="18.2" y="0" width="1" height="14"/>
+      <rect x="20.4" y="0" width="3" height="14"/>
+      <rect x="24.6" y="0" width="1.2" height="14"/>
+      <rect x="27" y="0" width="2.4" height="14"/>
+    </g>
+    <!-- 药名占位条 -->
+    <rect x="18" y="52" width="28" height="2.5" fill="white"/>
+  </symbol>
+
+</svg>

@@ -1,0 +1,1313 @@
+/* EMRS 卒中患者全程管理软件 · P0 Demo · v2.0
+ * 设计风格:微信小程序(375-414)+ 医疗质感
+ * - 设计令牌全部走 :root CSS 变量,品牌可替换
+ * - 主色:信任蓝 + 治愈青绿(医疗行业通用语义)
+ * - 老年页面字号 18-22px,触控 ≥44px(医疗场景手套/床旁/抢救)
+ * - 阴影/过渡/状态完整,无 emoji 图标(全部 SVG inline)
+ */
+
+/* ============ Reset ============ */
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html,body { height: 100%; }
+button { font: inherit; cursor: pointer; }
+a { color: inherit; text-decoration: none; }
+
+/* ============ 设计令牌 · Design Tokens ============ */
+:root {
+  /* 主色 — 信任蓝 + 治愈青绿(可整体替换) */
+  --brand: #2E7DD7;
+  --brand-2: #5BBFC5;
+  --brand-light: #E8F2FC;
+  --brand-2-light: #E0F2F4;
+  --brand-dark: #1A5BA8;
+  --brand-soft: #F4F9FE;
+
+  /* 状态色 */
+  --pass: #2E7D32;
+  --pass-bg: #E8F5E9;
+  --pass-soft: #F1F8F2;
+  --warn: #E66B2E;
+  --warn-bg: #FFF3E0;
+  --warn-soft: #FFF8F0;
+  --block: #C62828;
+  --block-bg: #FFEBEE;
+  --block-soft: #FFF5F5;
+  --info: #1565C0;
+  --info-bg: #E3F2FD;
+  --info-soft: #F0F7FD;
+  --purple: #6A1B9A;
+  --purple-bg: #F3E5F5;
+  --purple-soft: #FAF3FB;
+
+  /* 中性色 — 文本四阶 */
+  --ink: #1A2332;
+  --ink-2: #4A5568;
+  --ink-3: #8A94A6;
+  --ink-4: #B0B7C3;
+  --ink-5: #D5DAE2;
+
+  /* 表面 */
+  --bg: #F5F7FA;
+  --bg-2: #FFFFFF;
+  --bg-3: #FAFBFD;
+
+  /* 边框 */
+  --line: #E5EAF0;
+  --line-2: #F0F3F7;
+  --line-3: #F7F9FC;
+
+  /* 角色色 */
+  --role-patient: #5BBFC5;
+  --role-doctor: #2E7DD7;
+  --role-nurse: #43A047;
+  --role-director: #8E63CE;
+  --role-admin: #607D8B;
+
+  /* 字号 — 11/12/13/14/16/18/20/24/28 */
+  --fs-xs: 11px;
+  --fs-sm: 12px;
+  --fs-md: 13px;
+  --fs-base: 14px;
+  --fs-lg: 16px;
+  --fs-xl: 18px;
+  --fs-xxl: 20px;
+  --fs-2xl: 24px;
+  --fs-3xl: 28px;
+  --fs-display: 32px;
+  --fs-elder: 22px;
+
+  /* 字重 */
+  --fw-reg: 400;
+  --fw-med: 500;
+  --fw-sb: 600;
+  --fw-bold: 700;
+
+  /* 行高 */
+  --lh-tight: 1.3;
+  --lh-base: 1.5;
+  --lh-loose: 1.7;
+
+  /* 间距 — 4/8/12/16/20/24 */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-7: 32px;
+  --sp-8: 40px;
+
+  /* 圆角 */
+  --r-sm: 4px;
+  --r-md: 6px;
+  --r-base: 8px;
+  --r-lg: 12px;
+  --r-xl: 16px;
+  --r-pill: 999px;
+
+  /* 阴影 — 三档 + 内嵌 */
+  --shadow-xs: 0 1px 2px rgba(15,23,42,0.04);
+  --shadow-sm: 0 2px 6px rgba(15,23,42,0.06);
+  --shadow-md: 0 4px 14px rgba(15,23,42,0.08);
+  --shadow-lg: 0 8px 24px rgba(15,23,42,0.10);
+  --shadow-press: 0 1px 3px rgba(15,23,42,0.06);
+  --shadow-ring: 0 0 0 3px rgba(46,125,215,0.12);
+  --shadow-brand: 0 6px 16px rgba(46,125,215,0.25);
+  --shadow-block: 0 6px 16px rgba(198,40,40,0.25);
+  --shadow-pass: 0 6px 16px rgba(67,160,71,0.25);
+  --shadow-director: 0 6px 16px rgba(142,99,206,0.30);
+  --shadow-nurse: 0 6px 16px rgba(67,160,71,0.25);
+
+  /* 过渡 */
+  --t-fast: 120ms cubic-bezier(0.4,0,0.2,1);
+  --t-base: 180ms cubic-bezier(0.4,0,0.2,1);
+  --t-slow: 240ms cubic-bezier(0.4,0,0.2,1);
+
+  /* Z 轴 */
+  --z-nav: 100;
+  --z-tabbar: 100;
+  --z-modal: 200;
+  --z-toast: 300;
+
+  /* 半透明叠加 — 角色徽章用 */
+  --overlay-12: rgba(255,255,255,0.12);
+  --overlay-20: rgba(255,255,255,0.20);
+  --overlay-30: rgba(255,255,255,0.30);
+}
+
+/* ============ 基础排版 ============ */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "PingFang SC", "Microsoft YaHei", "Source Han Sans CN", sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  font-size: var(--fs-base);
+  line-height: var(--lh-base);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "tnum";
+}
+
+/* ============ 移动端容器(微信小程序标准) ============ */
+.app {
+  max-width: 414px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--ink);            /* 强制深色,防止 body.preview-mode 的浅色级联造成不可见 */
+  position: relative;
+  padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+  box-shadow: 0 0 24px rgba(15,23,42,0.04);
+}
+
+/* ============ 顶部 navbar ============ */
+/* 设计:玻璃感 + 顶部品牌色细线 + 圆角胶囊切换按钮
+   - 适配 50+ 页面,只动 .navbar / .actions button / .back
+   - 保留 "切" 文字 + 给它套胶囊 + 图标
+   - 120 急救按钮:红色实心,显眼但不超过 36px 高
+*/
+.navbar {
+  /* 桌面端 navbar 修复:padding + 标题居中 + 按钮间距 */
+  padding: 0 14px;
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: saturate(180%) blur(14px);
+  -webkit-backdrop-filter: saturate(180%) blur(14px);
+  border-bottom: 1px solid rgba(15, 23, 42, 0.05);
+  padding: 0 var(--sp-4);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: var(--z-nav);
+  height: 52px;
+}
+/** navbar 顶部品牌色细线已移除,改用更微妙的 brand-soft 顶部高光 */
+.navbar {
+  /* ... 现有样式 ... */
+  box-shadow: inset 0 1px 0 rgba(46, 125, 215, 0.08);  /* 顶部 1px 品牌色微光 */
+}
+.navbar > * { position: relative; z-index: 1; }
+.navbar .back {
+  width: 34px; height: 34px;
+  display: grid; place-items: center;
+  font-size: 22px; color: var(--ink);
+  cursor: pointer;
+  border: none; background: transparent;
+  border-radius: var(--r-base);
+  transition: background var(--t-fast), transform var(--t-fast);
+}
+.navbar .back:active { background: var(--line-2); transform: scale(0.94); }
+.navbar .title {
+  font-size: 17px;
+  font-weight: var(--fw-bold);
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  text-align: center;
+  flex: 1;            /* 占据中间空间让两侧按钮自然对齐 */
+  padding: 0 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.navbar .actions { display: flex; gap: 8px; align-items: center; }
+.navbar .actions button {
+  background: var(--brand-light);
+  border: 1px solid rgba(46, 125, 215, 0.18);
+  font-size: 13px;
+  color: var(--brand);
+  cursor: pointer;
+  padding: 4px 10px 4px 8px;
+  border-radius: var(--r-pill);
+  transition: background var(--t-fast), transform var(--t-fast), box-shadow var(--t-base);
+  font-weight: var(--fw-sb);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  line-height: 1;
+  height: 30px;
+  letter-spacing: 0.01em;
+}
+.navbar .actions button span { line-height: 1; }
+.navbar .actions button::before {
+  content: '';
+  width: 14px; height: 14px;
+  display: inline-block;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232E7DD7' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'><path d='M16 4h5v5'/><path d='M3 20l18-16'/><path d='M3 14v6h6'/><path d='M21 10V4'/></svg>");
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center;
+  flex-shrink: 0;
+}
+.navbar .actions button:active {
+  background: var(--brand);
+  color: #fff;
+  transform: scale(0.96);
+  box-shadow: var(--shadow-brand);
+}
+.navbar .actions button:active::before {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'><path d='M16 4h5v5'/><path d='M3 20l18-16'/><path d='M3 14v6h6'/><path d='M21 10V4'/></svg>");
+}
+
+/* 120 急救按钮特殊样式:红色实心 + 白字 + 心跳图标 */
+.navbar .actions button[onclick*="emergency"] {
+  background: linear-gradient(135deg, #E53935 0%, #C62828 100%);
+  color: #fff;
+  border: 1px solid rgba(198, 40, 40, 0.3);
+  box-shadow: 0 3px 8px rgba(198, 40, 40, 0.25);
+  padding: 4px 10px;
+}
+.navbar .actions button[onclick*="emergency"]::before {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'><path d='M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z'/></svg>");
+}
+.navbar .actions button[onclick*="emergency"]:active {
+  background: linear-gradient(135deg, #C62828 0%, #A32020 100%);
+  transform: scale(0.96);
+}
+
+/* 老年模式:navbar 字体放大,按钮更大 */
+.app.elder .navbar { height: 60px; }
+.app.elder .navbar .title { font-size: 21px; }
+.app.elder .navbar .actions button {
+  font-size: 16px;
+  height: 38px;
+  padding: 6px 16px 6px 14px;
+}
+.app.elder .navbar .actions button::before {
+  width: 18px; height: 18px;
+}
+
+/* ============ 内容区 ============ */
+.page { padding: var(--sp-4); }
+.page.flat { padding: 0; }
+
+/* ============ 卡片 · 升级版 ============ */
+.card {
+  background: var(--bg-2);
+  border-radius: var(--r-lg);
+  padding: var(--sp-4);
+  margin-bottom: var(--sp-3);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--line-3);
+  position: relative;
+  transition: box-shadow var(--t-base), transform var(--t-base);
+}
+.card-row { display: flex; justify-content: space-between; align-items: center; gap: var(--sp-2); }
+.card-title {
+  font-size: var(--fs-base);
+  font-weight: var(--fw-sb);
+  margin-bottom: var(--sp-2);
+  color: var(--ink);
+  letter-spacing: 0.01em;
+}
+.card-sub { font-size: var(--fs-sm); color: var(--ink-3); }
+
+/* 状态色条卡片(绿/黄/红) */
+.card.status-pass { border-top: 3px solid var(--pass); }
+.card.status-warn { border-top: 3px solid var(--warn); }
+.card.status-block { border-top: 3px solid var(--block); }
+.card.status-info { border-top: 3px solid var(--info); }
+.card.status-brand { border-top: 3px solid var(--brand); }
+
+/* ============ 按钮 ============ */
+.btn {
+  display: inline-block;
+  text-align: center;
+  padding: 12px 20px;
+  border-radius: var(--r-base);
+  font-size: var(--fs-base);
+  font-weight: var(--fw-med);
+  cursor: pointer;
+  border: none;
+  text-decoration: none;
+  min-height: 44px;
+  line-height: 20px;
+  transition: transform var(--t-fast), box-shadow var(--t-base), background var(--t-base), color var(--t-base);
+  letter-spacing: 0.02em;
+}
+.btn-primary {
+  background: var(--brand);
+  color: #fff;
+  box-shadow: var(--shadow-brand);
+}
+.btn-primary:active { background: var(--brand-dark); transform: translateY(1px); box-shadow: var(--shadow-press); }
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--brand);
+  color: var(--brand);
+}
+.btn-outline:active { background: var(--brand-light); }
+.btn-danger {
+  background: var(--block);
+  color: #fff;
+  box-shadow: var(--shadow-block);
+}
+.btn-danger:active { background: #A32020; transform: translateY(1px); }
+.btn-ghost {
+  background: var(--line-2);
+  color: var(--ink-2);
+}
+.btn-ghost:active { background: var(--line); }
+.btn-block { display: block; width: 100%; }
+.btn-sm { padding: 6px 12px; font-size: var(--fs-sm); min-height: 32px; border-radius: var(--r-sm); }
+.btn-lg { padding: 16px 20px; font-size: var(--fs-lg); min-height: 52px; border-radius: var(--r-base); }
+.btn[disabled], .btn.disabled { opacity: 0.4; pointer-events: none; }
+
+/* ============ 列表 cell ============ */
+.cell {
+  background: var(--bg-2);
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--line-2);
+  text-decoration: none;
+  color: var(--ink);
+  min-height: 56px;
+  gap: var(--sp-2);
+  transition: background var(--t-fast);
+}
+.cell:last-child { border-bottom: 0; }
+.cell:active { background: var(--line-2); }
+.cell .l { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+.cell .l .icon {
+  width: 36px; height: 36px;
+  border-radius: var(--r-base);
+  display: grid; place-items: center;
+  background: var(--brand-light);
+  color: var(--brand);
+  flex-shrink: 0;
+  transition: transform var(--t-base);
+}
+.cell .l .icon svg, .cell .l .icon img { width: 20px; height: 20px; display: block; object-fit: contain; }
+.cell:active .l .icon { transform: scale(0.95); }
+.cell .l .info { flex: 1; min-width: 0; }
+.cell .l .info b { font-size: var(--fs-base); font-weight: var(--fw-med); display: block; color: var(--ink); }
+.cell .l .info span { font-size: var(--fs-sm); color: var(--ink-3); display: block; margin-top: 2px; }
+.cell .r { display: flex; align-items: center; gap: var(--sp-2); color: var(--ink-3); font-size: var(--fs-sm); flex-shrink: 0; }
+.cell .arrow {
+  color: var(--ink-4);
+  display: grid;
+  place-items: center;
+  width: 16px; height: 16px;
+  transition: transform var(--t-fast), color var(--t-fast);
+}
+.cell .arrow svg, .cell .arrow img { width: 14px; height: 14px; display: block; object-fit: contain; }
+.cell:active .arrow { transform: translateX(2px); color: var(--ink-3); }
+
+/* cell 变体:告警红/警示黄 */
+.cell.cell-warn { background: var(--warn-soft); }
+.cell.cell-warn:active { background: var(--warn-bg); }
+.cell.cell-block { background: var(--block-soft); }
+.cell.cell-block:active { background: var(--block-bg); }
+
+/* ============ Badge ============ */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 10px;
+  border-radius: var(--r-pill);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-med);
+  line-height: 18px;
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+}
+.badge-brand { background: var(--brand-light); color: var(--brand); }
+.badge-pass  { background: var(--pass-bg); color: var(--pass); }
+.badge-warn  { background: var(--warn-bg); color: var(--warn); }
+.badge-block { background: var(--block-bg); color: var(--block); }
+.badge-info  { background: var(--info-bg); color: var(--info); }
+.badge-gray  { background: var(--line-2); color: var(--ink-2); }
+.badge-purple{ background: var(--purple-bg); color: var(--purple); }
+.badge-solid-brand { background: var(--brand); color: #fff; }
+.badge-dot::before {
+  content: '';
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  display: inline-block;
+}
+
+/* ============ 表单 ============ */
+.form-item {
+  background: var(--bg-2);
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line-2);
+  transition: background var(--t-fast);
+}
+.form-item:focus-within { background: var(--brand-soft); }
+.form-item:last-child { border-bottom: 0; }
+.form-label {
+  font-size: var(--fs-sm);
+  color: var(--ink-2);
+  margin-bottom: 6px;
+  display: block;
+  font-weight: var(--fw-med);
+}
+.form-label .req { color: var(--block); margin-right: 2px; font-weight: var(--fw-sb); }
+.form-helper {
+  font-size: var(--fs-xs);
+  color: var(--ink-3);
+  margin-top: 4px;
+}
+.form-input,
+.form-textarea,
+.form-select {
+  width: 100%;
+  border: none;
+  outline: none;
+  font-size: var(--fs-base);
+  color: var(--ink);
+  background: transparent;
+  padding: 4px 0;
+  font-family: inherit;
+}
+.form-textarea { resize: none; min-height: 60px; line-height: var(--lh-loose); }
+.form-input::placeholder,
+.form-textarea::placeholder { color: var(--ink-4); }
+
+/* 嵌入框样式(背景为 bg) */
+.form-input.bordered,
+.form-textarea.bordered,
+.form-select.bordered {
+  border: 1px solid var(--line);
+  border-radius: var(--r-base);
+  padding: 10px 12px;
+  background: var(--bg-2);
+  transition: border-color var(--t-fast), box-shadow var(--t-fast);
+}
+.form-input.bordered:focus,
+.form-textarea.bordered:focus,
+.form-select.bordered:focus {
+  border-color: var(--brand);
+  box-shadow: var(--shadow-ring);
+}
+
+/* ============ Tabbar(底部) ============ */
+.tabbar {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 414px;
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: saturate(180%) blur(12px);
+  -webkit-backdrop-filter: saturate(180%) blur(12px);
+  border-top: 1px solid var(--line);
+  display: flex;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+  z-index: var(--z-tabbar);
+}
+.tab {
+  flex: 1;
+  padding: 8px 0 6px;
+  text-align: center;
+  color: var(--ink-3);
+  text-decoration: none;
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-med);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  transition: color var(--t-fast);
+  min-height: 50px;
+}
+.tab .tab-icon {
+  font-size: 22px;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  line-height: 1;
+}
+.tab .tab-icon svg, .tab .tab-icon img { width: 22px; height: 22px; display: block; object-fit: contain; }
+.tab.active { color: var(--brand); }
+.tab.active .tab-icon { transform: translateY(-1px); }
+.tab.danger { color: var(--block); }
+.tab.danger.active { color: var(--block); }
+
+/* ============ Banner(顶部信息条) ============ */
+.banner {
+  background: linear-gradient(135deg, var(--brand-light), var(--brand-2-light));
+  padding: 14px 16px;
+  margin: 0 -16px 16px;
+  border-radius: 0 0 var(--r-lg) var(--r-lg);
+  color: var(--brand-dark);
+  font-size: var(--fs-md);
+  line-height: var(--lh-loose);
+  border: 1px solid var(--brand-light);
+  border-top: 0;
+}
+.banner b { color: var(--brand-dark); font-size: var(--fs-base); display: block; margin-bottom: 4px; font-weight: var(--fw-sb); }
+.banner.banner-warn { background: linear-gradient(135deg, var(--warn-bg), #FFE9CC); color: var(--warn); border-color: var(--warn-bg); }
+.banner.banner-warn b { color: var(--warn); }
+.banner.banner-block { background: linear-gradient(135deg, var(--block-bg), #FFD8D8); color: var(--block); border-color: var(--block-bg); }
+.banner.banner-block b { color: var(--block); }
+.banner.banner-info { background: linear-gradient(135deg, var(--info-bg), #D2EAFD); color: var(--info); border-color: var(--info-bg); }
+.banner.banner-info b { color: var(--info); }
+
+/* ============ Section header ============ */
+.section-title {
+  font-size: var(--fs-base);
+  font-weight: var(--fw-sb);
+  color: var(--ink-2);
+  margin: var(--sp-3) 0 var(--sp-2);
+  padding: 0 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  letter-spacing: 0.01em;
+}
+.section-title::before {
+  content: '';
+  display: inline-block;
+  width: 3px;
+  height: 14px;
+  border-radius: 2px;
+  background: var(--brand);
+  flex-shrink: 0;
+}
+.section-title.section-warn { color: var(--block); }
+.section-title.section-warn::before { background: var(--block); }
+.section-title.section-block { color: var(--block); }
+.section-title.section-block::before { background: var(--block); }
+.section-title .count {
+  background: var(--brand-light);
+  color: var(--brand);
+  border-radius: var(--r-pill);
+  padding: 1px 8px;
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-med);
+  margin-left: auto;
+}
+
+/* ============ 紧急 120 大按钮 ============ */
+.sos-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 18px 16px;
+  background: var(--block);
+  color: #fff;
+  text-align: center;
+  border-radius: var(--r-lg);
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-bold);
+  text-decoration: none;
+  margin-top: var(--sp-4);
+  box-shadow: var(--shadow-block);
+  letter-spacing: 0.05em;
+  transition: transform var(--t-fast), box-shadow var(--t-base);
+}
+.sos-btn svg { width: 24px; height: 24px; }
+.sos-btn:active { transform: translateY(1px); box-shadow: 0 4px 10px rgba(198,40,40,0.3); }
+.sos-btn::before {
+  content: '';
+  position: absolute;
+}
+
+/* ============ 角色色块 ============ */
+.role-banner {
+  padding: 22px 16px 18px;
+  color: #fff;
+  border-radius: 0 0 var(--r-xl) var(--r-xl);
+  margin-bottom: var(--sp-4);
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+.role-banner::after {
+  content: '';
+  position: absolute;
+  right: -30px; top: -30px;
+  width: 140px; height: 140px;
+  border-radius: 50%;
+  background: var(--overlay-12);
+  pointer-events: none;
+}
+.role-banner::before {
+  content: '';
+  position: absolute;
+  right: 20px; bottom: -40px;
+  width: 90px; height: 90px;
+  border-radius: 50%;
+  background: var(--overlay-12);
+  pointer-events: none;
+}
+.role-banner > * { position: relative; z-index: 1; }
+.role-banner.patient   { background: linear-gradient(135deg, #5BBFC5 0%, #4A9B9F 100%); }
+.role-banner.doctor    { background: linear-gradient(135deg, #2E7DD7 0%, #1A5BA8 100%); }
+.role-banner.nurse     { background: linear-gradient(135deg, #43A047 0%, #2E7D32 100%); }
+.role-banner.director  { background: linear-gradient(135deg, #8E63CE 0%, #6B4BA0 100%); }
+.role-banner.admin     { background: linear-gradient(135deg, #607D8B 0%, #455A64 100%); }
+.role-banner b { font-size: var(--fs-xxl); display: block; font-weight: var(--fw-sb); letter-spacing: 0.01em; }
+.role-banner span { font-size: var(--fs-sm); opacity: 0.92; margin-top: 4px; display: block; }
+.role-banner .row { margin-top: 12px; display: flex; gap: var(--sp-2); flex-wrap: wrap; }
+.role-banner .badge { background: var(--overlay-30); color: #fff; }
+
+/* ============ 列表分组 ============ */
+.group {
+  background: var(--bg-2);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  margin-bottom: var(--sp-3);
+  box-shadow: var(--shadow-xs);
+  border: 1px solid var(--line-3);
+}
+.group-title {
+  padding: 10px 16px 6px;
+  font-size: var(--fs-sm);
+  color: var(--ink-3);
+  background: var(--bg);
+}
+
+/* ============ 数值大显示 ============ */
+.big-number {
+  font-size: var(--fs-display);
+  font-weight: var(--fw-bold);
+  color: var(--brand);
+  line-height: var(--lh-tight);
+  font-feature-settings: "tnum";
+}
+.big-number .unit {
+  font-size: var(--fs-md);
+  color: var(--ink-3);
+  font-weight: var(--fw-reg);
+  margin-left: 4px;
+}
+
+/* ============ Feed 流 ============ */
+.feed-item {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line-2);
+}
+.feed-item:last-child { border-bottom: 0; }
+.feed-item .meta {
+  font-size: var(--fs-xs);
+  color: var(--ink-3);
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.feed-item .body {
+  font-size: var(--fs-md);
+  color: var(--ink);
+  line-height: var(--lh-loose);
+}
+
+/* ============ IM 气泡 ============ */
+.im-bubble {
+  max-width: 70%;
+  padding: 10px 12px;
+  border-radius: var(--r-lg);
+  margin-bottom: var(--sp-2);
+  font-size: var(--fs-md);
+  line-height: var(--lh-loose);
+  box-shadow: var(--shadow-xs);
+  word-break: break-word;
+}
+.im-bubble.me {
+  background: #95EC69;
+  color: var(--ink);
+  margin-left: auto;
+  border-bottom-right-radius: 4px;
+}
+.im-bubble.other {
+  background: #fff;
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-bottom-left-radius: 4px;
+}
+
+/* ============ 空态 ============ */
+.empty {
+  text-align: center;
+  padding: 40px 16px;
+  color: var(--ink-3);
+}
+.empty .icon { font-size: 48px; margin-bottom: 12px; opacity: 0.4; display: block; color: var(--ink-4); }
+.empty .icon svg { width: 48px; height: 48px; display: inline-block; }
+.empty .text { font-size: var(--fs-md); }
+.empty .hint { font-size: var(--fs-sm); color: var(--ink-3); margin-top: 6px; }
+
+/* ============ Toast / Modal ============ */
+.modal-mask {
+  position: fixed; inset: 0;
+  background: rgba(15,23,42,0.45);
+  z-index: var(--z-modal);
+  display: none;
+  align-items: center; justify-content: center;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  animation: fadeIn var(--t-base);
+}
+.modal-mask.show { display: flex; }
+.modal {
+  background: #fff;
+  border-radius: var(--r-lg);
+  width: 320px;
+  max-width: 86%;
+  padding: 22px 20px 16px;
+  box-shadow: var(--shadow-lg);
+  animation: zoomIn var(--t-slow);
+}
+.modal h3 { font-size: var(--fs-lg); margin-bottom: var(--sp-2); font-weight: var(--fw-sb); }
+.modal p { font-size: var(--fs-md); color: var(--ink-2); margin-bottom: var(--sp-4); line-height: var(--lh-loose); }
+.modal .modal-actions { display: flex; gap: var(--sp-2); }
+.modal .modal-actions .btn { flex: 1; }
+
+.toast {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(15,23,42,0.85);
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: var(--r-base);
+  font-size: var(--fs-md);
+  z-index: var(--z-toast);
+  box-shadow: var(--shadow-lg);
+  animation: zoomIn var(--t-base);
+}
+
+/* ============ 头像圆框 ============ */
+.avatar {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  display: grid; place-items: center;
+  font-size: 14px; font-weight: 600;
+  color: #fff;
+  flex-shrink: 0;
+  background: var(--role-nurse);
+  overflow: hidden;
+}
+.avatar svg, .avatar img { width: 100%; height: 100%; display: block; object-fit: contain; }
+.avatar svg use { width: 100%; height: 100%; }
+
+/* ============ 老年模式 ============ */
+.app.elder { font-size: var(--fs-elder); }
+.app.elder .navbar .title { font-size: var(--fs-xxl); }
+.app.elder .cell { min-height: 68px; padding: 16px; }
+.app.elder .cell .l .info b { font-size: var(--fs-lg); font-weight: var(--fw-sb); }
+.app.elder .btn { min-height: 52px; font-size: var(--fs-lg); padding: 14px 20px; }
+.app.elder .form-input,
+.app.elder .form-textarea,
+.app.elder .form-select { font-size: var(--fs-lg); }
+
+/* ============ 状态栏(顶部时间/电量) ============ */
+.statusbar {
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-sb);
+  background: var(--bg-2);
+  color: var(--ink);
+}
+
+/* ============ 列表行式 ============ */
+.kv {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line-2);
+  font-size: var(--fs-md);
+  gap: var(--sp-3);
+}
+.kv:last-child { border-bottom: 0; }
+.kv .k { color: var(--ink-2); flex-shrink: 0; }
+.kv .v { color: var(--ink); font-weight: var(--fw-med); text-align: right; word-break: break-word; min-width: 0; }
+.kv.kv-block .v { color: var(--block); }
+.kv.kv-pass .v { color: var(--pass); }
+.kv.kv-warn .v { color: var(--warn); }
+
+/* ============ 分割 ============ */
+.divider { height: 1px; background: var(--line); margin: 12px 0; border: 0; }
+
+/* ============ 进度条 ============ */
+.progress {
+  width: 100%;
+  height: 6px;
+  background: var(--line-2);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+.progress > span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--brand), var(--brand-2));
+  border-radius: 3px;
+  transition: width var(--t-slow);
+}
+
+/* ============ 录音大按钮 ============ */
+.record-btn {
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  background: var(--role-nurse);
+  border: none;
+  color: white;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  box-shadow: var(--shadow-nurse);
+  flex-shrink: 0;
+  transition: transform var(--t-fast), box-shadow var(--t-base), background var(--t-base);
+}
+.record-btn:active { transform: scale(0.95); }
+.record-btn svg { width: 26px; height: 26px; }
+.record-btn.recording {
+  background: var(--block);
+  box-shadow: 0 0 0 6px rgba(198,40,40,0.15), 0 6px 16px rgba(198,40,40,0.3);
+  animation: pulse 1.4s infinite;
+}
+.record-btn.role-director { background: var(--role-director); box-shadow: var(--shadow-director); }
+.record-btn.role-director.recording { background: var(--block); }
+
+/* ============ 内联图标 ============ */
+.icon-inline { display: inline-block; vertical-align: -2px; }
+.icon-inline svg { width: 1em; height: 1em; display: inline-block; }
+
+/* ============ 角标 / Tag ============ */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: var(--r-sm);
+  font-size: var(--fs-xs);
+  background: var(--line-2);
+  color: var(--ink-2);
+  font-weight: var(--fw-med);
+}
+.tag-brand { background: var(--brand-light); color: var(--brand); }
+.tag-warn { background: var(--warn-bg); color: var(--warn); }
+.tag-block { background: var(--block-bg); color: var(--block); }
+.tag-pass { background: var(--pass-bg); color: var(--pass); }
+.tag-info { background: var(--info-bg); color: var(--info); }
+.tag-purple { background: var(--purple-bg); color: var(--purple); }
+
+/* ============ 链接颜色 ============ */
+.link-brand { color: var(--brand); text-decoration: none; transition: color var(--t-fast); }
+.link-brand:hover { color: var(--brand-dark); }
+.link-block { color: var(--block); }
+
+/* ============ 响应提示卡(替代内联 style) ============ */
+.notice {
+  background: var(--info-bg);
+  border-left: 3px solid var(--info);
+  border-radius: var(--r-base);
+  padding: 10px 12px;
+  font-size: var(--fs-sm);
+  color: var(--info);
+  line-height: var(--lh-loose);
+}
+.notice b { color: var(--info); font-weight: var(--fw-sb); }
+.notice-warn { background: var(--warn-bg); border-color: var(--warn); color: var(--warn); }
+.notice-warn b { color: var(--warn); }
+.notice-block { background: var(--block-bg); border-color: var(--block); color: var(--block); }
+.notice-block b { color: var(--block); }
+.notice-pass { background: var(--pass-bg); border-color: var(--pass); color: var(--pass); }
+.notice-pass b { color: var(--pass); }
+
+/* ============ 通用过渡 ============ */
+.fade-in { animation: fadeIn var(--t-slow); }
+.slide-up { animation: slideUp var(--t-slow); }
+
+/* ============ 关键帧 ============ */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes zoomIn {
+  from { opacity: 0; transform: scale(0.94); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 6px rgba(198,40,40,0.15), 0 6px 16px rgba(198,40,40,0.3); }
+  50% { box-shadow: 0 0 0 10px rgba(198,40,40,0.08), 0 6px 16px rgba(198,40,40,0.3); }
+}
+
+/* ============ 减少动画偏好 ============ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* ============================================================
+   桌面端预览模式 · 真实 iPhone 外框
+   移动端 (<=480) 不应用任何样式,直接全屏 App
+   481-767    简化:phone-frame,无左右导航
+   >=768     完整:phone-frame + 左右导航
+   ============================================================ */
+
+/* 通用:body.preview-mode 自然延伸布局
+   - body 三段: 顶部 padding / 中间(phone-stage,可压缩) / 下方(切换栏)
+   - 中间区用 flex:1 1 auto + min-height:0 允许缩放,避免撑爆 viewport
+   - 切换栏 flex-shrink:0,保证不被压掉
+   - 不在 body 上 justify-content:center,让 phone-stage 自主布局
+*/
+body.preview-mode {
+  height: 100vh;
+  overflow: hidden;
+  background: linear-gradient(135deg, #2c3e50 0%, #34495e 50%, #2c3e50 100%);
+  color: #ecf0f1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4px 16px;           /* 顶部/底部几乎为 0,全给手机 */
+  gap: 0;
+  position: relative;
+  box-sizing: border-box;
+}
+
+/* === Phone stage:中间区,flex:1 1 0% 占满剩余空间,可压缩 ===
+   flex-basis: 0 让 stage 从 0 grow,不被 phone-wrapper 内容撑开
+   overflow:hidden 裁掉 phone-wrapper 溢出(transform:scale 视觉适配)
+*/
+.phone-stage {
+  flex: 1 1 0%;
+  min-height: 0;
+  width: 100%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* === Phone wrapper(低调黑色商务 iPhone 外框) === */
+.phone-wrapper {
+  position: relative;
+  width: 414px;     /* 390 屏幕 + 12×2 边框 */
+  height: 868px;    /* 844 屏幕 + 12×2 边框 */
+  flex-shrink: 0;   /* 不要被 stage 压缩,视觉上由 transform:scale 适配 */
+  background: #1a1a1a;
+  border-radius: 50px;
+  padding: 12px;
+  box-shadow:
+    0 0 0 2px #333,
+    0 0 0 8px #0a0a0a,
+    0 30px 80px rgba(0,0,0,0.6),
+    inset 0 0 4px rgba(255,255,255,0.1);
+  z-index: 50;
+}
+
+/* === Phone screen(实际屏幕) === */
+.phone-screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: var(--bg);
+  border-radius: 38px;
+  overflow: hidden;
+}
+
+/* === 刘海(Notch) === */
+.phone-notch {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 110px;
+  height: 28px;
+  background: #000;
+  border-radius: 0 0 18px 18px;
+  z-index: 200;
+  pointer-events: none;
+}
+/* 刘海内点(摄像头) */
+.phone-notch::after {
+  content: '';
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 8px;
+  background: #1a1a1a;
+  border-radius: 50%;
+  box-shadow: inset 0 0 2px rgba(255,255,255,0.1);
+}
+
+/* === 侧边按键(电源 / 音量上 / 音量下) === */
+.phone-button-power {
+  position: absolute;
+  right: -3px;
+  top: 180px;
+  width: 3px;
+  height: 60px;
+  background: #2a2a2a;
+  border-radius: 0 2px 2px 0;
+  pointer-events: none;
+}
+.phone-button-vol {
+  position: absolute;
+  left: -3px;
+  top: 150px;
+  width: 3px;
+  height: 40px;
+  background: #2a2a2a;
+  border-radius: 2px 0 0 2px;
+  pointer-events: none;
+}
+.phone-button-vol2 {
+  position: absolute;
+  left: -3px;
+  top: 200px;
+  width: 3px;
+  height: 40px;
+  background: #2a2a2a;
+  border-radius: 2px 0 0 2px;
+  pointer-events: none;
+}
+
+/* === 状态栏(顶部时间/电量) === */
+.phone-status-bar {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 44px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 30px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a2332;
+  z-index: 150;
+  pointer-events: none;
+}
+.phone-status-bar .icons { display: flex; gap: 6px; font-size: 13px; }
+.phone-status-bar .time { margin-left: -8px; }
+
+/* === .app 适配:内部滚动而非整体滚动 ===
+   关键:.app 不能是 position:relative,否则里面的 .tabbar(position:absolute)
+   会以 .app 为包含块,跟着 .app 滚动。把 .tabbar 钉到 phone-screen 底部,
+   需要 .app 不要是 positioned,absolute 就会往上找到 phone-screen */
+.phone-screen .app {
+  max-width: 414px;
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  min-height: 0; /* 覆盖原有 100vh */
+  border-radius: 38px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-shadow: none;
+  position: static;            /* 强制 static,让 .tabbar 的 absolute 找到 phone-screen */
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0,0,0,0.18) transparent;
+}
+.phone-screen .app::-webkit-scrollbar { width: 4px; }
+.phone-screen .app::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.18); border-radius: 2px; }
+
+/* tabbar 改为贴 phone-screen 底部(非 viewport) */
+.phone-screen .tabbar {
+  position: absolute;       /* 钉死在 phone-screen 底部,不随 .app 滚动 */
+  bottom: 0;
+  left: 0;
+  right: 0;
+  transform: none;
+  margin-left: 0;
+  width: 100%;
+  max-width: 100%;
+  z-index: 100;
+}
+
+/* navbar 让出 notch 顶部空间 */
+.phone-screen .navbar { padding-top: 38px; }
+
+/* === 左右导航(深色底,贴合外框背景) ===
+   桌面端 (>=1100):用绝对定位挂在手机两侧,不抢流
+   <1100:不显示(切换栏已覆盖导航需求)
+*/
+.preview-nav { display: none; }
+
+@media (min-width: 1100px) {
+  body.preview-mode {
+    position: relative;
+  }
+  body.preview-mode .preview-nav {
+    display: flex;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 220px;
+    height: 420px;                 /* 固定高度 → 两个 nav 同高 → translateY 后视觉对齐 */
+    max-height: calc(100vh - 80px);
+    background: rgba(20,28,40,0.55);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: var(--r-lg);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    padding: 12px;
+    flex-direction: column;
+    gap: 4px;
+    overflow-y: auto;
+    z-index: 100; /* 高于 phone-wrapper 的 50,确保不被遮 */
+  }
+  body.preview-mode .preview-nav-left { left: 24px; height: 420px; }
+  body.preview-mode .preview-nav-right { right: 24px; width: 240px; height: 420px; }
+
+  .preview-nav-title {
+    font-size: 11px;
+    font-weight: var(--fw-sb);
+    color: rgba(236,240,241,0.55);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 6px 8px 4px;
+  }
+  .preview-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border-radius: var(--r-base);
+    color: rgba(236,240,241,0.85);
+    text-decoration: none;
+    font-size: 13px;
+    line-height: 1.2;
+    transition: background var(--t-fast);
+  }
+  .preview-nav-item:hover {
+    background: rgba(255,255,255,0.08);
+    color: #fff;
+  }
+  .preview-nav-item.current {
+    background: var(--brand);
+    color: #fff;
+    font-weight: var(--fw-sb);
+  }
+  .preview-nav-item.current .preview-nav-icon { color: #fff; }
+  .preview-nav-icon {
+    width: 22px; height: 22px;
+    display: grid; place-items: center;
+    color: rgba(236,240,241,0.6);
+    flex-shrink: 0;
+  }
+  .preview-nav-icon svg { width: 18px; height: 18px; }
+  .preview-nav-divider {
+    height: 1px;
+    background: rgba(255,255,255,0.08);
+    margin: 6px 4px;
+  }
+  .preview-nav-section { margin-bottom: 6px; }
+  .preview-nav-empty {
+    font-size: 12px;
+    color: rgba(236,240,241,0.5);
+    padding: 6px 10px;
+    line-height: 1.5;
+  }
+}
+
+/* === 预览切换栏(手机下方,按角色分组) === */
+.preview-switch-bar {
+  display: none;                  /* 隐藏整个切换栏,把空间让给手机 */
+}
+.preview-switch-bar-header .hint {
+  font-size: 11px;
+  color: rgba(236,240,241,0.45);
+  text-transform: none;
+  letter-spacing: 0.01em;
+}
+.preview-switch-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.preview-switch-group-title {
+  font-size: 11px;
+  color: rgba(236,240,241,0.5);
+  font-weight: var(--fw-sb);
+  letter-spacing: 0.06em;
+  padding: 0 4px;
+}
+.preview-switch-group-title .dot {
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: 1px;
+}
+.preview-switch-group.patient .dot   { background: var(--role-patient); }
+.preview-switch-group.doctor .dot    { background: var(--role-doctor); }
+.preview-switch-group.nurse .dot     { background: var(--role-nurse); }
+.preview-switch-group.director .dot  { background: var(--role-director); }
+.preview-switch-group.admin .dot     { background: var(--role-admin); }
+.preview-switch-group.system .dot    { background: rgba(236,240,241,0.6); }
+.preview-switch-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.preview-switch-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: var(--r-pill);
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: rgba(236,240,241,0.85);
+  font-size: 12px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background var(--t-fast), border-color var(--t-fast), color var(--t-fast);
+}
+.preview-switch-item:hover {
+  background: rgba(255,255,255,0.18);
+  color: #fff;
+}
+.preview-switch-item.current {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #fff;
+  font-weight: var(--fw-sb);
+}
+.preview-switch-item svg {
+  width: 14px; height: 14px;
+  display: block;
+}
+
+/* 1100-1399 视口:左右导航+切换栏同时存在,切换栏适度收窄以避免挤压 */
+@media (min-width: 1100px) and (max-width: 1399px) {
+  .preview-switch-bar { max-width: 760px; }
+}
+
+/* 兼容旧版:768-1099 视口下,左右导航不显示但仍可能存在,
+   这里显式隐藏以免意外出现 */
+@media (min-width: 768px) and (max-width: 1099px) {
+  body.preview-mode .preview-nav { display: none !important; }
+}
+
+/* 极矮视口:JS fitPhone() 会读取 stage.clientHeight 并计算 scale 写到 wrapper,
+   这里只做 CSS fallback(JS 尚未执行时)。注意 wrapper 高度是设计稿原始 868px,
+   这里的 scale 仅防止首屏闪一下。*/
+@media (max-height: 720px) {
+  body.preview-mode .phone-wrapper { transform: scale(0.78); transform-origin: center center; }
+}
+@media (max-height: 620px) {
+  body.preview-mode .phone-wrapper { transform: scale(0.6); transform-origin: center center; }
+}
+
+/* 移动端 (<=480):不应用外框,直接全屏 App
+   关键:不被 .phone-screen 包裹(layout.js 在 <=480 不调用 wrapApp)
+   注意:这里只是兜底,layout.js 已经在 <=480 时主动移除 wrapper/nav/switch-bar */
+@media (max-width: 480px) {
+  .phone-wrapper,
+  .preview-nav,
+  .preview-switch-bar { display: none !important; }
+}

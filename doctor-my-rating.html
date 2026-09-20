@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>我的评分</title>
+  <link rel="stylesheet" href="assets/styles.css">
+  <style>
+    .rank-banner {
+      background: linear-gradient(135deg, var(--role-doctor), var(--brand-dark));
+      color: #fff;
+      padding: 16px 14px;
+      margin: 0 16px 12px;     /* 左右 16px,跟下面 .page 的卡片对齐 */
+      border-radius: var(--r-lg);
+      max-width: calc(100% - 32px);
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+    .rank-banner b { font-size: 15px; display: block; font-weight: var(--fw-sb); line-height: 1.4; }
+    .rank-banner span { font-size: 11px; opacity: 0.9; line-height: 1.4; }
+    .rank-banner .big {
+      font-size: 28px;
+      font-weight: var(--fw-bold);
+      margin-top: 6px;
+      line-height: 1.1;
+    }
+    .rank-banner .big .small { 
+      font-size: 13px; 
+      opacity: 0.85; 
+      font-weight: var(--fw-reg); 
+      margin-left: 4px; 
+      display: inline-block;
+      max-width: 100%;
+    }
+
+    /* 评分概览 */
+    .score-overview {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      padding: 12px 0;
+    }
+    .score-overview .col { text-align: center; }
+    .score-overview .col .num {
+      font-size: var(--fs-lg);
+      font-weight: var(--fw-bold);
+      color: var(--ink);
+      line-height: 1.2;
+    }
+    .score-overview .col .num.composite { color: var(--brand); font-size: 28px; }
+    .score-overview .col .lbl { font-size: 10px; color: var(--ink-3); margin-top: 2px; }
+
+    /* 五角星 小 */
+    .star-mini { display: inline-flex; gap: 1px; vertical-align: middle; }
+    .star-mini .s { width: 14px; height: 14px; display: inline-block; }
+    .star-mini .s svg { width: 14px; height: 14px; display: block; }
+    .star-mini .s .star-shape { fill: var(--line); stroke: var(--ink-5); }
+    .star-mini .s.on .star-shape { fill: var(--brand); stroke: var(--brand-dark); }
+
+    /* 评价列表 */
+    .review-item {
+      padding: 12px 0;
+      border-bottom: 1px solid var(--line-2);
+    }
+    .review-item:last-child { border-bottom: 0; }
+    .review-item .top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .review-item .top b { font-size: var(--fs-md); font-weight: var(--fw-med); color: var(--ink); }
+    .review-item .top span { font-size: var(--fs-xs); color: var(--ink-3); }
+    .review-item .comment {
+      margin-top: 6px;
+      font-size: 12px;
+      color: var(--ink-2);
+      line-height: 1.6;
+      background: var(--bg-2);
+      padding: 8px 10px;
+      border-radius: var(--r-base);
+    }
+
+    /* 趋势图 */
+    .trend-card svg { width: 100%; height: 80px; display: block; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="navbar">
+      <button class="back" onclick="location.href='doctor-home.html'"><span style="font-size:22px; font-weight:700; line-height:1;">‹</span></button>
+      <div class="title">我的评分</div>
+      <div class="actions"></div>
+    </div>
+
+    <!-- 顶部角色 banner -->
+    <div class="rank-banner">
+      <b>主管医生(您) · 医生甲</b>
+      <span>神经内科 · 主治医师</span>
+      <div class="big">4.6<span class="small"> 综合得分(满分 5)</span></div>
+    </div>
+
+    <div class="page" style="padding-top:0;">
+
+      <!-- 评分概览(3 列:综合 / 病患 / 排名) -->
+      <div class="section-title">评分概览 · 90 天项目</div>
+      <div class="card">
+        <div class="score-overview" style="grid-template-columns:1fr 1fr 1fr;">
+          <div class="col">
+            <div class="num composite">4.6</div>
+            <div class="lbl">综合得分</div>
+          </div>
+          <div class="col">
+            <div class="num">4.5</div>
+            <div class="lbl">病患均值</div>
+          </div>
+          <div class="col">
+            <div class="num">#1</div>
+            <div class="lbl">项目排名</div>
+          </div>
+        </div>
+        <div style="font-size:11px; color:var(--ink-3); padding-top:8px; border-top:1px solid var(--line-2);">
+          病患评价 ≥ 5 条计入统计(Q-VOTE-3 防刷分,7 天/次)
+        </div>
+      </div>
+
+      <!-- 趋势(简单 SVG 折线) -->
+      <div class="section-title">近 6 月病患评分趋势</div>
+      <div class="card trend-card">
+        <svg viewBox="0 0 280 80" preserveAspectRatio="none" style="width:100%; height:80px;">
+          <!-- 网格线 -->
+          <line x1="0" y1="20" x2="280" y2="20" stroke="#F0F3F7" stroke-width="0.5"/>
+          <line x1="0" y1="40" x2="280" y2="40" stroke="#F0F3F7" stroke-width="0.5"/>
+          <line x1="0" y1="60" x2="280" y2="60" stroke="#F0F3F7" stroke-width="0.5"/>
+          <!-- 折线 -->
+          <polyline points="20,50 60,40 100,30 140,25 180,20 220,15" 
+                    fill="none" stroke="#2E7DD7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- 渐变填充 -->
+          <polygon points="20,50 60,40 100,30 140,25 180,20 220,15 220,80 20,80" 
+                   fill="#2E7DD7" fill-opacity="0.08"/>
+          <!-- 数据点 -->
+          <circle cx="20" cy="50" r="3" fill="#2E7DD7"/>
+          <circle cx="60" cy="40" r="3" fill="#2E7DD7"/>
+          <circle cx="100" cy="30" r="3" fill="#2E7DD7"/>
+          <circle cx="140" cy="25" r="3" fill="#2E7DD7"/>
+          <circle cx="180" cy="20" r="3" fill="#2E7DD7"/>
+          <circle cx="220" cy="15" r="4" fill="#2E7DD7" stroke="#fff" stroke-width="2"/>
+        </svg>
+        <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--ink-3); margin-top:6px;">
+          <span>04月<br>4.2</span>
+          <span>05月<br>4.3</span>
+          <span>06月<br>4.4</span>
+          <span>07月<br>4.4</span>
+          <span>08月<br>4.5</span>
+          <span>09月<br>4.6</span>
+        </div>
+      </div>
+
+      <!-- 病患评价列表 -->
+      <div class="section-title">病患评价(12 条)</div>
+      <div class="card">
+        <div class="review-item">
+          <div class="top">
+            <b>陈丙英 女士</b>
+            <div class="star-mini">
+              <div class="s on"><svg viewBox="0 0 24 24"><polygon class="star-shape" points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+              <div class="s on"><svg viewBox="0 0 24 24"><polygon class="star-shape" points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+              <div class="s on"><svg viewBox="0 0 24 24"><polygon class="star-shape" points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+              <div class="s on"><svg viewBox="0 0 24 24"><polygon class="star-shape" points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+              <div class="s on"><svg viewBox="0 0 24 24"><polygon class="star-shape" points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+            </div>
+          </div>
+          <div class="top" style="margin-top:4px;">
+            <span>2026-09-12 · D5(90 天期内)</span>
+          </div>
+          <div class="comment">陈医生很耐心,每次提问都解释清楚,儿子在外地也放心。</div>
+        </div>
+
+        <div class="review-item">
+          <div class="top">
+            <b>张桂兰 女士</b>
+            <div class="star-mini">
+              <div class="s on"><svg viewBox="0 0 24 24"><polygon class="star-shape" points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+              <div class="s on"><svg viewBox="0 0 24 24"><polygon class="star-shape" points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+              <div class="s on"><svg viewBox="0 0 24 24"><polygon class="star-shape" points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+              <div class="s on"><svg viewBox="0 0 24 24"><polygon class="star-shape" points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+              <div class="s"><svg viewBox="0 0 24 24"><polygon class="star-shape" points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+            </div>
+          </div>
+          <div class="top" style="margin-top:4px;">
+            <span>2026-09-08 · D22</span>
+          </div>
+          <div class="comment">复诊安排细致,目标值讲得明白。</div>
+        </div>
+
+        <div class="review-item">
+          <div class="top">
+            <b>赵慧 女士</b>
+            <div class="star-mini">
+              <div class="s on"><svg viewBox="0 0 24 24"><polygon class="star-shape" points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+              <div class="s on"><svg viewBox="0 0 24 24"><polygon class="star-shape" points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+              <div class="s on"><svg viewBox="0 0 24 24"><polygon class="star-shape" points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+              <div class="s on"><svg viewBox="0 0 24 24"><polygon class="star-shape" points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+              <div class="s on"><svg viewBox="0 0 24 24"><polygon class="star-shape" points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+            </div>
+          </div>
+          <div class="top" style="margin-top:4px;">
+            <span>2026-08-30 · D45</span>
+          </div>
+          <div class="comment">感谢医生 45 天节点认真核实复查结果。</div>
+        </div>
+
+        <a href="leaderboard.html?role=doctor" style="display:block; text-align:center; margin-top:8px; font-size:12px; color:var(--brand);">查看我的项目内排名 ›</a>
+      </div>
+
+      <!-- 底部说明 -->
+      <div class="card" style="background:var(--brand-soft); border:none; margin-top:12px;">
+        <div style="font-size:12px; color:var(--brand-dark); line-height:1.7;">
+          <b>评分仅作参考(C1)</b><br>
+          · 不替代临床判断,不限制处方/治疗<br>
+          · 不直接联动绩效(§12.5)<br>
+          · 仅 90 天管理期内可评价(Q-VOTE-4)
+        </div>
+      </div>
+
+    </div>
+
+    <div class="tabbar">
+      <a href="doctor-home.html" class="tab active"><span <img src="assets/icons-png/icon-tab-home.png" alt="首" />主页</a>
+      <a href="doctor-tasks.html" class="tab"><span <img src="assets/icons-png/icon-tab-tasks.png" alt="任" />任务</a>
+      <a href="doctor-patients.html" class="tab"><span <img src="assets/icons-png/icon-tab-people.png" alt="患" />患者</a>
+      <a href="role-switch.html" class="tab"><span <img src="assets/icons-png/icon-tab-switch.png" alt="切" />切换</a>
+    </div>
+  </div>
+  <script src="assets/layout.js"></script>
+</body>
+</html>

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>项目设置</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <div class="app">
+    <div class="navbar">
+      <button class="back" onclick="location.href='index.html'">
+        <span style="font-size:22px; font-weight:700; line-height:1;">‹</span>
+      </button>
+      <div class="title">项目设置</div>
+      <div class="actions">
+        <button onclick="location.href='role-switch.html'">
+          <span style="font-size:18px; font-weight:700; line-height:1;">切</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="page" style="padding:16px; padding-top:0;">
+      <!-- 角色 banner:根据 URL ?role= 切换 -->
+      <div id="banner-admin" class="role-banner admin" style="border-radius:0 0 16px 16px; margin-bottom:0;">
+        <b>系统维护 · 维护员</b>
+        <span>由科室主任指定 · 负责项目 / 任务库 / 药品库</span>
+      </div>
+      <div id="banner-admin-doc" class="role-banner doctor" style="border-radius:0 0 16px 16px; margin-bottom:0; display:none;">
+        <b>主管医生(您) · 医生甲(有管理权限)</b>
+        <span>由科室主任指定 · 可管理项目 / 任务库 / 药品库</span>
+        <div style="margin-top:8px;">
+          <span class="badge" style="background:rgba(255,255,255,0.3); color:white;">医生</span>
+          <span class="badge" style="background:rgba(255,255,255,0.3); color:white;">管理权限</span>
+        </div>
+      </div>
+
+        <div class="banner banner-warn">
+          <b>此角色待临床确认</b>(§2.1, Q6):由主任指定,可由科室医生 / 护士兼任。
+        </div>
+
+        <!-- 普通医生(有管理权限)快捷入口提示 -->
+        <div id="admin-doc-tip" class="notice" style="display:none;">
+          <b>管理系统</b>:作为有管理权限的医生,您可在此管理项目配置、任务库、药品库。<br>
+          本视图与系统维护人员角色功能相同,仅身份不同。
+        </div>
+
+        <div class="section-title">项目管理</div>
+        <div class="group">
+          <a href="admin-project-edit.html" class="cell">
+            <div class="l">
+              <div class="icon"><img src="assets/icons-png/icon-document.png" alt="文" /></div>
+              <div class="info"><b>90 天卒中连续健康管理</b><span>2025-10-01 ~ 2026-03-31 · 主负责科室主任</span></div>
+            </div>
+            <div class="r"><span class="badge badge-pass">进行中</span><span class="arrow">›</span></div>
+          </a>
+          <a href="admin-project-edit.html" class="cell">
+            <div class="l">
+              <div class="icon"><img src="assets/icons-png/icon-microscope.png" alt="研" /></div>
+              <div class="info"><b>颈动脉斑块管理研究</b><span>P1 · 2026-Q1 启动准备</span></div>
+            </div>
+            <div class="r"><span class="badge badge-purple">P1</span><span class="arrow">›</span></div>
+          </a>
+          <a href="admin-project-edit.html" class="cell">
+            <div class="l">
+              <div class="icon"><img src="assets/icons-png/icon-plus.png" alt="＋" /></div>
+              <div class="info" style="color:var(--brand);"><b>+ 新建项目</b><span>配置主题 / 周期 / 任务模板</span></div>
+            </div>
+            <div class="r"><span class="arrow">›</span></div>
+          </a>
+        </div>
+
+        <div class="section-title">任务库(task 库)</div>
+        <a href="admin-task-lib.html" class="card" style="display:block; overflow:hidden;">
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+            <div style="flex:1; min-width:0;">
+              <div style="font-size:15px; font-weight:600; line-height:1.4;">任务组件库</div>
+              <div style="font-size:12px; color:var(--ink-3); margin-top:4px;">可插拔组件 · 按需求扩展 · 共 8 个</div>
+            </div>
+            <span class="arrow" style="flex-shrink:0;"><span style="font-size:18px; color:var(--ink-3);">›</span></span>
+          </div>
+        </a>
+
+        <div class="section-title">药品库</div>
+        <a href="admin-drugs.html" class="card" style="display:block; overflow:hidden;">
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+            <div style="flex:1; min-width:0;">
+              <div style="font-size:15px; font-weight:600; line-height:1.4;">药物清单</div>
+              <div style="font-size:12px; color:var(--ink-3); margin-top:4px;">添加 / 编辑 / 上传图片 · 共 11 个</div>
+            </div>
+            <span class="arrow" style="flex-shrink:0;"><span style="font-size:18px; color:var(--ink-3);">›</span></span>
+          </div>
+        </a>
+
+        <div class="notice">
+          <b>P0 范围说明</b>:任务库和药品库是 PRD §7.5 提到的角色功能,具体组件由系统在开发中固化,后续需求再迭代扩展。
+        </div>
+    </div>
+
+    <div class="tabbar">
+      <a href="admin-projects.html" class="tab active"><span <img src="assets/icons-png/icon-tab-projects.png" alt="项" />项目</a>
+      <a href="admin-task-lib.html" class="tab"><span <img src="assets/icons-png/icon-tab-tasklib.png" alt="库" />任务库</a>
+      <a href="admin-drugs.html" class="tab"><span <img src="assets/icons-png/icon-tab-drugs.png" alt="药" />药品</a>
+      <a href="role-switch.html" class="tab"><span <img src="assets/icons-png/icon-tab-switch.png" alt="切" />切换</a>
+    </div>
+  </div>
+  <script>
+    (function() {
+      var params = new URLSearchParams(window.location.search);
+      var role = params.get('role');
+      if (role === 'admin-doc') {
+        // 普通医生有管理权限:切换 banner
+        document.getElementById('banner-admin').style.display = 'none';
+        document.getElementById('banner-admin-doc').style.display = 'block';
+        document.getElementById('admin-doc-tip').style.display = 'block';
+      }
+    })();
+  </script>
+  <script src="assets/layout.js"></script>
+</body>
+</html>

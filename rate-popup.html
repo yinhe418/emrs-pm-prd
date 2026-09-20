@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>打分弹窗组件 · 预览</title>
+  <link rel="stylesheet" href="assets/styles.css">
+  <style>
+    .star {
+      width: 44px; height: 44px;
+      cursor: pointer;
+      transition: transform var(--t-fast);
+    }
+    .star:active { transform: scale(0.9); }
+    .star svg { width: 100%; height: 100%; display: block; }
+    .star.active .star-shape { fill: var(--brand); stroke: var(--brand-dark); }
+    .star .star-shape { fill: var(--line); stroke: var(--ink-5); transition: fill var(--t-base); }
+    .star-row {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      padding: 8px 0;
+    }
+
+    .preview-section {
+      background: var(--bg-2);
+      border-radius: var(--r-lg);
+      padding: 16px;
+      margin-bottom: 12px;
+      border: 1px dashed var(--line);
+    }
+    .preview-section .lbl {
+      font-size: 11px;
+      color: var(--ink-3);
+      text-align: center;
+      margin-top: 6px;
+    }
+
+    .comment-box {
+      width: 100%;
+      min-height: 70px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--r-base);
+      font-family: inherit;
+      font-size: var(--fs-base);
+      color: var(--ink);
+      resize: none;
+      outline: none;
+    }
+
+    .trigger-btn {
+      padding: 8px 14px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: var(--r-base);
+      font-size: var(--fs-md);
+      font-weight: var(--fw-med);
+      cursor: pointer;
+    }
+
+    /* 提态页 */
+    .toast-block {
+      background: var(--pass-soft);
+      border: 1px solid var(--pass-bg);
+      border-radius: var(--r-lg);
+      padding: 14px 16px;
+      margin: 12px 0;
+      font-size: var(--fs-md);
+      color: var(--pass);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .toast-block svg { width: 22px; height: 22px; flex-shrink: 0; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="navbar">
+      <button class="back" onclick="location.href='patient-rate.html'"><span style="font-size:22px; font-weight:700; line-height:1;">‹</span></button>
+      <div class="title">打分弹窗组件</div>
+      <div class="actions"></div>
+    </div>
+
+    <div class="page">
+
+      <div class="banner banner-info" style="margin:0 0 16px;">
+        <b>打分弹窗组件预览</b>
+        同一组件被患者端(patient-rate.html)与主任端(director-rate.html)引用。此页用于演示各种状态。
+      </div>
+
+      <!-- 状态 1:默认未选 -->
+      <div class="section-title">状态 1 · 未选择</div>
+      <div class="preview-section">
+        <div class="star-row" id="s1">
+          <div class="star" data-val="1"><span style="font-size:14px; font-weight:400; line-height:1;">·</span></div>
+          <div class="star" data-val="2"><span style="font-size:14px; font-weight:400; line-height:1;">·</span></div>
+          <div class="star" data-val="3"><span style="font-size:14px; font-weight:400; line-height:1;">·</span></div>
+          <div class="star" data-val="4"><span style="font-size:14px; font-weight:400; line-height:1;">·</span></div>
+          <div class="star" data-val="5"><span style="font-size:14px; font-weight:400; line-height:1;">·</span></div>
+        </div>
+        <div class="lbl">灰色星星 · 点击即可选中</div>
+      </div>
+
+      <!-- 状态 2:已选 4 星 -->
+      <div class="section-title">状态 2 · 已选 4 星</div>
+      <div class="preview-section">
+        <div class="star-row">
+          <div class="star active"><span style="font-size:14px; font-weight:400; line-height:1;">·</span></div>
+          <div class="star active"><span style="font-size:14px; font-weight:400; line-height:1;">·</span></div>
+          <div class="star active"><span style="font-size:14px; font-weight:400; line-height:1;">·</span></div>
+          <div class="star active"><span style="font-size:14px; font-weight:400; line-height:1;">·</span></div>
+          <div class="star"><span style="font-size:14px; font-weight:400; line-height:1;">·</span></div>
+        </div>
+        <div class="lbl">已选 4 星(浅蓝填充) · 文字评语框可选</div>
+      </div>
+
+      <!-- 状态 3:提交成功 -->
+      <div class="section-title">状态 3 · 提交成功</div>
+      <div class="toast-block">
+        <span style="font-size:14px; font-weight:400; line-height:1;">·</span>
+        <div>
+          <b>已提交 4 星评价</b><br>
+          <span style="font-size:12px; color:var(--pass);">感谢您的反馈 · 下次可评价时间:7 天后</span>
+        </div>
+      </div>
+
+      <!-- 状态 4:频次超限 -->
+      <div class="section-title">状态 4 · 频次超限(Q-VOTE-3)</div>
+      <div class="toast-block" style="background:var(--warn-soft); border-color:var(--warn-bg); color:var(--warn);">
+        <span style="font-size:14px; font-weight:400; line-height:1;">·</span>
+        <div>
+          <b>7 天内已评价过</b><br>
+          <span style="font-size:12px;">同一医护每 7 天可评价 1 次,下次可评:2026-09-22</span>
+        </div>
+      </div>
+
+      <!-- 状态 5:评语框 -->
+      <div class="section-title">状态 5 · 文字评语(可选)</div>
+      <div class="preview-section">
+        <textarea class="comment-box" placeholder="如:医生很耐心,解释清楚。(0-200 字)">医生很耐心,解释清楚。</textarea>
+        <div style="text-align:right; font-size:10px; color:var(--ink-4); margin-top:4px;">10 / 200</div>
+      </div>
+
+      <!-- 触发 -->
+      <div class="section-title">触发入口</div>
+      <div style="display:flex; gap:8px;">
+        <button class="trigger-btn" onclick="location.href='patient-rate.html'">患者端触发</button>
+        <button class="trigger-btn" onclick="location.href='director-rate.html'" style="background:var(--role-director);">主任端触发</button>
+      </div>
+
+    </div>
+
+    <!-- 角色入口 -->
+    <div class="tabbar">
+      <a href="patient-rate.html" class="tab"><span <img src="assets/icons-png/icon-im.png" alt="信" />患者</a>
+      <a href="director-rate.html" class="tab"><span class="tab-icon">改</span>主任</a>
+      <a href="leaderboard.html?role=director" class="tab"><span <img src="assets/icons-png/icon-tab-eval.png" alt="评" />排行</a>
+      <a href="index.html" class="tab"><span <img src="assets/icons-png/icon-tab-home.png" alt="首" />首页</a>
+    </div>
+  </div>
+</body>
+</html>

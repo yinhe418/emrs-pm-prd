@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>记录血压</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <div class="app">
+    <div class="navbar">
+      <button class="back" onclick="location.href='patient-tasks.html'"><span style="font-size:22px; font-weight:700; line-height:1;">‹</span></button>
+      <div class="title">记录血压</div>
+      <div class="actions"></div>
+    </div>
+
+    <div class="page">
+      <div class="banner">
+        <b>个人目标:血压 &lt; 130/80 mmHg</b>
+        由您的医生甲为您设定。记录后将自动对比目标。
+      </div>
+
+      <div class="card" style="background:var(--block-bg); border:none;">
+        <div style="font-size:13px; color:var(--block);">
+          <b>已逾期 3 小时</b> · 连续 3 天未记录,护士甲将电话提醒您。
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="form-item">
+          <span class="form-label"><span class="req">*</span>收缩压(高压)</span>
+          <input class="form-input" type="number" placeholder="60-250" style="font-size:24px; font-weight:600;">
+        </div>
+        <div class="form-item">
+          <span class="form-label"><span class="req">*</span>舒张压(低压)</span>
+          <input class="form-input" type="number" placeholder="30-150" style="font-size:24px; font-weight:600;">
+        </div>
+        <div class="form-item">
+          <span class="form-label">心率(选填)</span>
+          <input class="form-input" type="number" placeholder="30-220">
+        </div>
+        <div class="form-item">
+          <span class="form-label">测量时间</span>
+          <input class="form-input" type="datetime-local" value="2025-12-27T08:30">
+        </div>
+        <div class="form-item">
+          <span class="form-label">测量体位</span>
+          <select class="form-select">
+            <option>坐位</option>
+            <option>卧位</option>
+            <option>站位</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="card" style="background:var(--info-bg); border:none;">
+        <div style="font-size:12px; color:var(--info);">
+          <b>如何测量?</b> 安静休息 5 分钟后,坐位测量上臂血压,连续 2 次取均值。
+          详细步骤可在 <a href="patient-edu.html" style="color:var(--info);">健康教育</a> 查看。
+        </div>
+      </div>
+
+      <a href="patient-tasks.html" class="btn btn-primary btn-block" style="margin-top:20px;">
+        保存记录
+      </a>
+      <a href="patient-tasks.html" class="btn btn-outline btn-block" style="margin-top:8px;">
+        取消
+      </a>
+    </div>
+  </div>
+  <script src="assets/layout.js"></script>
+</body>
+</html>

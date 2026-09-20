@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>双项目合并 - 同时参加管理 + 研究</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <div class="app">
+    <div class="navbar">
+      <button class="back" onclick="location.href='patient-home.html'"><span style="font-size:22px; font-weight:700; line-height:1;">‹</span></button>
+      <div class="title">双项目参加</div>
+      <div class="actions"></div>
+    </div>
+
+    <div class="page">
+      <div class="banner">
+        <b>同时参加 90 天管理 + 颈动脉研究</b>
+        您可以同时参加两项。同一次联系尽量合并;各自欠缺的资料仍可见;不重复检查。
+      </div>
+
+      <div class="section-title">参加状态</div>
+      <div class="group">
+        <div class="cell" style="background:#E8F5E9;">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-check.png" alt="✓" /></div>
+            <div class="info">
+              <b>90 天卒中连续健康管理</b>
+              <span>D12 / 90 · 进行中</span>
+            </div>
+          </div>
+          <div class="r"><span class="badge badge-pass">已加入</span></div>
+        </div>
+        <div class="cell" style="background:#E8F5E9;">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-check.png" alt="✓" /></div>
+            <div class="info">
+              <b>颈动脉斑块管理研究</b>
+              <span>D12 / 365 · 进行中</span>
+            </div>
+          </div>
+          <div class="r"><span class="badge badge-pass">已加入</span></div>
+        </div>
+      </div>
+
+      <div class="section-title">合并的任务</div>
+      <div class="card">
+        <div style="font-size:13px; color:var(--ink-2); line-height:1.8;">
+          以下任务同时满足两个项目:<br>
+          • <b>每日血压记录</b>(90 天 + 研究)<br>
+          • <b>D30 血脂全套</b>(90 天 + 研究)<br>
+          • <b>D90 mRS 评估</b>(90 天 必做 + 研究中期评估)<br>
+          • <b>颈动脉超声</b>(研究 必做 + 90 天 关联参考)
+        </div>
+      </div>
+
+      <div class="section-title">90 天管理专属</div>
+      <div class="group">
+        <div class="cell">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-calendar.png" alt="历" /></div>
+            <div class="info"><b>D7 / D30 / D90 电话回访</b><span>3 次主动随访 · 不重复</span></div>
+          </div>
+          <div class="r"><span class="badge badge-pass">专属</span></div>
+        </div>
+        <div class="cell">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-tab-drugs.png" alt="药" /></div>
+            <div class="info"><b>出院药物核对</b><span>90 天用药反馈</span></div>
+          </div>
+          <div class="r"><span class="badge badge-pass">专属</span></div>
+        </div>
+      </div>
+
+      <div class="section-title">研究专属</div>
+      <div class="group">
+        <div class="cell">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-microscope.png" alt="研" /></div>
+            <div class="info"><b>12 月 LDL-C 跟踪</b><span>每 3 月 1 次 · D90 / D180 / D365</span></div>
+          </div>
+          <div class="r"><span class="badge" style="background:var(--purple-bg); color:var(--purple);">专属</span></div>
+        </div>
+        <div class="cell">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-microscope.png" alt="研" /></div>
+            <div class="info"><b>知情同意 / 纳排资料</b><span>研究者确认资格 · 不可自动入组</span></div>
+          </div>
+          <div class="r"><span class="badge" style="background:var(--purple-bg); color:var(--purple);">专属</span></div>
+        </div>
+      </div>
+
+      <div class="card" style="background:var(--info-bg); border:none;">
+        <div style="font-size:12px; color:var(--info);">
+          <b>退出规则</b>(§3.3):退出其中一项,其他已同意的必要服务<b>不应随之取消</b>。
+        </div>
+      </div>
+    </div>
+
+    <div class="tabbar">
+      <a href="patient-home.html" class="tab"><span <img src="assets/icons-png/icon-tab-home.png" alt="首" />首页</a>
+      <a href="patient-tasks.html" class="tab"><span <img src="assets/icons-png/icon-tab-tasks.png" alt="任" />任务</a>
+      <a href="patient-im.html" class="tab"><span <img src="assets/icons-png/icon-im.png" alt="信" />联系</a>
+      <a href="patient-emergency.html" class="tab" style="color:var(--block);"><span <img src="assets/icons-png/icon-sos.png" alt="急" />紧急</a>
+    </div>
+  </div>
+  <script src="assets/layout.js"></script>
+</body>
+</html>

@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>评分排行榜</title>
+  <link rel="stylesheet" href="assets/styles.css">
+  <style>
+    /* 角色 banner */
+    .rank-banner {
+      background: linear-gradient(135deg, var(--role-director), #6B4BA0);
+      color: #fff;
+      padding: 20px 16px;
+      margin: 0 0 16px;
+      border-radius: 0 0 var(--r-xl) var(--r-xl);
+    }
+    .rank-banner.self {
+      background: linear-gradient(135deg, var(--role-doctor), var(--brand-dark));
+    }
+    .rank-banner.nurse-self {
+      background: linear-gradient(135deg, var(--role-nurse), #2E7D32);
+    }
+    .rank-banner b { font-size: var(--fs-xl); display: block; font-weight: var(--fw-sb); }
+    .rank-banner span { font-size: var(--fs-sm); opacity: 0.9; }
+    .rank-banner .big {
+      font-size: 36px;
+      font-weight: var(--fw-bold);
+      margin-top: 8px;
+      line-height: 1;
+    }
+    .rank-banner .big .small { font-size: 16px; opacity: 0.85; font-weight: var(--fw-reg); margin-left: 4px; }
+
+    /* 维度切换 */
+    .dim-switch {
+      display: flex;
+      gap: 8px;
+      padding: 0 0 12px;
+    }
+    .dim-switch button {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid var(--line);
+      background: var(--bg-2);
+      color: var(--ink-2);
+      border-radius: var(--r-base);
+      font-size: var(--fs-md);
+      font-weight: var(--fw-med);
+      cursor: pointer;
+      transition: all var(--t-fast);
+    }
+    .dim-switch button.on {
+      background: var(--brand);
+      color: #fff;
+      border-color: var(--brand);
+    }
+
+    /* 排名列表 */
+    .rank-row {
+      background: var(--bg-2);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid var(--line-2);
+    }
+    .rank-row:last-child { border-bottom: 0; }
+    .rank-row.is-self { background: var(--brand-soft); }
+    .rank-row .idx {
+      width: 28px;
+      flex-shrink: 0;
+      text-align: center;
+      font-size: var(--fs-lg);
+      font-weight: var(--fw-bold);
+      color: var(--ink-3);
+      font-feature-settings: "tnum";
+    }
+    .rank-row.gold .idx   { color: #C9A227; }
+    .rank-row.silver .idx { color: #8E94A0; }
+    .rank-row.bronze .idx { color: #B87333; }
+    .rank-row .avatar {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      display: grid; place-items: center;
+    }
+    .rank-row .avatar svg { width: 38px; height: 38px; }
+    .rank-row .name { flex: 1; min-width: 0; }
+    .rank-row .name b { font-size: var(--fs-md); display: block; color: var(--ink); font-weight: var(--fw-med); }
+    .rank-row .name span { font-size: var(--fs-xs); color: var(--ink-3); }
+    .rank-row .scores {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      font-size: var(--fs-xs);
+      color: var(--ink-3);
+    }
+    .rank-row .scores .num {
+      font-size: var(--fs-lg);
+      font-weight: var(--fw-bold);
+      color: var(--brand);
+      font-feature-settings: "tnum";
+    }
+
+    .legend {
+      display: flex;
+      gap: 12px;
+      font-size: 11px;
+      color: var(--ink-3);
+      padding: 12px 16px;
+      flex-wrap: wrap;
+    }
+    .legend .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; vertical-align: middle; }
+
+    /* 本人视图:不显示他人姓名 */
+    .self-only-banner {
+      background: var(--info-bg);
+      border: none;
+      padding: 14px 16px;
+      border-radius: var(--r-lg);
+      margin-bottom: 12px;
+      font-size: 12px;
+      color: var(--info);
+      line-height: 1.7;
+    }
+    .self-only-banner b { color: var(--info); display: block; margin-bottom: 4px; font-weight: var(--fw-sb); }
+
+    /* 五角星 小 */
+    .star-mini {
+      display: inline-flex;
+      gap: 1px;
+      vertical-align: middle;
+    }
+    .star-mini .s {
+      width: 12px; height: 12px;
+    }
+    .star-mini .s svg { width: 100%; height: 100%; }
+    .star-mini .s .star-shape { fill: var(--line); stroke: var(--ink-5); }
+    .star-mini .s.on .star-shape { fill: var(--brand); stroke: var(--brand-dark); }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="navbar">
+      <button class="back" id="backBtn"><span style="font-size:22px; font-weight:700; line-height:1;">‹</span></button>
+      <div class="title">评分排行榜</div>
+      <div class="actions">
+        <button onclick="toggleRole()" style="color:var(--brand); font-size:13px; padding:6px 10px;" id="roleBtn">主任视图</button>
+      </div>
+    </div>
+
+    <!-- 角色 banner:动态切换 -->
+    <div class="rank-banner" id="rankBanner">
+      <b id="bannerTitle">90 天项目 · 项目维度</b>
+      <span id="bannerSub">2026-09 · 当前周期排名</span>
+      <div class="big" id="bannerBig" style="display:none;">
+        <span id="bannerBigNum"></span><span class="small" id="bannerBigUnit"></span>
+      </div>
+    </div>
+
+    <div class="page" style="padding-top:0;">
+
+      <!-- 维度切换 -->
+      <div class="dim-switch">
+        <button class="on" data-dim="project" onclick="switchDim('project', this)">项目维度</button>
+        <button data-dim="dept" onclick="switchDim('dept', this)">全科维度</button>
+      </div>
+
+      <!-- 本人视图说明 -->
+      <div class="self-only-banner" id="selfOnlyBanner" style="display:none;">
+        <b>仅显示您的得分与排名</b>
+        其他医护匿名展示;完整排名仅主任可见。
+      </div>
+
+      <!-- 主任视图:完整排行榜 -->
+      <div class="group" id="directorView">
+        <div class="group-title">医生排名 · 90 天项目</div>
+
+        <div class="rank-row gold">
+          <div class="idx">1</div>
+          <div class="icon"><img src="assets/icons-png/icon-avatar-doctor.png" alt="医" /></div>
+          <div class="name">
+            <b>医生甲</b>
+            <span>在管 8 例 · 病患评价 12 条</span>
+          </div>
+          <div class="scores">
+            <span class="num">4.6</span>
+          </div>
+        </div>
+
+        <div class="rank-row silver">
+          <div class="idx">2</div>
+          <div class="icon"><img src="assets/icons-png/icon-avatar-doctor.png" alt="医" /></div>
+          <div class="name">
+            <b>医生乙</b>
+            <span>在管 12 例 · 病患评价 18 条</span>
+          </div>
+          <div class="scores">
+            <span class="num">4.4</span>
+          </div>
+        </div>
+
+        <div class="rank-row bronze">
+          <div class="idx">3</div>
+          <div class="icon"><img src="assets/icons-png/icon-avatar-doctor.png" alt="医" /></div>
+          <div class="name">
+            <b>医生丙</b>
+            <span>在管 6 例 · 病患评价 8 条</span>
+          </div>
+          <div class="scores">
+            <span class="num">3.2</span>
+          </div>
+        </div>
+
+        <div class="group-title" style="margin-top:8px;">护士排名 · 90 天项目</div>
+
+        <div class="rank-row gold">
+          <div class="idx">1</div>
+          <div class="icon"><img src="assets/icons-png/icon-avatar-nurse.png" alt="护" /></div>
+          <div class="name">
+            <b>护士甲</b>
+            <span>在管 12 例 · 病患评价 22 条</span>
+          </div>
+          <div class="scores">
+            <span class="num">4.7</span>
+          </div>
+        </div>
+
+        <div class="rank-row silver">
+          <div class="idx">2</div>
+          <div class="icon"><img src="assets/icons-png/icon-avatar-nurse.png" alt="护" /></div>
+          <div class="name">
+            <b>护士乙</b>
+            <span>在管 10 例 · 病患评价 16 条</span>
+          </div>
+          <div class="scores">
+            <span class="num">4.3</span>
+          </div>
+        </div>
+
+        <div class="legend">
+          <span><span class="dot" style="background:var(--brand);"></span>综合得分</span>
+          <span>· 病患 30% + 主任 70% 加权</span>
+        </div>
+      </div>
+
+      <!-- 本人视图:只见自己 -->
+      <div id="selfView" style="display:none;">
+        <div class="card">
+          <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
+            <div class="icon"><img src="assets/icons-png/icon-avatar-doctor.png" alt="医" /></div>
+            <div style="flex:1;">
+              <b id="selfName" style="font-size:var(--fs-base);">医生</b>
+              <div style="font-size:11px; color:var(--ink-3);" id="selfRole">角色</div>
+            </div>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; padding:8px 0;">
+            <div style="text-align:center;">
+              <div style="font-size:24px; font-weight:700; color:var(--brand);" id="selfComposite">4.6</div>
+              <div style="font-size:10px; color:var(--ink-3);">综合</div>
+            </div>
+            <div style="text-align:center;">
+              <div style="font-size:18px; font-weight:600;" id="selfPatient">4.5</div>
+              <div style="font-size:10px; color:var(--ink-3);">病患均值</div>
+            </div>
+            <div style="text-align:center;">
+              <div style="font-size:18px; font-weight:600;" id="selfDirector">4.7</div>
+              <div style="font-size:10px; color:var(--ink-3);">主任打分</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">项目内排名</div>
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div style="font-size:36px; font-weight:700; color:#C9A227;">1</div>
+            <div style="flex:1;">
+              <b style="display:block;">项目内第 1 名</b>
+              <span style="font-size:12px; color:var(--ink-3);" id="selfRankDesc">医生组 · 共 3 人</span>
+            </div>
+            <span class="badge badge-brand">领先</span>
+          </div>
+        </div>
+
+        <div class="card" style="background:var(--brand-soft); border:none;">
+          <div style="font-size:12px; color:var(--brand-dark); line-height:1.7;">
+            <b>近 30 天趋势</b><br>
+            综合得分较上月 +0.2;病患评分 18 条;主任评分 3 条。
+          </div>
+        </div>
+      </div>
+
+      <!-- 权重说明 -->
+      <div class="card" style="background:var(--line-3); border:none; margin-top:12px;">
+        <div style="font-size:11px; color:var(--ink-3); line-height:1.7;">
+          综合 = 病患均值 × 30% + 主任均值 × 70%(Q-VOTE-1 待临床确认)。评分仅作参考,不直接联动绩效(§12.5)。
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 角色入口 -->
+    <div class="tabbar">
+      <a href="index.html" class="tab"><span <img src="assets/icons-png/icon-tab-home.png" alt="首" />切换</a>
+      <a id="navEntry" href="director-rate.html" class="tab"><span class="tab-icon">改</span>打分</a>
+      <a href="patient-rate.html" class="tab"><span <img src="assets/icons-png/icon-im.png" alt="信" />患者</a>
+      <a href="rate-popup.html" class="tab"><span <img src="assets/icons-png/icon-info.png" alt="详" />弹窗</a>
+    </div>
+  </div>
+
+  <script>
+    // 根据 ?role= 参数决定默认视图
+    const params = new URLSearchParams(location.search);
+    let role = params.get('role') || 'director';
+
+    function applyRole(){
+      const banner = document.getElementById('rankBanner');
+      const title = document.getElementById('bannerTitle');
+      const sub = document.getElementById('bannerSub');
+      const big = document.getElementById('bannerBig');
+      const selfOnly = document.getElementById('selfOnlyBanner');
+      const directorView = document.getElementById('directorView');
+      const selfView = document.getElementById('selfView');
+      const roleBtn = document.getElementById('roleBtn');
+      const backBtn = document.getElementById('backBtn');
+      const navEntry = document.getElementById('navEntry');
+
+      if (role === 'director'){
+        banner.className = 'rank-banner';
+        title.textContent = '90 天项目 · 项目维度';
+        sub.textContent = '2026-09 · 当前周期排名';
+        big.style.display = 'none';
+        selfOnly.style.display = 'none';
+        directorView.style.display = 'block';
+        selfView.style.display = 'none';
+        roleBtn.textContent = '主任视图';
+        backBtn.onclick = () => location.href = 'director-project-detail.html';
+        navEntry.href = 'director-rate.html';
+      } else {
+        // doctor 自视图
+        banner.className = 'rank-banner self';
+        title.textContent = '我的评分';
+        sub.textContent = '主管医生(您) · 医生甲';
+        big.style.display = 'block';
+        document.getElementById('bannerBigNum').textContent = '4.6';
+        document.getElementById('bannerBigUnit').textContent = ' 综合得分(项目内 #1)';
+        selfOnly.style.display = 'block';
+        directorView.style.display = 'none';
+        selfView.style.display = 'block';
+        document.getElementById('selfName').textContent = '医生甲(您)';
+        document.getElementById('selfRole').textContent = '主管医生 · 在管 8 例';
+        roleBtn.textContent = role === 'doctor' ? '医生本人' : '护士本人';
+        backBtn.onclick = () => location.href = role === 'doctor' ? 'doctor-home.html' : 'nurse-home.html';
+        navEntry.href = 'patient-rate.html';
+      }
+    }
+
+    function toggleRole(){
+      if (role === 'director') role = 'doctor';
+      else if (role === 'doctor') role = 'nurse';
+      else role = 'director';
+      applyRole();
+    }
+
+    function switchDim(dim, btn){
+      document.querySelectorAll('.dim-switch button').forEach(b => b.classList.remove('on'));
+      btn.classList.add('on');
+      document.getElementById('bannerTitle').textContent = dim === 'project' ? '90 天项目 · 项目维度' : '神经内科 · 全科维度';
+      document.getElementById('bannerSub').textContent = dim === 'project' ? '2026-09 · 当前周期排名' : '2026-09 · 全科按月';
+    }
+
+    applyRole();
+  </script>
+  <script src="assets/layout.js"></script>
+</body>
+</html>

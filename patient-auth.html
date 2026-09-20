@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>个人信息认证</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <div class="app">
+    <div class="navbar">
+      <button class="back" onclick="location.href='patient-scan.html'"><span style="font-size:22px; font-weight:700; line-height:1;">‹</span></button>
+      <div class="title">信息认证</div>
+      <div class="actions"></div>
+    </div>
+
+    <div class="page">
+      <div class="banner">
+        <b>首次进入,请补充基本信息</b>
+        已从病案档案自动带入的字段不可修改。需补充项以红色 * 标注。
+      </div>
+
+      <div class="group">
+        <div class="group-title">基本信息(已从档案带入)</div>
+        <div class="form-item">
+          <span class="form-label">姓名</span>
+          <div style="font-size:16px; color:var(--ink); padding:4px 0;">陈丙英</div>
+        </div>
+        <div class="form-item">
+          <span class="form-label">性别 / 年龄</span>
+          <div style="font-size:16px; color:var(--ink); padding:4px 0;">女 · 81 岁</div>
+        </div>
+        <div class="form-item">
+          <span class="form-label">身份证号</span>
+          <div style="font-size:14px; color:var(--ink); padding:4px 0;">320************22(脱敏)</div>
+        </div>
+        <div class="form-item">
+          <span class="form-label">绑定医生</span>
+          <div style="font-size:14px; color:var(--ink); padding:4px 0;">主管医生(您) · 医生甲 · 神经内科</div>
+        </div>
+        <div class="form-item">
+          <span class="form-label">绑定护士</span>
+          <div style="font-size:14px; color:var(--ink); padding:4px 0;">护士甲(主)· 护士乙(备)</div>
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="group-title">补充信息</div>
+        <div class="form-item">
+          <span class="form-label"><span class="req">*</span>本人联系电话</span>
+          <input class="form-input" placeholder="11 位手机号" value="138****8821">
+        </div>
+        <div class="form-item">
+          <span class="form-label">家属 / 照护者电话</span>
+          <input class="form-input" placeholder="紧急联系用 · 选填">
+        </div>
+        <div class="form-item">
+          <span class="form-label"><span class="req">*</span>身高(cm)</span>
+          <input class="form-input" type="number" placeholder="如 158" value="158">
+        </div>
+        <div class="form-item">
+          <span class="form-label"><span class="req">*</span>体重(kg)</span>
+          <input class="form-input" type="number" placeholder="如 55" value="55">
+        </div>
+        <div class="form-item">
+          <span class="form-label">家庭住址</span>
+          <input class="form-input" placeholder="选填 · 用于基层接续参考">
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="group-title">授权说明</div>
+        <div style="padding:14px 16px; font-size:13px; color:var(--ink-2); line-height:1.7;">
+          本软件由 H 市第一医院神经内科提供。<br>
+          您的资料用于出院后随访管理,<b>不向第三方营销,仅供医护工作所需人员查看</b>(C10)。<br>
+          <a href="patient-research.html" style="color:var(--brand);">是否选择参与研究项目?</a>
+        </div>
+      </div>
+
+      <a href="patient-home.html" class="btn btn-primary btn-block" style="margin-top:20px;">
+        完成认证,进入个人中心
+      </a>
+
+      <div style="margin-top:12px; font-size:11px; color:var(--ink-3); text-align:center;">
+        <a href="patient-emergency.html" style="color:var(--block);">
+          紧急情况?点这里立即拨打 120
+        </a>
+      </div>
+    </div>
+  </div>
+  <script src="assets/layout.js"></script>
+</body>
+</html>

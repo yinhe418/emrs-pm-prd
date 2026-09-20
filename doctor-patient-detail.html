@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>患者详情 · 陈丙英</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <div class="app">
+    <div class="navbar">
+      <button class="back" onclick="location.href='doctor-patients.html'"><span style="font-size:22px; font-weight:700; line-height:1;">‹</span></button>
+      <div class="title">患者详情</div>
+      <div class="actions">
+        <button onclick="location.href='doctor-issue-task.html'" style="font-size:13px;">+ 下发</button>
+      </div>
+    </div>
+
+    <div class="page">
+      <!-- 身份卡 -->
+      <div class="card" style="background:linear-gradient(135deg, var(--brand-light), var(--brand-2-light)); border:none;">
+        <div class="card-row">
+          <div>
+            <b style="font-size:18px;">陈丙英 · 女 · 81 岁</b>
+            <div style="font-size:12px; color:var(--ink-3); margin-top:4px;">住院号 1820519 · 出院 2025-12-15</div>
+          </div>
+          <span class="badge badge-pass">90 天</span>
+        </div>
+        <div style="margin-top:8px; display:flex; gap:6px; flex-wrap:wrap;">
+          <span class="badge" style="background:var(--purple-bg); color:var(--purple);">颈动脉研究</span>
+          <span class="badge badge-gray">缺血性卒中</span>
+          <span class="badge badge-gray">房颤</span>
+          <span class="badge badge-gray">高血压 3 级</span>
+        </div>
+      </div>
+
+      <!-- 关键操作入口 -->
+      <div class="section-title">关键操作</div>
+      <div class="group">
+        <a href="patient-report-90.html" class="cell" style="background:var(--pass-bg);">
+          <div class="l">
+            <div class="icon" style="background:white; color:var(--pass);">📄</div>
+            <div class="info">
+              <b style="color:var(--pass);">生成 90 天报告(S6 占位)</b>
+              <span>管理期满 D90 · 必须有交代 · 复诊/基层/续研究</span>
+            </div>
+          </div>
+          <div class="r"><span class="arrow">›</span></div>
+        </a>
+        <a href="doctor-assign-nurse.html" class="cell">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-avatar-nurse.png" alt="护" /></div>
+            <div class="info"><b>分配 / 调整主管护士</b><span>当前:护士甲(主)· 护士乙(备)</span></div>
+          </div>
+          <div class="r"><span class="arrow">›</span></div>
+        </a>
+        <a href="doctor-issue-task.html" class="cell">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-check.png" alt="✓" /></div>
+            <div class="info"><b>下发新任务</b><span>记录血压 / 血脂 / 上传报告</span></div>
+          </div>
+          <div class="r"><span class="arrow">›</span></div>
+        </a>
+        <a href="doctor-patient-detail.html" class="cell">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-document.png" alt="文" /></div>
+            <div class="info"><b>调整个人计划</b><span>目标 / 用药 / 复查安排</span></div>
+          </div>
+          <div class="r"><span class="arrow">›</span></div>
+        </a>
+      </div>
+
+      <!-- 病历摘要 -->
+      <div class="section-title">病历摘要</div>
+      <div class="card">
+        <div class="card-title">出院诊断</div>
+        <div style="font-size:13px; color:var(--ink-2); line-height:1.7;">
+          ① 脑梗塞(心源性) I63.4<br>
+          ② 高血压病 3 级(极高危)<br>
+          ③ 心房颤动<br>
+          ④ 高脂血症
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">出院时状态</div>
+        <div class="kv"><span class="k">出院 NIHSS</span><span class="v">4</span></div>
+        <div class="kv"><span class="k">出院 mRS</span><span class="v">2</span></div>
+        <div class="kv"><span class="k">吞咽</span><span class="v">已通过筛查</span></div>
+        <div class="kv"><span class="k">肢体</span><span class="v">右上肢 4 级,右下肢 4+ 级</span></div>
+      </div>
+
+      <!-- 个人目标(C5) -->
+      <div class="section-title">个人目标</div>
+      <div class="card">
+        <div class="kv"><span class="k">血压目标</span><span class="v" style="color:var(--brand);">&lt; 130/80 mmHg</span></div>
+        <div class="kv"><span class="k">LDL-C 目标</span><span class="v" style="color:var(--brand);">&lt; 1.8 mmol/L</span></div>
+        <div class="kv"><span class="k">INR 目标(抗凝)</span><span class="v">2.0 - 3.0</span></div>
+        <div style="margin-top:8px; font-size:11px; color:var(--ink-3);">
+          您为该患者设定,软件不自行调整(C5)
+        </div>
+      </div>
+
+      <!-- 当前用药(两栏 C6) -->
+      <div class="section-title">出院药物(分两栏)</div>
+      <div class="card">
+        <div class="card-title" style="display:flex; align-items:center; gap:6px;">药医嘱使用</div>
+        <div style="font-size:13px; color:var(--ink-2); line-height:1.7;">
+          ① 阿司匹林 100mg qd<br>
+          ② 阿托伐他汀 20mg qN<br>
+          ③ 缬沙坦 80mg qd<br>
+          ④ 达比加群 110mg bid
+        </div>
+        <div class="divider"></div>
+        <div class="card-title" style="color:var(--brand-2);">✓ 实际使用(患者反馈)</div>
+        <div style="font-size:13px; color:var(--ink-2); line-height:1.7;">
+          ① 阿司匹林:依从<br>
+          ② 阿托伐他汀:漏服 1 次(D11)<br>
+          ③ 缬沙坦:依从<br>
+          ④ 达比加群:依从,偶有胃部不适
+        </div>
+      </div>
+
+      <!-- 指标趋势(F7) -->
+      <div class="section-title">指标趋势</div>
+      <div class="card">
+        <div class="kv"><span class="k">血压</span><span class="v" style="color:var(--warn);">近 3 天偏高 (135/82, 138/85, 132/80)</span></div>
+        <div class="kv"><span class="k">LDL-C</span><span class="v" style="color:var(--block);">1.95(D30 复查) ↑</span></div>
+        <div class="kv"><span class="k">INR</span><span class="v">2.4(达标)</span></div>
+        <a href="doctor-patient-detail.html" style="font-size:12px; color:var(--brand); display:block; margin-top:8px;">查看趋势图 ›</a>
+      </div>
+
+      <!-- 任务流水 feed 流(F4) -->
+      <div class="section-title">任务流水(feed 流)</div>
+      <div class="card">
+        <div class="feed-item">
+          <div class="meta">2025-12-27 08:30 · 患者</div>
+          <div class="body">记录血压 135/82(早上)</div>
+        </div>
+        <div class="feed-item">
+          <div class="meta">2025-12-26 21:30 · 患者</div>
+          <div class="body">记录血压 132/80(晚上)</div>
+        </div>
+        <div class="feed-item">
+          <div class="meta">2025-12-26 16:00 · 护士甲</div>
+          <div class="body">完成 7 天电话回访,患者状态良好,血压偏高已告知,继续观察</div>
+        </div>
+        <div class="feed-item">
+          <div class="meta">2025-12-25 10:15 · 患者</div>
+          <div class="body">上传报告 LDL-C 1.95(2025-12-29 · H 市第一医院)</div>
+        </div>
+        <div class="feed-item">
+          <div class="meta">2025-12-24 09:00 · 患者</div>
+          <div class="body">服药反馈:阿托伐他汀漏服 1 次</div>
+        </div>
+      </div>
+
+      <!-- 责任分工(F2) -->
+      <div class="section-title">责任分工</div>
+      <div class="group">
+        <div class="cell">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-avatar-doctor.png" alt="医" /></div>
+            <div class="info"><b>主管医生 · 主管医生(您)</b></div>
+          </div>
+          <div class="r"></div>
+        </div>
+        <div class="cell">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-avatar-nurse.png" alt="护" /></div>
+            <div class="info"><b>主要联系护士 · 护士甲</b><span>139****6688 · 8:00-17:00</span></div>
+          </div>
+          <div class="r"><a href="doctor-assign-nurse.html" style="font-size:12px; color:var(--brand);">调整 ›</a></div>
+        </div>
+        <div class="cell">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-avatar-nurse.png" alt="护" /></div>
+            <div class="info"><b>备班护士 · 护士乙</b></div>
+          </div>
+          <div class="r"></div>
+        </div>
+      </div>
+
+      <div class="card" style="background:var(--info-bg); border:none;">
+        <div style="font-size:12px; color:var(--info);">
+          您可以看到患者的<b>所有记录</b>:病历、诊断、出院小结、药品清单、患者任务、护士任务、指派给自己的 task。
+        </div>
+      </div>
+    </div>
+
+    <div class="tabbar">
+      <a href="doctor-home.html" class="tab"><span <img src="assets/icons-png/icon-tab-home.png" alt="首" />主页</a>
+      <a href="doctor-tasks.html" class="tab"><span <img src="assets/icons-png/icon-tab-tasks.png" alt="任" />任务</a>
+      <a href="doctor-patients.html" class="tab active"><span <img src="assets/icons-png/icon-tab-people.png" alt="患" />患者</a>
+      <a href="role-switch.html" class="tab"><span <img src="assets/icons-png/icon-tab-switch.png" alt="切" />切换</a>
+    </div>
+  </div>
+  <script src="assets/layout.js"></script>
+</body>
+</html>

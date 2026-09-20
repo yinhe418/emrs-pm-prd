@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>角色切换</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <div class="app">
+    <div class="navbar">
+      <button class="back" onclick="location.href='index.html'">
+        <span style="font-size:22px; font-weight:700; line-height:1;">‹</span>
+      </button>
+      <div class="title">角色切换</div>
+      <div class="actions"></div>
+    </div>
+
+    <div class="page">
+      <div class="banner">
+        <b>演示快捷切换</b>
+        所有角色的主页都可直达。演示完成后请从本页切换回默认首页。
+      </div>
+
+      <div class="group">
+        <a href="patient-home.html" class="cell">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-avatar-patient.png" alt="陈" /></div>
+            <div class="info"><b>陈丙英 · 患者</b><span>出院 12 天</span></div>
+          </div>
+          <div class="r"><span class="arrow">›</span></div>
+        </a>
+        <a href="doctor-home.html" class="cell">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-avatar-doctor.png" alt="医" /></div>
+            <div class="info"><b>主管医生(您) · 医生甲</b><span>神经内科</span></div>
+          </div>
+          <div class="r"><span class="arrow">›</span></div>
+        </a>
+        <a href="nurse-home.html" class="cell">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-avatar-nurse.png" alt="护" /></div>
+            <div class="info"><b>护士甲 · 主要联系护士</b><span>随访岗</span></div>
+          </div>
+          <div class="r"><span class="arrow">›</span></div>
+        </a>
+        <a href="director-home.html" class="cell">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-avatar-director.png" alt="院" /></div>
+            <div class="info"><b>科室主任 · 主任</b><span>神经内科</span></div>
+          </div>
+          <div class="r"><span class="arrow">›</span></div>
+        </a>
+        <a href="admin-projects.html" class="cell">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-avatar-admin.png" alt="管" /></div>
+            <div class="info"><b>系统维护 · 维护员</b><span>由主任指定 · 完整管理权限</span></div>
+          </div>
+          <div class="r"><span class="arrow">›</span></div>
+        </a>
+        <a href="admin-projects.html?role=admin-doc" class="cell">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-avatar-doctor.png" alt="医" /></div>
+            <div class="info"><b>主管医生(您) · 医生甲(有管理权限)</b><span>由主任指定 · 可管理项目 / 任务库 / 药品库</span></div>
+          </div>
+          <div class="r"><span class="badge badge-info">兼职</span><span class="arrow">›</span></div>
+        </a>
+      </div>
+
+      <div class="card">
+        <div class="card-title">演示剧本(陈丙英·81岁)</div>
+        <div style="font-size:13px; color:var(--ink-2); line-height:1.7;">
+          <b>入院(2025-11-03)</b>:右侧偏瘫、口角歪斜、BP 178/112、房颤<br>
+          <b>出院(2025-12-15)</b>:NIHSS 4 / mRS 2<br>
+          <b>当前(Demo)</b>:出院 12 天,90 天管理期 D12<br>
+          <b>今日待办</b>:血压记录(未完成)· LDL-C 复查(已逾期)
+        </div>
+      </div>
+    </div>
+
+    <div class="tabbar">
+      <a href="index.html" class="tab"><span <img src="assets/icons-png/icon-tab-home.png" alt="首" />首页</a>
+      <a href="role-switch.html" class="tab active"><span <img src="assets/icons-png/icon-tab-switch.png" alt="切" />切换</a>
+    </div>
+  </div>
+  <script src="assets/layout.js"></script>
+</body>
+</html>

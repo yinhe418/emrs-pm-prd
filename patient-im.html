@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>联系护士</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <div class="app">
+    <div class="navbar">
+      <button class="back" onclick="location.href='patient-home.html'"><span style="font-size:22px; font-weight:700; line-height:1;">‹</span></button>
+      <div class="title">联系护士</div>
+      <div class="actions">
+        <button onclick="location.href='patient-emergency.html'" style="color:var(--block);">120</button>
+      </div>
+    </div>
+
+    <div class="page" style="padding:16px;">
+      <div class="group">
+        <a href="patient-im.html" class="cell">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-avatar-nurse.png" alt="护" /></div>
+            <div class="info"><b>护士甲(主要联系护士)</b><span>工作时段 8:00 - 17:00 · 在线</span></div>
+          </div>
+          <div class="r"><span class="badge badge-pass">接听</span></div>
+        </a>
+        <div class="cell">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-avatar-nurse.png" alt="护" /></div>
+            <div class="info"><b>护士乙(备班)</b><span>护士甲休息时接替</span></div>
+          </div>
+          <div class="r"><span class="badge badge-gray">离线</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- IM 区域 -->
+    <div style="padding:0 16px 16px;">
+      <div class="card" style="background:#EDEDED;">
+        <div style="text-align:center; font-size:11px; color:var(--ink-3); margin-bottom:8px;">与护士甲的对话</div>
+
+        <div style="display:flex; flex-direction:column;">
+          <div style="text-align:center; font-size:11px; color:var(--ink-3); margin:8px 0;">2025-12-27</div>
+
+          <div class="im-bubble other">
+            陈阿姨您好,我是护士甲,今天下午会跟您做个电话回访,大约 15:00 左右打给您,可以吗?
+            <div style="font-size:11px; color:var(--ink-3); margin-top:4px;">10:30 护士甲</div>
+          </div>
+
+          <div class="im-bubble me">
+            好的,我下午在家
+            <div style="font-size:11px; color:var(--ink-3); margin-top:4px; text-align:right;">10:32 我</div>
+          </div>
+
+          <div class="im-bubble other">
+            好的,对了看到您昨天的血压记录 135/82 偏高一点点,医生说先继续观察。如果连续 3 天都超过 140,医生会联系您调整用药。
+            <div style="font-size:11px; color:var(--ink-3); margin-top:4px;">10:33 护士甲</div>
+          </div>
+
+          <div class="im-bubble me">
+            昨晚他汀漏服了一次,要紧吗?
+            <div style="font-size:11px; color:var(--ink-3); margin-top:4px; text-align:right;">10:35 我</div>
+          </div>
+
+          <div class="im-bubble other">
+            漏服一次不要紧,今天记得吃就行。我把这个反馈转给医生了,有回复会告诉您。
+            <div style="font-size:11px; color:var(--ink-3); margin-top:4px;">10:36 护士甲</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 输入区 -->
+      <div style="display:flex; gap:8px; margin-top:12px; align-items:center;">
+        <input class="form-input" placeholder="输入留言 · 仅工作时段回复" style="flex:1; background:white; border-radius:8px; padding:10px 14px; border:1px solid var(--line);">
+        <button class="btn btn-primary btn-sm">发送</button>
+      </div>
+
+      <!-- 异常升级入口(S3 / S4) -->
+      <div class="card" style="margin-top:16px; background:var(--info-bg); border:none;">
+        <div style="font-size:12px; color:var(--info);">
+          <b>如有不适如何反馈?</b><br>
+          • 一般不适 / 药物疑问 → 直接在此留言,护士会跟进<br>
+          • <b style="color:var(--block);">疑似卒中(口角歪斜、肢体无力、言语不清)</b> → <a href="patient-emergency.html" style="color:var(--block);">立即 120</a>,不等线上答复(S4)<br>
+          • 严重出血 / 意识异常 → 同上
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:8px; background:#FFF3E0; border:none;">
+        <div style="font-size:12px; color:var(--warn);">
+          <b>非工作时段说明</b>(C2):夜间/周末留言,工作日首次回应;紧急情况立即 120。
+        </div>
+      </div>
+    </div>
+
+    <div class="tabbar">
+      <a href="patient-home.html" class="tab"><span <img src="assets/icons-png/icon-tab-home.png" alt="首" />首页</a>
+      <a href="patient-tasks.html" class="tab"><span <img src="assets/icons-png/icon-tab-tasks.png" alt="任" />任务</a>
+      <a href="patient-im.html" class="tab active"><span <img src="assets/icons-png/icon-im.png" alt="信" />联系</a>
+      <a href="patient-emergency.html" class="tab" style="color:var(--block);"><span <img src="assets/icons-png/icon-sos.png" alt="急" />紧急</a>
+    </div>
+  </div>
+  <script src="assets/layout.js"></script>
+</body>
+</html>

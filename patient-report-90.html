@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>90 天报告</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <div class="app elder">
+    <div class="navbar">
+      <button class="back" onclick="location.href='doctor-patient-detail.html'"><span style="font-size:22px; font-weight:700; line-height:1;">‹</span></button>
+      <div class="title">90 天报告</div>
+      <div class="actions"></div>
+    </div>
+
+    <div class="page">
+      <div class="banner" style="background:var(--pass-bg); color:var(--pass);">
+        <b style="color:var(--pass);">90 天管理完成 · 必须有交代(C7)</b>
+        不能只移出名单 — 需安排复诊 / 基层接续 / 续研究
+      </div>
+
+      <div class="section-title">患者基本信息</div>
+      <div class="card">
+        <div class="kv"><span class="k">姓名</span><span class="v">陈丙英</span></div>
+        <div class="kv"><span class="k">性别 / 年龄</span><span class="v">女 · 81 岁</span></div>
+        <div class="kv"><span class="k">住院号</span><span class="v">1820519</span></div>
+        <div class="kv"><span class="k">管理期</span><span class="v">2025-12-15 ~ 2026-03-14(90 天)</span></div>
+        <div class="kv"><span class="k">主管医生</span><span class="v">医生甲</span></div>
+        <div class="kv"><span class="k">主要联系护士</span><span class="v">护士甲</span></div>
+      </div>
+
+      <div class="section-title">主要诊断</div>
+      <div class="card">
+        <div style="font-size:13px; color:var(--ink-2); line-height:1.7;">
+          ① 脑梗塞(心源性) I63.4<br>
+          ② 心房颤动<br>
+          ③ 高血压病 3 级(极高危)<br>
+          ④ 高脂血症
+        </div>
+      </div>
+
+      <div class="section-title">个体目标完成情况</div>
+      <div class="card">
+        <div class="kv"><span class="k">血压目标</span><span class="v">&lt; 130/80</span></div>
+        <div class="kv"><span class="k">实际平均</span><span class="v" style="color:var(--pass);">128/78(达标)</span></div>
+        <div class="kv"><span class="k">LDL-C 目标</span><span class="v">&lt; 1.8 mmol/L</span></div>
+        <div class="kv"><span class="k">实际 D90</span><span class="v" style="color:var(--pass);">1.62(达标)</span></div>
+        <div style="margin-top:8px; font-size:11px; color:var(--ink-3);">
+          个人目标由主管医生设定,软件只展示对比,不调整治疗(C5)
+        </div>
+      </div>
+
+      <div class="section-title">实际用药(分两栏 C6)</div>
+      <div class="card">
+        <div class="card-title" style="display:flex; align-items:center; gap:6px;">药医嘱使用</div>
+        <div style="font-size:13px; color:var(--ink-2); line-height:1.7;">
+          阿司匹林 100mg qd + 阿托伐他汀 40mg qN(D45 调整) + 缬沙坦 80mg qd + 达比加群 110mg bid
+        </div>
+        <div class="divider"></div>
+        <div class="card-title" style="color:var(--brand-2);">✓ 实际使用</div>
+        <div style="font-size:13px; color:var(--ink-2); line-height:1.7;">
+          4 种药物全程依从,无自行停药;D11 漏服 1 次阿托伐他汀(已了解原因)。
+        </div>
+      </div>
+
+      <div class="section-title">随访经过</div>
+      <div class="card">
+        <div style="font-size:13px; color:var(--ink-2); line-height:1.8;">
+          • D7 电话回访(接通):血压偏高,继续观察<br>
+          • D30 复查 + 血脂全套:LDL-C 1.95,D45 调整他汀剂量<br>
+          • D45 复核:LDL-C 1.62 达标<br>
+          • D60 微信文字沟通(有效):无不适<br>
+          • D90 电话回访(接通):综合评估
+        </div>
+        <div style="margin-top:8px; font-size:11px; color:var(--ink-3);">
+          3 次主动随访均"电话接通 / 有效线上沟通"(C3)。
+        </div>
+      </div>
+
+      <div class="section-title">检查变化</div>
+      <div class="card">
+        <div style="font-size:13px; color:var(--ink-2); line-height:1.7;">
+          • LDL-C: 入院未查 → D30 1.95 → D45 1.62 → D90 1.58<br>
+          • 颈动脉超声(D60):左侧颈动脉斑块 2.3×1.5mm(稳定)<br>
+          • 心电图(D90):房颤,心室率 78bpm
+        </div>
+      </div>
+
+      <div class="section-title">事件</div>
+      <div class="card">
+        <div style="font-size:13px; color:var(--ink-2); line-height:1.7;">
+          • 无卒中再发<br>
+          • 无 sICH / 出血事件<br>
+          • 无住院 / 急诊<br>
+          • D11 阿托伐他汀漏服 1 次(已了解原因,非不依从)
+        </div>
+      </div>
+
+      <div class="section-title">mRS 评估(适用患者 §8)</div>
+      <div class="card">
+        <div class="kv"><span class="k">入院 mRS</span><span class="v">3</span></div>
+        <div class="kv"><span class="k">D90 mRS</span><span class="v" style="color:var(--pass);">1(明显改善)</span></div>
+        <div style="margin-top:8px; font-size:13px; color:var(--ink-2);">
+          含义:mRS 1 = 有症状但无明显残障,能完成所有日常活动。
+        </div>
+      </div>
+
+      <!-- C7 关键:下一步安排 -->
+      <div class="section-title" style="color:var(--brand);">下一步安排(必须有交代 · C7)</div>
+      <div class="card" style="background:linear-gradient(135deg, var(--brand-light), var(--brand-2-light)); border:none;">
+        <div style="font-size:13px; color:var(--ink-2); line-height:1.8;">
+          <b>① 复诊</b>:2026-06-14 神经内科门诊(D180 复诊)<br>
+          <b>② 基层接续</b>:所在社区卫生服务中心 · 家庭医生(社区医生)<br>
+          <b>③ 续研究</b>:如继续参加颈动脉研究,后续 D180 / D365 随访继续存在,不因项目阶段总结漏掉
+        </div>
+      </div>
+
+      <div class="card" style="background:var(--info-bg); border:none;">
+        <div style="font-size:12px; color:var(--info);">
+          <b>可读性</b>(F9):本报告<b>患者和家属看得懂</b>,且<b>门诊及基层接续时能够使用</b>。
+        </div>
+      </div>
+
+      <a href="doctor-patient-detail.html" class="btn btn-primary btn-block" style="margin-top:20px;">
+        下载报告(PDF 占位)
+      </a>
+      <a href="doctor-patient-detail.html" class="btn btn-outline btn-block" style="margin-top:8px;">
+        返回患者详情
+      </a>
+    </div>
+  </div>
+  <script src="assets/layout.js"></script>
+</body>
+</html>

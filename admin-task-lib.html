@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>任务库</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <div class="app">
+    <div class="navbar">
+      <button class="back" onclick="location.href='admin-projects.html'">
+        <span style="font-size:22px; font-weight:700; line-height:1;">‹</span>
+      </button>
+      <div class="title">任务库(task 库)</div>
+      <div class="actions">
+        <button onclick="location.href='admin-task-edit.html'">+ 新建</button>
+      </div>
+    </div>
+
+    <div class="page">
+      <div class="banner" id="mode-banner">
+        <b>可插拔组件</b>
+        每个任务组件定义不同的录入字段。在系统开发时定制,后续可扩展。
+      </div>
+
+      <!-- 项目编辑模式下显示 -->
+      <div id="project-mode-bar" style="display:none;">
+        <div class="banner banner-info">
+          <b>项目编辑模式</b>
+          为「<span id="project-name">90 天卒中连续健康管理</span>」选择任务组件。
+          勾选后点击下方"完成选择"。
+        </div>
+
+        <!-- Tab 切换:已选 / 可选 -->
+        <div style="display:flex; gap:8px; margin-bottom:12px;">
+          <button id="tab-selected" onclick="switchTab('selected')" class="btn btn-sm" style="background:var(--brand); color:white; flex:1;">
+            已选(<span id="selected-count">5</span>)
+          </button>
+          <button id="tab-available" onclick="switchTab('available')" class="btn btn-sm" style="background:var(--bg); color:var(--ink-2); flex:1;">
+            可选(<span id="available-count">3</span>)
+          </button>
+        </div>
+      </div>
+
+      <!-- 普通模式(无 URL 参数) -->
+      <div id="normal-title" class="section-title">现有任务组件(8)</div>
+
+      <!-- 任务列表容器 -->
+      <div id="task-list" class="group">
+        <a href="admin-task-edit.html" class="cell" data-selected="1">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-bp.png" alt="血" /></div>
+            <div class="info"><b>记录血压</b><span>数值字段:收缩压 / 舒张压 / 心率</span></div>
+          </div>
+          <div class="r"><span class="badge badge-pass" style="margin-right:4px;">已选</span><span class="arrow">›</span></div>
+        </a>
+        <a href="admin-task-edit.html" class="cell" data-selected="1">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-bp.png" alt="血" /></div>
+            <div class="info"><b>记录血糖</b><span>数值字段:空腹 / 餐后</span></div>
+          </div>
+          <div class="r"><span class="badge badge-pass" style="margin-right:4px;">已选</span><span class="arrow">›</span></div>
+        </a>
+        <a href="admin-task-edit.html" class="cell" data-selected="0">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-tab-drugs.png" alt="药" /></div>
+            <div class="info"><b>服药反馈</b><span>枚举字段:依从 / 漏服 / 停药 + 备注</span></div>
+          </div>
+          <div class="r"><span class="badge badge-gray" style="margin-right:4px;">可选</span><span class="arrow">›</span></div>
+        </a>
+        <a href="admin-task-edit.html" class="cell" data-selected="1">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-call.png" alt="电" /></div>
+            <div class="info"><b>电话回访</b><span>枚举字段:接通方式 + 异常分级</span></div>
+          </div>
+          <div class="r"><span class="badge badge-pass" style="margin-right:4px;">已选</span><span class="arrow">›</span></div>
+        </a>
+        <a href="admin-task-edit.html" class="cell" data-selected="0">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-camera.png" alt="摄" /></div>
+            <div class="info"><b>上传检查报告</b><span>文件字段:照片 + 数值 + 机构 + 日期</span></div>
+          </div>
+          <div class="r"><span class="badge badge-gray" style="margin-right:4px;">可选</span><span class="arrow">›</span></div>
+        </a>
+        <a href="admin-task-edit.html" class="cell" data-selected="0">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-transfer.png" alt="动" /></div>
+            <div class="info"><b>康复训练打卡</b><span>枚举:步行 / 被动运动 / 语言训练</span></div>
+          </div>
+          <div class="r"><span class="badge badge-gray" style="margin-right:4px;">可选</span><span class="arrow">›</span></div>
+        </a>
+        <a href="admin-task-edit.html" class="cell" data-selected="1">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-document.png" alt="文" /></div>
+            <div class="info"><b>口述病例</b><span>语音录入 + 文本 + 医生整理</span></div>
+          </div>
+          <div class="r"><span class="badge badge-pass" style="margin-right:4px;">已选</span><span class="arrow">›</span></div>
+        </a>
+        <a href="admin-task-edit.html" class="cell" data-selected="1">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-document.png" alt="文" /></div>
+            <div class="info"><b>建立药物清单</b><span>多药品 + 剂量 + 频次</span></div>
+          </div>
+          <div class="r"><span class="badge badge-pass" style="margin-right:4px;">已选</span><span class="arrow">›</span></div>
+        </a>
+      </div>
+
+      <!-- 项目编辑模式底部按钮 -->
+      <div id="project-mode-footer" style="display:none;">
+        <a href="admin-project-edit.html" class="btn btn-primary btn-block" style="margin-top:12px;">
+          完成选择 · 返回项目编辑
+        </a>
+        <a href="admin-project-edit.html" class="btn btn-outline btn-block" style="margin-top:8px;">
+          取消
+        </a>
+      </div>
+
+      <div class="notice">
+        <b>扩展说明</b>:新组件可在迭代中增加,定义字段后自动出现在医生"下发任务"列表。
+      </div>
+    </div>
+
+    <div class="tabbar">
+      <a href="admin-projects.html" class="tab"><span <img src="assets/icons-png/icon-tab-projects.png" alt="项" />项目</a>
+      <a href="admin-task-lib.html" class="tab active"><span <img src="assets/icons-png/icon-tab-tasklib.png" alt="库" />任务库</a>
+      <a href="admin-drugs.html" class="tab"><span <img src="assets/icons-png/icon-tab-drugs.png" alt="药" />药品</a>
+      <a href="role-switch.html" class="tab"><span <img src="assets/icons-png/icon-tab-switch.png" alt="切" />切换</a>
+    </div>
+  </div>
+  <script>
+    // 检测 URL 参数:从项目编辑跳转?
+    (function() {
+      var params = new URLSearchParams(window.location.search);
+      var from = params.get('from');
+      var project = params.get('project');
+      if (from === 'project-edit') {
+        // 进入项目编辑模式
+        document.getElementById('mode-banner').style.display = 'none';
+        document.getElementById('project-mode-bar').style.display = 'block';
+        document.getElementById('normal-title').style.display = 'none';
+        document.getElementById('project-mode-footer').style.display = 'block';
+        document.querySelector('.tabbar').style.display = 'none';
+        if (project === '90day') {
+          document.getElementById('project-name').innerHTML = '90 天卒中连续健康管理';
+        }
+        // 默认显示已选 tab
+        switchTab('selected');
+      }
+    })();
+
+    var currentTab = 'all';
+
+    function switchTab(tab) {
+      currentTab = tab;
+      var btnSel = document.getElementById('tab-selected');
+      var btnAva = document.getElementById('tab-available');
+      if (tab === 'selected') {
+        btnSel.style.background = 'var(--brand)';
+        btnSel.style.color = 'white';
+        btnAva.style.background = 'var(--bg)';
+        btnAva.style.color = 'var(--ink-2)';
+      } else {
+        btnAva.style.background = 'var(--brand)';
+        btnAva.style.color = 'white';
+        btnSel.style.background = 'var(--bg)';
+        btnSel.style.color = 'var(--ink-2)';
+      }
+      // 过滤显示
+      var cells = document.querySelectorAll('#task-list .cell');
+      var selCount = 0, avaCount = 0;
+      cells.forEach(function(c) {
+        var sel = c.getAttribute('data-selected') === '1';
+        if (sel) selCount++; else avaCount++;
+        if (tab === 'selected') {
+          c.style.display = sel ? 'flex' : 'none';
+        } else if (tab === 'available') {
+          c.style.display = sel ? 'none' : 'flex';
+        } else {
+          c.style.display = 'flex';
+        }
+      });
+      document.getElementById('selected-count').innerHTML = selCount;
+      document.getElementById('available-count').innerHTML = avaCount;
+    }
+  </script>
+  <script src="assets/layout.js"></script>
+</body>
+</html>

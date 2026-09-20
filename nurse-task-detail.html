@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>任务详情 · 7 天回访</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <div class="app">
+    <div class="navbar">
+      <button class="back" onclick="location.href='nurse-tasks.html'">
+        <span style="font-size:22px; font-weight:700; line-height:1;">‹</span>
+      </button>
+      <div class="title">7 天电话回访</div>
+      <div class="actions">
+        <button onclick="location.href='nurse-transfer.html'">转移</button>
+      </div>
+    </div>
+
+    <div class="page">
+      <!-- 任务类型 -->
+      <div class="banner">
+        <b>电话回访任务 · 7 天随访</b>
+        边沟通边记录,可在过程中启动语音录入。<br>
+        话术仅供参考,可根据实际情况调整。
+      </div>
+
+      <!-- 患者快读 -->
+      <div class="card">
+        <div class="card-row">
+          <div>
+            <b>陈丙英 · 女 · 81 岁</b>
+            <div style="font-size:12px; color:var(--ink-3);">出院 12 天 · D12 / 90 · 90 天管理期</div>
+          </div>
+          <span class="badge badge-pass">90 天</span>
+        </div>
+        <div class="divider"></div>
+        <div class="kv"><span class="k">联系电话</span><span class="v">139****6688</span></div>
+        <div class="kv"><span class="k">家属电话</span><span class="v">138****8821</span></div>
+        <div class="kv"><span class="k">预约时间</span><span class="v">2025-12-27 15:00 - 17:00</span></div>
+      </div>
+
+      <!-- 已调取的既往信息 -->
+      <div class="section-title">已从档案调取(无需重复填)</div>
+      <div class="card">
+        <div class="card-title">诊断 / 出院状态</div>
+        <div class="kv"><span class="k">诊断</span><span class="v">脑梗塞(心源性)+ 房颤 + 高血压</span></div>
+        <div class="kv"><span class="k">出院 NIHSS</span><span class="v">4</span></div>
+        <div class="kv"><span class="k">出院 mRS</span><span class="v">2</span></div>
+      </div>
+      <div class="card">
+        <div class="card-title">当前用药(医嘱)</div>
+
+        <!-- 阿司匹林 -->
+        <div style="display:flex; gap:12px; padding:10px 0; border-bottom:1px solid var(--line-2);">
+          <div style="width:48px; height:48px; border-radius:8px; background:#FFEBEE; display:grid; place-items:center; color:#C62828; flex-shrink:0;">
+            片
+          </div>
+          <div style="flex:1; min-width:0;">
+            <div style="font-size:14px; font-weight:600;">阿司匹林肠溶片</div>
+            <div style="font-size:12px; color:var(--ink-3); margin-top:2px;">抗血小板 · 心脑血管一级预防</div>
+            <div style="margin-top:6px; font-size:13px; color:var(--ink-2);">
+              医生给:<b style="color:var(--ink);">100mg qd</b>(每日 1 次)
+            </div>
+          </div>
+        </div>
+        <div style="background:#E3F2FD; padding:8px 12px; border-radius:6px; margin:6px 0 10px; font-size:12px; color:var(--info);">
+          <b>医嘱剂量:</b>阿司匹林 <b style="font-size:14px;">100mg</b> 每日 1 次(qd)· 餐后服用
+        </div>
+
+        <!-- 阿托伐他汀 -->
+        <div style="display:flex; gap:12px; padding:10px 0; border-bottom:1px solid var(--line-2);">
+          <div style="width:48px; height:48px; border-radius:8px; background:#E8F5E9; display:grid; place-items:center; color:#2E7D32; flex-shrink:0;">
+            片
+          </div>
+          <div style="flex:1; min-width:0;">
+            <div style="font-size:14px; font-weight:600;">阿托伐他汀钙片</div>
+            <div style="font-size:12px; color:var(--ink-3); margin-top:2px;">他汀 · 降脂 + 稳定斑块</div>
+            <div style="margin-top:6px; font-size:13px; color:var(--ink-2);">
+              医生给:<b style="color:var(--ink);">20mg qN</b>(每晚 1 次)
+            </div>
+          </div>
+        </div>
+        <div style="background:#E3F2FD; padding:8px 12px; border-radius:6px; margin:6px 0 10px; font-size:12px; color:var(--info);">
+          <b>医嘱剂量:</b>阿托伐他汀 <b style="font-size:14px;">20mg</b> 每晚 1 次(qN)· LDL-C 目标 &lt; 1.8
+        </div>
+
+        <!-- 缬沙坦 -->
+        <div style="display:flex; gap:12px; padding:10px 0; border-bottom:1px solid var(--line-2);">
+          <div style="width:48px; height:48px; border-radius:8px; background:#FFF3E0; display:grid; place-items:center; color:#E66B2E; flex-shrink:0;">
+            胶
+          </div>
+          <div style="flex:1; min-width:0;">
+            <div style="font-size:14px; font-weight:600;">缬沙坦胶囊</div>
+            <div style="font-size:12px; color:var(--ink-3); margin-top:2px;">ARB · 降压 + 靶器官保护</div>
+            <div style="margin-top:6px; font-size:13px; color:var(--ink-2);">
+              医生给:<b style="color:var(--ink);">80mg qd</b>(每日 1 次)
+            </div>
+          </div>
+        </div>
+        <div style="background:#E3F2FD; padding:8px 12px; border-radius:6px; margin:6px 0 10px; font-size:12px; color:var(--info);">
+          <b>医嘱剂量:</b>缬沙坦 <b style="font-size:14px;">80mg</b> 每日 1 次(qd)· BP 目标 &lt; 140/90
+        </div>
+
+        <!-- 达比加群 -->
+        <div style="display:flex; gap:12px; padding:10px 0;">
+          <div style="width:48px; height:48px; border-radius:8px; background:#F3E5F5; display:grid; place-items:center; color:#6A1B9A; flex-shrink:0;">
+            胶
+          </div>
+          <div style="flex:1; min-width:0;">
+            <div style="font-size:14px; font-weight:600;">达比加群酯胶囊</div>
+            <div style="font-size:12px; color:var(--ink-3); margin-top:2px;">NOAC · 房颤抗凝</div>
+            <div style="margin-top:6px; font-size:13px; color:var(--ink-2);">
+              医生给:<b style="color:var(--ink);">110mg bid</b>(每日 2 次)
+            </div>
+          </div>
+        </div>
+        <div style="background:#E3F2FD; padding:8px 12px; border-radius:6px; margin:6px 0 0; font-size:12px; color:var(--info);">
+          <b>医嘱剂量:</b>达比加群 <b style="font-size:14px;">110mg</b> 每日 2 次(bid)· 注意出血倾向
+        </div>
+      </div>
+
+      <!-- 话术参考 -->
+      <div class="section-title">话术参考</div>
+      <div class="notice">
+        <b>① 寒暄</b>:陈阿姨您好,我是 H 市第一医院的护士甲,您出院 12 天了,今天做个电话回访,大概 5-10 分钟,好吗?<br>
+        <b>② 血压</b>:最近血压怎么样?在家测过吗?今天早上测了吗?<br>
+        <b>③ 用药</b>:阿司匹林、阿托伐他汀、缬沙坦、达比加群 4 种药,有按时吃吗?有没有漏服或不舒服?<br>
+        <b>④ 症状</b>:有没有头痛、肢体麻木、胸闷、出血倾向?<br>
+        <b>⑤ 复查</b>:LDL-C 复查报告 12-29 已经上传了,看到了。<br>
+        <b>⑥ 康复</b>:每天步行 30 分钟做了吗?<br>
+        <b>⑦ 下一步</b>:90 天后我们会安排 mRS 评估,届时门诊来一趟。
+      </div>
+
+      <!-- 语音录入区 -->
+      <div class="section-title">语音录入</div>
+      <div class="card" style="text-align:center; background:#FAFAFA;">
+        <button class="record-btn" style="margin:0 auto;">
+          录
+        </button>
+        <div style="font-size:13px; color:var(--ink-2); margin-top:12px;">点击开始录音</div>
+        <div style="font-size:11px; color:var(--ink-3); margin-top:4px;">边沟通边录,实时转写(占位)</div>
+      </div>
+
+      <!-- 录入表单(快捷选择 + 补充) -->
+      <div class="section-title">本次记录(快捷选择 + 补充)</div>
+      <div class="group">
+        <div class="form-item">
+          <span class="form-label">随访方式</span>
+          <select class="form-select">
+            <option>电话接通</option>
+            <option>面访</option>
+            <option>有效线上沟通</option>
+            <option>仅留言(不计入完成 - C3)</option>
+          </select>
+        </div>
+        <div class="form-item">
+          <span class="form-label">血压情况</span>
+          <select class="form-select">
+            <option>稳定(达标)</option>
+            <option>偏高(>140/90,继续观察)</option>
+            <option>明显异常(转医生)</option>
+            <option>未测量</option>
+          </select>
+        </div>
+        <div class="form-item">
+          <span class="form-label">用药情况</span>
+          <select class="form-select">
+            <option>依从</option>
+            <option>部分依从(漏服)</option>
+            <option>自行停药(已了解原因)</option>
+            <option>不良反应(已记录转医生)</option>
+          </select>
+        </div>
+        <div class="form-item">
+          <span class="form-label">不适症状</span>
+          <select class="form-select">
+            <option>无</option>
+            <option>轻微(继续观察)</option>
+            <option>明显(转医生)</option>
+            <option>疑似急症(立即 120)</option>
+          </select>
+        </div>
+        <div class="form-item">
+          <span class="form-label">本次记录详情</span>
+          <textarea class="form-textarea" placeholder="如:BP 135/82 偏高但未超阈值,已告知患者继续观察..."></textarea>
+        </div>
+      </div>
+
+      <!-- 异常发现(分三级 §6.1) -->
+      <div class="section-title">异常分级</div>
+      <div class="group">
+        <div class="form-item">
+          <label style="display:flex; align-items:center; gap:10px; padding:6px 0;">
+            <input type="radio" name="level" checked> <span>无异常(已完成记录)</span>
+          </label>
+          <label style="display:flex; align-items:center; gap:10px; padding:6px 0;">
+            <input type="radio" name="level"> <span style="color:var(--warn);">一般管理(后续跟进)</span>
+          </label>
+          <label style="display:flex; align-items:center; gap:10px; padding:6px 0;">
+            <input type="radio" name="level"> <span style="color:var(--brand);">需医生判断(转交主管医生)</span>
+          </label>
+          <label style="display:flex; align-items:center; gap:10px; padding:6px 0;">
+            <input type="radio" name="level"> <span style="color:var(--block);">急症(立即 120,记录处理经过)</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- 未解决事项交接(§5 F5) -->
+      <div class="section-title">未解决事项(交接)</div>
+      <div class="group">
+        <div class="form-item">
+          <span class="form-label">负责人</span>
+          <select class="form-select">
+            <option>主管医生(您)</option>
+            <option>护士丙</option>
+            <option>护士乙(备班)</option>
+          </select>
+        </div>
+        <div class="form-item">
+          <span class="form-label">下次处理安排</span>
+          <input class="form-input" type="date">
+        </div>
+      </div>
+
+      <div class="notice">
+        <b>交接原则</b>:跨班 / 休假时,接班人员能接着处理,不能让患者从头讲述(F5)。
+      </div>
+
+      <a href="nurse-tasks.html" class="btn btn-primary btn-block" style="margin-top:20px;">
+        标记完成
+      </a>
+      <a href="nurse-transfer.html" class="btn btn-outline btn-block" style="margin-top:8px;">
+        转移给主管医生
+      </a>
+    </div>
+  </div>
+  <script src="assets/layout.js"></script>
+</body>
+</html>

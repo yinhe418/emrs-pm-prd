@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>电话回访安排</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <div class="app">
+    <div class="navbar">
+      <button class="back" onclick="location.href='patient-tasks.html'"><span style="font-size:22px; font-weight:700; line-height:1;">‹</span></button>
+      <div class="title">7 天随访</div>
+      <div class="actions"></div>
+    </div>
+
+    <div class="page">
+      <div class="banner">
+        <b>7 天随访(出院 7±2 天)</b>
+        由您的责任护士甲负责。
+      </div>
+
+      <div class="card">
+        <div class="card-title">本次随访</div>
+        <div class="kv"><span class="k">随访方式</span><span class="v">电话(默认)</span></div>
+        <div class="kv"><span class="k">预计时间</span><span class="v">2025-12-27 15:00 - 17:00</span></div>
+        <div class="kv"><span class="k">随访护士</span><span class="v">护士甲 · 工作时段 8:00-17:00</span></div>
+        <div class="kv"><span class="k">联系电话</span><span class="v">139****6688</span></div>
+      </div>
+
+      <div class="section-title">护士会问您(参考话术)</div>
+      <div class="card">
+        <div style="font-size:13px; color:var(--ink-2); line-height:1.8;">
+          ✓ 今天血压怎么样?<br>
+          ✓ 阿托伐他汀有没有按时吃?<br>
+          ✓ 有没有不舒服(头痛、肢体麻木、胸闷)?<br>
+          ✓ 康复训练做了吗?<br>
+          ✓ 上次复查报告上传了吗?
+        </div>
+      </div>
+
+      <div class="section-title">如有不适如何反馈</div>
+      <div class="card">
+        <div style="font-size:13px; color:var(--ink-2); line-height:1.7;">
+          • 一般不适 → 随访时可告知护士,记录后会转给医生<br>
+          • <b style="color:var(--block);">疑似卒中症状</b>(口角歪斜、单侧无力、言语不清)→ <a href="patient-emergency.html" style="color:var(--block);">立即拨打 120</a>,不等线上答复(S4)<br>
+          • 漏服 / 自行停药 → 护士会了解原因,不会直接判定不依从(C6)
+        </div>
+      </div>
+
+      <div class="card" style="background:var(--info-bg); border:none;">
+        <div style="font-size:12px; color:var(--info);">
+          <b>仅"已读"不算完成</b>(C3)。护士会按"电话接通 / 面访 / 有效线上沟通"记录完成。
+        </div>
+      </div>
+
+      <a href="patient-tasks.html" class="btn btn-primary btn-block" style="margin-top:20px;">
+        我知道了
+      </a>
+    </div>
+  </div>
+  <script src="assets/layout.js"></script>
+</body>
+</html>

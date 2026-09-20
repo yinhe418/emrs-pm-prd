@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>项目评定</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <div class="app">
+    <div class="navbar">
+      <button class="back" onclick="location.href='director-project-detail.html'">‹</button>
+      <div class="title">项目评定</div>
+      <div class="actions"></div>
+    </div>
+
+    <div class="page">
+      <div class="banner">
+        <b>主任评定 · 90 天卒中连续健康管理</b>
+        基于临床需求书 §9 末尾、试点方案建议填写
+      </div>
+
+      <!-- 服务安全 -->
+      <div class="section-title">服务安全</div>
+      <div class="group">
+        <div class="form-item">
+          <label style="display:flex; align-items:center; gap:10px;">
+            <input type="checkbox" checked>
+            <span>本季度无重大服务安全问题</span>
+          </label>
+        </div>
+        <div class="form-item">
+          <label style="display:flex; align-items:center; gap:10px;">
+            <input type="checkbox" checked>
+            <span>所有急症均 100% 升级处理(逐例复盘)</span>
+          </label>
+        </div>
+        <div class="form-item">
+          <label style="display:flex; align-items:center; gap:10px;">
+            <input type="checkbox" checked>
+            <span>90 天结案均有交代(复诊 / 基层接续)</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- 隐私保护 -->
+      <div class="section-title">隐私保护(C10)</div>
+      <div class="group">
+        <div class="form-item">
+          <label style="display:flex; align-items:center; gap:10px;">
+            <input type="checkbox" checked>
+            <span>资助方不直接接触患者营销名单</span>
+          </label>
+        </div>
+        <div class="form-item">
+          <label style="display:flex; align-items:center; gap:10px;">
+            <input type="checkbox" checked>
+            <span>对外报告已脱敏</span>
+          </label>
+        </div>
+        <div class="form-item">
+          <label style="display:flex; align-items:center; gap:10px;">
+            <input type="checkbox">
+            <span>研究数据按伦理要求保护</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- 有效性 -->
+      <div class="section-title">有效性</div>
+      <div class="group">
+        <div class="form-item">
+          <span class="form-label">建档率评估</span>
+          <select class="form-select">
+            <option>达标(≥95%)</option>
+            <option>接近</option>
+            <option>未达标</option>
+          </select>
+        </div>
+        <div class="form-item">
+          <span class="form-label">有效随访率评估</span>
+          <select class="form-select">
+            <option>达标(≥90%)</option>
+            <option>接近</option>
+            <option>未达标</option>
+          </select>
+        </div>
+        <div class="form-item">
+          <span class="form-label">90 天 mRS 完成率</span>
+          <select class="form-select">
+            <option>达标(≥90%)</option>
+            <option>接近</option>
+            <option>未达标</option>
+          </select>
+        </div>
+        <div class="form-item">
+          <span class="form-label">患者 / 家属满意度</span>
+          <select class="form-select">
+            <option>满意(85%+)</option>
+            <option>一般</option>
+            <option>不满意</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 人员投入 -->
+      <div class="section-title">人员投入</div>
+      <div class="group">
+        <div class="form-item">
+          <span class="form-label">医生工作量是否合理</span>
+          <select class="form-select">
+            <option>合理</option>
+            <option>偏高</option>
+            <option>过低</option>
+          </select>
+        </div>
+        <div class="form-item">
+          <span class="form-label">护士工作量是否合理</span>
+          <select class="form-select">
+            <option>合理</option>
+            <option selected>偏高(护士甲等)</option>
+            <option>过低</option>
+          </select>
+        </div>
+        <div class="form-item">
+          <span class="form-label">是否需要增加人手</span>
+          <select class="form-select">
+            <option>是 · 建议 +2 名护士</option>
+            <option>否</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 项目总结(口述 + 填入 + 手动修改) -->
+
+      <!-- 项目成员打分入口(醒目卡片,跳转到 director-rate.html) -->
+      <div class="card" style="background:linear-gradient(135deg,var(--role-director),#6B4BA0); color:#fff; border:none; padding:16px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+          <div style="min-width:0;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+              <span style="font-size:18px; font-weight:700; line-height:1;">切</span>
+              <b style="font-size:16px; font-weight:var(--fw-sb);">为项目成员打分</b>
+            </div>
+            <div style="font-size:12px; opacity:0.92;">医生 + 护士 · 综合得分 = 病患均值×30% + 主任均值×70%</div>
+          </div>
+          <a href="director-rate.html" class="btn" style="background:#fff; color:var(--role-director); font-weight:var(--fw-sb); padding:8px 14px; flex-shrink:0;">去打分 ›</a>
+        </div>
+      </div>
+
+      <div class="section-title">项目总结</div>
+      <div class="card">
+        <!-- 录音控件 -->
+        <div style="display:flex; align-items:center; gap:12px; padding:8px 12px; background:var(--bg); border-radius:8px; margin-bottom:10px;">
+          <button id="record-btn" onclick="toggleRecord()"
+                  class="record-btn role-director">
+            录
+          </button>
+          <div style="flex:1; min-width:0;">
+            <div id="record-status" style="font-size:13px; font-weight:500; color:var(--ink);">点击开始口述总结</div>
+            <div style="font-size:11px; color:var(--ink-3); margin-top:2px;">录音 → 自动填入下方文本框 → 可手动修改</div>
+          </div>
+          <button onclick="clearSummary()" style="background:none; border:none; color:var(--ink-3); font-size:12px; cursor:pointer; padding:4px 8px;">清空</button>
+        </div>
+
+        <!-- 文本框(可手动修改) -->
+        <div style="font-size:12px; color:var(--ink-3); margin-bottom:4px; padding:0 4px;">
+          总结内容(可手动修改)
+        </div>
+        <textarea id="summary-text" class="form-textarea"
+                  style="border:1px solid var(--line); border-radius:8px; padding:10px 12px; background:white; min-height:120px; font-size:13px; line-height:1.6;"
+                  placeholder="可手动输入,或点击上方麦克风口述自动填入..."></textarea>
+
+        <!-- 字数提示 -->
+        <div style="display:flex; justify-content:space-between; margin-top:6px; font-size:11px; color:var(--ink-3); padding:0 4px;">
+          <span id="summary-tip">建议 100-500 字</span>
+          <span><span id="summary-count">0</span> 字</span>
+        </div>
+
+        <!-- 快捷模板 -->
+        <div style="margin-top:10px; padding-top:10px; border-top:1px solid var(--line-2);">
+          <div style="font-size:11px; color:var(--ink-3); margin-bottom:6px;">快捷模板(点选追加到文本框)</div>
+          <div style="display:flex; flex-wrap:wrap; gap:6px;">
+            <button onclick="insertTemplate('overall')" class="btn btn-sm" style="background:var(--bg); color:var(--ink-2); border:1px solid var(--line);">整体概述</button>
+            <button onclick="insertTemplate('achievement')" class="btn btn-sm" style="background:var(--bg); color:var(--ink-2); border:1px solid var(--line);">亮点成果</button>
+            <button onclick="insertTemplate('issue')" class="btn btn-sm" style="background:var(--bg); color:var(--ink-2); border:1px solid var(--line);">存在问题</button>
+            <button onclick="insertTemplate('next')" class="btn btn-sm" style="background:var(--bg); color:var(--ink-2); border:1px solid var(--line);">下阶段</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 整改意见 -->
+      <div class="section-title">整改意见</div>
+      <div class="card">
+        <div class="form-item">
+          <span class="form-label">下一阶段重点</span>
+          <textarea class="form-textarea" placeholder="如:加快入组速度,优化护士工作量分配..."></textarea>
+        </div>
+      </div>
+
+      <div class="card" style="background:var(--warn-bg); border:none;">
+        <div style="font-size:12px; color:var(--warn);">
+          <b>触发暂停条件</b>(§8):出现重大服务安全 / 隐私 / 收费问题
+          → 暂停新增及相关收费,整改同时保障在管患者必要的照护与交接。
+        </div>
+      </div>
+
+      <a href="director-project-detail.html" class="btn btn-primary btn-block" style="margin-top:20px;">
+        提交评定
+      </a>
+    </div>
+  </div>
+  <script>
+    var recording = false;
+    var recordTimer = null;
+    var recordSeconds = 0;
+
+    function toggleRecord() {
+      var btn = document.getElementById('record-btn');
+      var status = document.getElementById('record-status');
+      if (!recording) {
+        // 开始录音(模拟)
+        recording = true;
+        recordSeconds = 0;
+        btn.style.background = 'var(--block)';
+        btn.innerHTML = '<span style="font-size:14px; font-weight:400; line-height:1;">·</span>';
+        status.innerHTML = '<span style="color:var(--block);">● 录音中...</span> <span id="rec-time">0:00</span>';
+        recordTimer = setInterval(function() {
+          recordSeconds++;
+          var m = Math.floor(recordSeconds / 60);
+          var s = recordSeconds % 60;
+          var t = document.getElementById('rec-time');
+          if (t) t.innerHTML = m + ':' + (s < 10 ? '0' : '') + s;
+        }, 1000);
+      } else {
+        // 停止录音,模拟填充
+        recording = false;
+        clearInterval(recordTimer);
+        btn.style.background = 'var(--role-director)';
+        btn.innerHTML = '<span style="font-size:14px; font-weight:400; line-height:1;">·</span>';
+        status.innerHTML = '<span style="color:var(--pass);">✓ 录音完成</span> · 已填入文本框,可手动修改';
+
+        // 模拟 ASR 转写结果
+        var mock = '本季度 90 天项目整体推进顺利,入组 18 例,完成率 9%。'
+                 + '建档率 97% 达标,有效随访率 93% 超目标。'
+                 + '护士甲工作量偏高,建议下季度增加 1-2 名随访护士。'
+                 + '患者满意度 87%,主要不满集中在复查预约等待时间。'
+                 + '下阶段重点:加快入组、调整人员配置、优化复查流程。';
+        var ta = document.getElementById('summary-text');
+        if (ta.value.trim()) {
+          ta.value = ta.value.trim() + '\n' + mock;
+        } else {
+          ta.value = mock;
+        }
+        updateCount();
+      }
+    }
+
+    function clearSummary() {
+      document.getElementById('summary-text').value = '';
+      document.getElementById('record-status').innerHTML = '点击开始口述总结';
+      document.getElementById('summary-count').innerHTML = '0';
+    }
+
+    function updateCount() {
+      var v = document.getElementById('summary-text').value;
+      document.getElementById('summary-count').innerHTML = v.length;
+    }
+
+    function insertTemplate(type) {
+      var templates = {
+        overall: '\n【整体概述】本季度项目运行平稳,各项指标基本达标。',
+        achievement: '\n【亮点成果】1) LDL-C 达标率较上季度提升 8%; 2) 患者家属满意度 87%。',
+        issue: '\n【存在问题】1) 护士甲工作量偏高; 2) 复查预约等待时间较长。',
+        next: '\n【下阶段】1) 增加 1-2 名随访护士; 2) 与门诊协调开放复查绿色通道; 3) 加强患者健康宣教。'
+      };
+      var ta = document.getElementById('summary-text');
+      ta.value = (ta.value ? ta.value.trim() + '\n' : '') + templates[type];
+      updateCount();
+    }
+
+    document.getElementById('summary-text').addEventListener('input', updateCount);
+  </script>
+  <script src="assets/layout.js"></script>
+</body>
+</html>

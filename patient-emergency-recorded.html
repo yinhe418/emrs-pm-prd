@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>已通知护士</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <div class="app">
+    <div class="navbar">
+      <button class="back" onclick="location.href='patient-emergency.html'"><span style="font-size:22px; font-weight:700; line-height:1;">‹</span></button>
+      <div class="title">已通知护士</div>
+      <div class="actions"></div>
+    </div>
+
+    <div class="page">
+      <div class="card" style="background:var(--pass-bg); border:none; text-align:center;">
+        <div style="font-size:48px;">✓</div>
+        <div style="font-size:18px; font-weight:600; color:var(--pass); margin-top:8px;">已通知护士甲</div>
+        <div style="font-size:13px; color:var(--ink-2); margin-top:8px; line-height:1.6;">
+          系统已记录:陈丙英于 2025-12-27 14:35 拨打 120<br>
+          通知已转交主管医生(医生甲)
+        </div>
+      </div>
+
+      <div class="section-title">异常处理记录(五要素 §6.2)</div>
+      <div class="card">
+        <div class="kv"><span class="k">发生了什么</span><span class="v">右侧肢体无力加重 + 口角歪斜</span></div>
+        <div class="kv"><span class="k">谁判断</span><span class="v">患者本人拨打 120</span></div>
+        <div class="kv"><span class="k">采取措施</span><span class="v">120 转运至 H 市第一医院急诊</span></div>
+        <div class="kv"><span class="k">患者是否知道</span><span class="v">是</span></div>
+        <div class="kv"><span class="k">最终是否解决</span><span class="v" style="color:var(--warn);">处理中</span></div>
+      </div>
+
+      <div class="card" style="background:var(--info-bg); border:none;">
+        <div style="font-size:12px; color:var(--info);">
+          <b>院内流程衔接</b>(C9):后续诊疗由院内卒中绿色通道负责,平台只记录衔接经过。
+        </div>
+      </div>
+
+      <a href="patient-home.html" class="btn btn-primary btn-block" style="margin-top:20px;">
+        返回首页
+      </a>
+    </div>
+  </div>
+  <script src="assets/layout.js"></script>
+</body>
+</html>

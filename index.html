@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>卒中全程管理 · 角色入口</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <div class="app">
+    <div class="navbar">
+      <div></div>
+      <div class="title">卒中全程管理</div>
+      <div class="actions">
+        <button onclick="location.href='role-switch.html'">切换</button>
+      </div>
+    </div>
+
+    <div class="page">
+      <div class="card" style="background:linear-gradient(135deg, var(--brand-light), var(--brand-2-light)); border:none;">
+        <div style="font-size:11px; color:var(--brand-dark);">H 市第一医院 · 神经内科</div>
+        <div style="font-size:22px; font-weight:600; color:var(--ink); margin:6px 0 2px;">P0 Demo · 演示入口</div>
+        <div style="font-size:13px; color:var(--ink-2); line-height:1.6;">
+          选择角色进入对应端。Demo 数据基于陈丙英女士(81 岁,缺血性卒中合并房颤)出院后的真实跟踪场景。
+        </div>
+      </div>
+
+      <div class="section-title">患者端</div>
+      <a href="patient-scan.html" class="cell">
+        <div class="l">
+          <div class="icon"><img src="assets/icons-png/icon-avatar-patient.png" alt="陈" /></div>
+          <div class="info"><b>陈丙英 · 患者端</b><span>扫码进入 · 出院 12 天 · 90 天管理中</span></div>
+        </div>
+        <div class="r"><span class="badge badge-pass">在管</span><span class="arrow">›</span></div>
+      </a>
+
+      <div class="section-title">医护端</div>
+      <a href="doctor-home.html" class="cell">
+        <div class="l">
+          <div class="icon"><img src="assets/icons-png/icon-avatar-doctor.png" alt="医" /></div>
+          <div class="info"><b>主管医生(您) · 医生甲</b><span>神经内科 · 在管 8 例 · 待办 3</span></div>
+        </div>
+        <div class="r"><span class="badge badge-warn">待处理</span><span class="arrow">›</span></div>
+      </a>
+      <a href="nurse-home.html" class="cell">
+        <div class="l">
+          <div class="icon"><img src="assets/icons-png/icon-avatar-nurse.png" alt="护" /></div>
+          <div class="info"><b>护士甲(您) · 主要联系护士</b><span>今日任务 5 · 逾期 1</span></div>
+        </div>
+        <div class="r"><span class="badge badge-warn">待随访</span><span class="arrow">›</span></div>
+      </a>
+
+      <div class="section-title">管理端</div>
+      <a href="director-home.html" class="cell">
+        <div class="l">
+          <div class="icon"><img src="assets/icons-png/icon-avatar-director.png" alt="院" /></div>
+          <div class="info"><b>科室主任 · 主任</b><span>全科 156 例 · 90 天项目 + 颈动脉研究</span></div>
+        </div>
+        <div class="r"><span class="arrow">›</span></div>
+      </a>
+      <a href="admin-projects.html" class="cell">
+        <div class="l">
+          <div class="icon"><img src="assets/icons-png/icon-avatar-admin.png" alt="管" /></div>
+          <div class="info"><b>系统维护 · 维护员</b><span>项目设置 · 任务库 · 药品库</span></div>
+        </div>
+        <div class="r"><span class="arrow">›</span></div>
+      </a>
+
+      <div class="divider"></div>
+
+      <div class="card">
+        <div class="card-title">P0 临床硬约束(10 条)</div>
+        <div style="font-size:12px; color:var(--ink-2); line-height:1.8;">
+          C1 不替代医生 · C2 不暗示实时监护 · C3 三次随访不能用自动消息代替 ·<br>
+          C4 不提前认定未来状态 · C5 个人目标 ≠ 通用 · C6 药物分两栏 ·<br>
+          C7 90 天结束必须有交代 · C8 阈值由科室设定 · C9 危急值走医院流程 ·<br>
+          C10 资料按用途查看
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">P0 七大核心场景</div>
+        <div style="font-size:12px; color:var(--ink-2); line-height:1.8;">
+          S1 出院准备 · S2 护士一天开始 · S3 患者反馈停药/不适 · S4 疑似卒中(立即 120) ·<br>
+          S5 同时参加两项目 · S6 90 天结束 · S7 老年不会手机
+        </div>
+      </div>
+    </div>
+
+    <!-- 底部 tabbar(角色入口页用单按钮回主页) -->
+    <div class="tabbar">
+      <a href="index.html" class="tab active">
+        <span <img src="assets/icons-png/icon-tab-home.png" alt="首" />首页
+      </a>
+      <a href="role-switch.html" class="tab">
+        <span <img src="assets/icons-png/icon-tab-switch.png" alt="切" />切换
+      </a>
+    </div>
+  </div>
+  <script src="assets/layout.js"></script>
+</body>
+</html>

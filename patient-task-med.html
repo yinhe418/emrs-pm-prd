@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>服药反馈</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <div class="app">
+    <div class="navbar">
+      <button class="back" onclick="location.href='patient-tasks.html'"><span style="font-size:22px; font-weight:700; line-height:1;">‹</span></button>
+      <div class="title">服药反馈</div>
+      <div class="actions"></div>
+    </div>
+
+    <div class="page">
+      <div class="banner">
+        <b>医嘱使用 ≠ 实际使用</b>
+        请如实反馈您的服药情况。我们想了解真实原因,而不是直接判定"不依从"。
+      </div>
+
+      <div class="card">
+        <div class="card-title">阿托伐他汀 20mg</div>
+        <div class="kv"><span class="k">医嘱</span><span class="v">每晚 1 次 · 20mg · 睡前服用</span></div>
+        <div class="kv"><span class="k">处方来源</span><span class="v">出院带药 · 主治医生甲</span></div>
+        <div class="kv"><span class="k">目标</span><span class="v" style="color:var(--brand);">LDL-C &lt; 1.8 mmol/L</span></div>
+      </div>
+
+      <div class="section-title">您今天服用了吗?</div>
+      <div class="group">
+        <div class="form-item">
+          <label style="display:flex; align-items:center; gap:10px; padding:8px 0;">
+            <input type="radio" name="med" checked> <span>已按医嘱服用</span>
+          </label>
+          <label style="display:flex; align-items:center; gap:10px; padding:8px 0;">
+            <input type="radio" name="med"> <span>漏服 1 次</span>
+          </label>
+          <label style="display:flex; align-items:center; gap:10px; padding:8px 0;">
+            <input type="radio" name="med"> <span>自行停药</span>
+          </label>
+          <label style="display:flex; align-items:center; gap:10px; padding:8px 0;">
+            <input type="radio" name="med"> <span>取药未到 / 缺药</span>
+          </label>
+          <label style="display:flex; align-items:center; gap:10px; padding:8px 0;">
+            <input type="radio" name="med"> <span>不清楚用法</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="form-item" style="background:white; border-radius:12px; padding:14px;">
+        <span class="form-label">备注(选填)</span>
+        <textarea class="form-textarea" placeholder="如有任何不适、疑问或停药原因,请说明"></textarea>
+      </div>
+
+      <div class="card" style="background:var(--info-bg); border:none; margin-top:12px;">
+        <div style="font-size:12px; color:var(--info);">
+          <b>不会直接判定不依从</b>(C6)。您的反馈会转给医生,由医生决定后续处理。
+        </div>
+      </div>
+
+      <a href="patient-tasks.html" class="btn btn-primary btn-block" style="margin-top:20px;">
+        提交反馈
+      </a>
+    </div>
+  </div>
+  <script src="assets/layout.js"></script>
+</body>
+</html>

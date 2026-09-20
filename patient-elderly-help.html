@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>家属授权协助(S7)</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <div class="app elder">
+    <div class="navbar">
+      <button class="back" onclick="location.href='patient-home.html'"><span style="font-size:22px; font-weight:700; line-height:1;">‹</span></button>
+      <div class="title">家属授权协助</div>
+      <div class="actions"></div>
+    </div>
+
+    <div class="page">
+      <div class="banner" style="background:var(--brand-2-light); color:var(--brand-dark);">
+        <b style="color:var(--brand-dark);">S7 · 老年 / 不会手机</b>
+        不会手机 ≠ 失去管理。可由家属协助 / 现场护士协助 / 接受电话随访。
+      </div>
+
+      <div class="section-title">陈丙英 81 岁 · 家属授权</div>
+      <div class="card">
+        <div class="card-title">授权家属</div>
+        <div class="kv"><span class="k">姓名</span><span class="v">陈大伟(儿子)</span></div>
+        <div class="kv"><span class="k">关系</span><span class="v">儿子</span></div>
+        <div class="kv"><span class="k">联系电话</span><span class="v">138****8821</span></div>
+        <div class="kv"><span class="k">授权范围</span><span class="v">协助记录血压 / 服药反馈 / 联系护士</span></div>
+        <div class="kv"><span class="k">授权日期</span><span class="v">2025-12-15</span></div>
+      </div>
+
+      <div class="section-title">您(家属)可以帮做的事</div>
+      <div class="group">
+        <a href="patient-task-bp.html" class="cell">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-info.png" alt="诊" /></div>
+            <div class="info"><b style="font-size:18px;">帮老人记录血压</b><span>每日 09:00 前</span></div>
+          </div>
+          <div class="r"><span class="arrow">›</span></div>
+        </a>
+        <a href="patient-task-med.html" class="cell">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-tab-drugs.png" alt="药" /></div>
+            <div class="info"><b style="font-size:18px;">帮老人记录服药</b><span>医嘱 vs 实际</span></div>
+          </div>
+          <div class="r"><span class="arrow">›</span></div>
+        </a>
+        <a href="patient-task-upload.html" class="cell">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-camera.png" alt="摄" /></div>
+            <div class="info"><b style="font-size:18px;">帮上传复查报告</b><span>拍照上传</span></div>
+          </div>
+          <div class="r"><span class="arrow">›</span></div>
+        </a>
+        <a href="patient-im.html" class="cell">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-im.png" alt="信" /></div>
+            <div class="info"><b style="font-size:18px;">帮联系护士</b><span>文字 / 语音留言</span></div>
+          </div>
+          <div class="r"><span class="arrow">›</span></div>
+        </a>
+      </div>
+
+      <div class="section-title">授权边界</div>
+      <div class="card">
+        <div style="font-size:13px; color:var(--ink-2); line-height:1.7;">
+          授权家属权限 = 同患者权限,但仅限您协助的范围。<br>
+          <b>不可代签知情同意</b>(Q7 待临床确认)·不可修改随访安排 · 不可看到其他患者资料。
+        </div>
+      </div>
+
+      <div class="card" style="background:var(--info-bg); border:none;">
+        <div style="font-size:12px; color:var(--info);">
+          <b>备用方式</b>:如家属也无法协助,可由现场护士电话随访 / 上门协助。
+          <b>不能因不会操作软件被排除</b>(§3.1)。
+        </div>
+      </div>
+
+      <div class="card" style="background:var(--warn-bg); border:none;">
+        <div style="font-size:12px; color:var(--warn);">
+          <b>紧急情况</b>(S4):即使不会手机,如出现口角歪斜、单侧无力、言语不清,
+          立即拨打 120(链接下方),不等线上答复。
+          <a href="patient-emergency.html" style="color:var(--block); display:block; margin-top:8px; text-align:center;">
+            <span class="sos-btn" style="margin:0;">电立即拨打 120</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="tabbar">
+      <a href="patient-home.html" class="tab"><span <img src="assets/icons-png/icon-tab-home.png" alt="首" />首页</a>
+      <a href="patient-tasks.html" class="tab"><span <img src="assets/icons-png/icon-tab-tasks.png" alt="任" />任务</a>
+      <a href="patient-im.html" class="tab"><span <img src="assets/icons-png/icon-im.png" alt="信" />联系</a>
+      <a href="patient-emergency.html" class="tab" style="color:var(--block);"><span <img src="assets/icons-png/icon-sos.png" alt="急" />紧急</a>
+    </div>
+  </div>
+  <script src="assets/layout.js"></script>
+</body>
+</html>

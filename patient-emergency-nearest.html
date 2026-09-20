@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>就近急诊医院</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <div class="app">
+    <div class="navbar">
+      <button class="back" onclick="location.href='patient-emergency.html'"><span style="font-size:22px; font-weight:700; line-height:1;">‹</span></button>
+      <div class="title">就近急诊医院</div>
+      <div class="actions"></div>
+    </div>
+
+    <div class="page">
+      <div class="banner" style="background:var(--block-bg); color:var(--block);">
+        <b style="color:var(--block);">优先拨打 120,听从调度</b>
+        120 调度会按距离/能力推荐。
+      </div>
+
+      <div class="group">
+        <a href="tel:120" class="cell">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-call.png" alt="电" /></div>
+            <div class="info"><b>120 急救中心</b><span>听从调度 · 全程指导</span></div>
+          </div>
+          <div class="r"><span class="arrow">›</span></div>
+        </a>
+      </div>
+
+      <div class="section-title">H 市内卒中急诊医院</div>
+      <div class="group">
+        <div class="cell">
+          <div class="l">
+            <div class="icon" style="background:var(--brand-light); color:var(--brand);">A</div>
+            <div class="info"><b>H 市第一医院(您的主治医院)</b><span>神经内科 · 急诊绿色通道 · 距您 3.2km</span></div>
+          </div>
+          <div class="r"><span class="badge badge-pass">推荐</span></div>
+        </div>
+        <div class="cell">
+          <div class="l">
+            <div class="icon">B</div>
+            <div class="info"><b>H 市中心医院</b><span>卒中中心 · 距您 5.8km</span></div>
+          </div>
+          <div class="r"></div>
+        </div>
+        <div class="cell">
+          <div class="l">
+            <div class="icon">C</div>
+            <div class="info"><b>H 医大附属医院</b><span>综合卒中中心 · 距您 8.4km</span></div>
+          </div>
+          <div class="r"></div>
+        </div>
+      </div>
+
+      <div class="card" style="background:var(--info-bg); border:none;">
+        <div style="font-size:12px; color:var(--info);">
+          <b>提示</b>:到院后请告诉急诊医生您正在 H 市第一医院神经内科 90 天管理期,
+          主管医生:医生甲,护士:护士甲。
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="assets/layout.js"></script>
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>分配主管护士</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <div class="app">
+    <div class="navbar">
+      <button class="back" onclick="location.href='doctor-patient-detail.html'"><span style="font-size:22px; font-weight:700; line-height:1;">‹</span></button>
+      <div class="title">分配护士 · 陈丙英</div>
+      <div class="actions"></div>
+    </div>
+
+    <div class="page">
+      <div class="banner">
+        <b>责任分工</b>
+        每名患者配 1 名主要联系护士 + 1 名负责医生。<br>
+        主管医生可指派多人共同负责后续 task(F2)。
+      </div>
+
+      <div class="section-title">当前分配</div>
+      <div class="group">
+        <div class="cell" style="background:#E8F5E9;">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-avatar-nurse.png" alt="护" /></div>
+            <div class="info"><b>护士甲 · 主要联系护士 ✓</b><span>139****6688 · 在管 12 例</span></div>
+          </div>
+          <div class="r"><span class="badge badge-pass">已分配</span></div>
+        </div>
+        <div class="cell">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-avatar-nurse.png" alt="护" /></div>
+            <div class="info"><b>护士乙 · 备班</b><span>139****9988 · 在管 10 例</span></div>
+          </div>
+          <div class="r"><span class="badge badge-pass">已分配</span></div>
+        </div>
+      </div>
+
+      <div class="section-title">候选护士</div>
+      <div class="group">
+        <div class="cell">
+          <label style="display:flex; align-items:center; gap:10px;">
+            <input type="checkbox">
+            <div class="info">
+              <b>张莉</b>
+              <span>139****1234 · 在管 8 例</span>
+            </div>
+          </label>
+        </div>
+        <div class="cell">
+          <label style="display:flex; align-items:center; gap:10px;">
+            <input type="checkbox">
+            <div class="info">
+              <b>护士丙</b>
+              <span>139****5678 · 在管 11 例</span>
+            </div>
+          </label>
+        </div>
+        <div class="cell">
+          <label style="display:flex; align-items:center; gap:10px;">
+            <input type="checkbox">
+            <div class="info">
+              <b>刘芳</b>
+              <span>139****3344 · 在管 9 例</span>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <div class="card" style="background:var(--info-bg); border:none;">
+        <div style="font-size:12px; color:var(--info);">
+          <b>规则说明</b>:1 名主要联系护士 + 0~多名共负责护士。
+          主要联系护士承担日常随访,共负责护士在交班/休假时接续,不能让患者从头讲述(F5)。
+        </div>
+      </div>
+
+      <a href="doctor-patient-detail.html" class="btn btn-primary btn-block" style="margin-top:20px;">
+        保存分配
+      </a>
+    </div>
+  </div>
+  <script src="assets/layout.js"></script>
+</body>
+</html>

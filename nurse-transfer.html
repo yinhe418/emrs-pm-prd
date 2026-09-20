@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>任务转移</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <div class="app">
+    <div class="navbar">
+      <button class="back" onclick="location.href='nurse-task-detail.html'"><span style="font-size:22px; font-weight:700; line-height:1;">‹</span></button>
+      <div class="title">转移任务</div>
+      <div class="actions"></div>
+    </div>
+
+    <div class="page">
+      <div class="banner">
+        <b>任务转移</b>
+        如患者上传了检查报告,护士可转给主管医生复核;<br>
+        多次未接通可转其他护士或备班。
+      </div>
+
+      <!-- 当前任务 -->
+      <div class="card">
+        <div class="card-title">当前任务</div>
+        <div style="font-size:13px; color:var(--ink-2); line-height:1.7;">
+          陈丙英 · LDL-C 复查结果需医生判断<br>
+          复查值:1.95 mmol/L(目标 &lt; 1.8)<br>
+          当前用药:阿托伐他汀 20mg qN
+        </div>
+      </div>
+
+      <div class="section-title">转移给谁</div>
+      <div class="group">
+        <div class="cell" style="background:var(--brand-light);">
+          <label style="display:flex; align-items:center; gap:10px;">
+            <input type="radio" name="to" checked>
+            <div class="info">
+              <b>主管医生(您) · 医生甲 ✓</b>
+              <span>主要负责该患者</span>
+            </div>
+          </label>
+        </div>
+        <div class="cell">
+          <label style="display:flex; align-items:center; gap:10px;">
+            <input type="radio" name="to">
+            <div class="info">
+              <b>护士乙 · 备班护士</b>
+              <span>多次未接通时使用</span>
+            </div>
+          </label>
+        </div>
+        <div class="cell">
+          <label style="display:flex; align-items:center; gap:10px;">
+            <input type="radio" name="to">
+            <div class="info">
+              <b>护士甲(其他病区)</b>
+              <span>同组护士</span>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <div class="section-title">转移原因(必须)</div>
+      <div class="group">
+        <div class="form-item">
+          <span class="form-label">原因类别</span>
+          <select class="form-select">
+            <option>需医生临床判断</option>
+            <option>疑似不良反应</option>
+            <option>复查结果异常</option>
+            <option>患者本人多次未接通</option>
+            <option>其他</option>
+          </select>
+        </div>
+        <div class="form-item">
+          <span class="form-label">补充说明</span>
+          <textarea class="form-textarea" placeholder="如:LDL-C 1.95 超过个人目标,需医生评估是否调整他汀剂量..."></textarea>
+        </div>
+      </div>
+
+      <!-- 异常处理五要素(§6.2) -->
+      <div class="section-title">异常处理记录五要素</div>
+      <div class="card">
+        <div class="form-item">
+          <span class="form-label"><span class="req">*</span>发生了什么</span>
+          <input class="form-input" placeholder="如:LDL-C 复查 1.95 mmol/L">
+        </div>
+        <div class="form-item">
+          <span class="form-label"><span class="req">*</span>谁作了判断</span>
+          <input class="form-input" placeholder="如:护士甲">
+        </div>
+        <div class="form-item">
+          <span class="form-label"><span class="req">*</span>采取什么措施</span>
+          <input class="form-input" placeholder="如:转交主管医生判断">
+        </div>
+        <div class="form-item">
+          <span class="form-label"><span class="req">*</span>患者是否知道</span>
+          <select class="form-select">
+            <option>是</option>
+            <option>否</option>
+          </select>
+        </div>
+        <div class="form-item">
+          <span class="form-label"><span class="req">*</span>最终是否解决</span>
+          <select class="form-select">
+            <option>处理中(转交)</option>
+            <option>已解决</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="card" style="background:var(--info-bg); border:none;">
+        <div style="font-size:12px; color:var(--info);">
+          <b>仅转发消息 ≠ 已处理</b>(§6.2)。转交后需确认接收人处理。<br>
+          <b>危急值</b>走医院流程(C9),不在平台等待。
+        </div>
+      </div>
+
+      <a href="nurse-tasks.html" class="btn btn-primary btn-block" style="margin-top:20px;">
+        确认转移
+      </a>
+      <a href="nurse-task-detail.html" class="btn btn-outline btn-block" style="margin-top:8px;">
+        取消
+      </a>
+    </div>
+  </div>
+  <script src="assets/layout.js"></script>
+</body>
+</html>

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>任务详情 · LDL-C 异常</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <div class="app">
+    <div class="navbar">
+      <button class="back" onclick="location.href='doctor-tasks.html'">
+        <span style="font-size:22px; font-weight:700; line-height:1;">‹</span>
+      </button>
+      <div class="title">任务详情</div>
+      <div class="actions"></div>
+    </div>
+
+    <div class="page">
+      <div class="banner banner-block">
+        <b>需医生判断</b>护士甲 2025-12-27 11:00 转交
+      </div>
+
+      <!-- 异常处理五要素(§6.2) -->
+      <div class="section-title section-block">异常处理记录</div>
+      <div class="card">
+        <div class="kv"><span class="k">发生了什么</span><span class="v">LDL-C 复查 1.95 mmol/L</span></div>
+        <div class="kv"><span class="k">个人目标</span><span class="v">&lt; 1.8 mmol/L</span></div>
+        <div class="kv"><span class="k">当前用药</span><span class="v">阿托伐他汀 20mg qN</span></div>
+        <div class="kv"><span class="k">谁判断</span><span class="v">护士甲发现指标异常,转交医生</span></div>
+        <div class="kv"><span class="k">患者是否知道</span><span class="v">是(护士已告知)</span></div>
+        <div class="kv kv-warn"><span class="k">最终是否解决</span><span class="v">待医生判断</span></div>
+      </div>
+
+      <!-- 患者信息快读 -->
+      <div class="section-title">患者信息</div>
+      <a href="doctor-patient-detail.html" class="card" style="display:block;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+          <div style="flex:1; min-width:0;">
+            <div style="font-size:15px; font-weight:600; line-height:1.4;">陈丙英</div>
+            <div style="font-size:12px; color:var(--ink-3); margin-top:2px;">女 · 81 岁 · 床 12-3</div>
+            <div style="font-size:12px; color:var(--ink-2); margin-top:6px; line-height:1.5;">缺血性卒中(心源性)+ 房颤 + 高血压</div>
+          </div>
+          <span class="badge badge-pass" style="flex-shrink:0;">90 天</span>
+        </div>
+        <div style="margin-top:10px; padding-top:10px; border-top:1px solid var(--line-2); font-size:12px; color:var(--brand); display:flex; align-items:center; gap:4px;">
+          查看完整病历
+          <span style="font-size:14px; font-weight:400; line-height:1;">·</span>
+        </div>
+      </a>
+
+      <!-- 关键检查 -->
+      <div class="section-title">本次报告</div>
+      <div class="card">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; font-size:13px;">
+          <div>
+            <div style="color:var(--ink-3);">LDL-C</div>
+            <b style="color:var(--block); font-size:20px;">1.95</b>
+            <div style="font-size:11px; color:var(--ink-3);">目标 &lt; 1.8</div>
+          </div>
+          <div>
+            <div style="color:var(--ink-3);">HDL-C</div>
+            <b style="font-size:20px;">1.20</b>
+          </div>
+          <div>
+            <div style="color:var(--ink-3);">TC</div>
+            <b style="font-size:20px;">4.85</b>
+          </div>
+          <div>
+            <div style="color:var(--ink-3);">TG</div>
+            <b style="font-size:20px;">1.45</b>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="kv"><span class="k">检查机构</span><span class="v">H 市第一医院</span></div>
+        <div class="kv"><span class="k">检查日期</span><span class="v">2025-12-29</span></div>
+        <div class="kv"><span class="k">报告</span><span class="v"><a href="doctor-task-detail.html" class="link-brand">查看原报告.jpg</a></span></div>
+      </div>
+
+      <!-- 临床判断 -->
+      <div class="section-title">您的判断</div>
+      <div class="card">
+        <div class="form-item">
+          <span class="form-label">处理方式</span>
+          <select class="form-select" id="treatment-select" onchange="toggleDosePanel()">
+            <option value="statin">调整他汀剂量(20 → 40mg)</option>
+            <option value="ezetimibe">联合依折麦布</option>
+            <option value="observe">观察 1 月后复查</option>
+            <option value="maintain">维持当前方案</option>
+          </select>
+        </div>
+
+        <!-- 剂量调整面板(选他汀时显示) -->
+        <div id="statin-dose-panel" class="form-item" style="background:#FFF8E1;">
+          <div style="font-size:13px; font-weight:600; color:var(--warn); margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+            <span style="font-size:14px; font-weight:400; line-height:1;">·</span>
+            他汀剂量调整
+          </div>
+          <!-- 之前剂量 -->
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 10px; background:#FFEBEE; border-radius:6px; margin-bottom:10px;">
+            <div>
+              <div style="font-size:11px; color:var(--ink-3);">之前剂量</div>
+              <div style="font-size:14px; font-weight:600; color:var(--ink);">
+                阿托伐他汀 <span style="color:var(--block);">20mg</span> qN
+              </div>
+            </div>
+            <span class="badge badge-block">需调整</span>
+          </div>
+          <!-- 新剂量输入 -->
+          <div style="font-size:12px; color:var(--ink-3); margin-bottom:4px;">调整后剂量</div>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <input class="form-input bordered" type="number" value="40" min="1" max="80" step="5"
+                   style="width:100px;">
+            <select class="form-select bordered" style="flex:0 0 90px;">
+              <option>mg</option>
+            </select>
+            <select class="form-select bordered" style="flex:1;">
+              <option>每晚(qN)</option>
+              <option>每日(qd)</option>
+            </select>
+          </div>
+          <div class="form-helper">上下限:1 ~ 80 mg(参考 field-constraints.md)</div>
+          <!-- 对比 -->
+          <div style="margin-top:10px; padding:8px 10px; background:white; border:1px dashed var(--brand); border-radius:6px; font-size:12px; color:var(--ink-2);">
+            <b style="color:var(--brand);">剂量变化:</b>
+            <span style="color:var(--block);">20mg</span>
+            <span style="margin:0 6px;">→</span>
+            <span style="color:var(--pass);">40mg</span>
+            <span style="color:var(--ink-3); margin-left:8px;">(翻倍,需关注肌酶)</span>
+          </div>
+        </div>
+
+        <div class="form-item">
+          <span class="form-label"><span class="req">*</span>判断说明(必须)</span>
+          <textarea class="form-textarea" placeholder="如:LDL-C 升高 0.15,合并他汀不达标,建议升级..."></textarea>
+        </div>
+        <div class="form-item">
+          <span class="form-label">复查安排</span>
+          <select class="form-select">
+            <option>D45 复查</option>
+            <option>D60 复查</option>
+            <option>D90 复查</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="notice">
+        <b>软件不自行调整治疗</b>(C1)。您的判断是最终依据,需医生签字。
+        异常处理阈值由科室设定(C8),此处阈值仅作参考。
+      </div>
+
+      <a href="doctor-tasks.html" class="btn btn-primary btn-block" style="margin-top:20px;">
+        提交判断 · 转护士执行
+      </a>
+      <a href="doctor-tasks.html" class="btn btn-outline btn-block" style="margin-top:8px;">
+        转交其他医生
+      </a>
+    </div>
+  </div>
+  <script>
+    function toggleDosePanel() {
+      var v = document.getElementById('treatment-select').value;
+      var p = document.getElementById('statin-dose-panel');
+      p.style.display = (v === 'statin') ? 'block' : 'none';
+    }
+  </script>
+  <script src="assets/layout.js"></script>
+</body>
+</html>

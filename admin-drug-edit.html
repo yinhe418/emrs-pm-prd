@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>编辑药品</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <div class="app">
+    <div class="navbar">
+      <button class="back" onclick="location.href='admin-drugs.html'"><span style="font-size:22px; font-weight:700; line-height:1;">‹</span></button>
+      <div class="title">编辑药品</div>
+      <div class="actions"></div>
+    </div>
+
+    <div class="page">
+      <div class="banner">
+        <b>药品配置</b>
+        完善药品信息(照片 / 使用说明 / 注意事项),可在患者端展示。
+      </div>
+
+      <div class="section-title">基本信息</div>
+      <div class="group">
+        <div class="form-item">
+          <span class="form-label"><span class="req">*</span>药品名称</span>
+          <input class="form-input" value="阿托伐他汀钙">
+        </div>
+        <div class="form-item">
+          <span class="form-label">规格</span>
+          <input class="form-input" value="20mg">
+        </div>
+        <div class="form-item">
+          <span class="form-label">类别</span>
+          <select class="form-select">
+            <option>他汀类</option>
+            <option>抗血小板</option>
+            <option>抗凝</option>
+            <option>降压</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="section-title">药品照片</div>
+      <div class="card" style="text-align:center; border:2px dashed var(--brand); background:var(--brand-light);">
+        <div style="color:var(--brand); margin-bottom:8px;"><span style="font-size:14px; font-weight:400; line-height:1;">·</span></div>
+        <div style="font-size:13px; color:var(--brand);">点击上传药品照片</div>
+        <div style="font-size:11px; color:var(--ink-3); margin-top:4px;">支持 jpg/png · 建议显示包装</div>
+      </div>
+
+      <div class="section-title">使用说明</div>
+      <div class="group">
+        <div class="form-item">
+          <span class="form-label">用法用量</span>
+          <textarea class="form-textarea">每晚 1 次,睡前服用。强化降脂目标 LDL-C &lt; 1.8 mmol/L。</textarea>
+        </div>
+        <div class="form-item">
+          <span class="form-label">常见不良反应</span>
+          <textarea class="form-textarea">肌肉酸痛、转氨酶升高。严重者需停药就医。</textarea>
+        </div>
+        <div class="form-item">
+          <span class="form-label">禁忌</span>
+          <textarea class="form-textarea">活动性肝病、孕妇、哺乳期妇女。</textarea>
+        </div>
+        <div class="form-item">
+          <span class="form-label">相互作用</span>
+          <textarea class="form-textarea">避免与 CYP3A4 强抑制剂(如克拉霉素、伊曲康唑)合用。</textarea>
+        </div>
+      </div>
+
+      <a href="admin-drugs.html" class="btn btn-primary btn-block" style="margin-top:20px;">
+        保存
+      </a>
+    </div>
+  </div>
+  <script src="assets/layout.js"></script>
+</body>
+</html>

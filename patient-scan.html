@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>扫码进入</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <div class="app">
+    <div class="navbar">
+      <div></div>
+      <div class="title">扫码进入</div>
+      <div class="actions"></div>
+    </div>
+
+    <div class="page" style="text-align:center;">
+      <div class="card" style="margin-top:20px;">
+        <div style="width:200px; height:200px; margin:20px auto; background:white; border:2px solid var(--brand); border-radius:12px; display:grid; place-items:center;">
+          <!-- 占位二维码 -->
+          <div style="font-size:80px; color:var(--brand);">⊞</div>
+        </div>
+        <div style="font-size:14px; color:var(--ink-2); margin-bottom:8px;">
+          请主管医生 / 护士出示二维码
+        </div>
+        <div style="font-size:11px; color:var(--ink-3);">
+          扫码后将自动绑定您与主管医生的所属关系
+        </div>
+      </div>
+
+      <a href="patient-auth.html" class="btn btn-primary btn-block" style="margin-top:24px;">
+        模拟扫码进入
+      </a>
+
+      <div class="card" style="margin-top:24px; text-align:left;">
+        <div class="card-title">不会扫码?</div>
+        <div style="font-size:13px; color:var(--ink-2); line-height:1.7;">
+          可由家人协助,或由现场护士帮助录入绑定信息。
+          <a href="patient-auth.html" style="color:var(--brand);">点此家属授权录入</a>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:8px; text-align:left; background:var(--info-bg); border:none;">
+        <div style="font-size:12px; color:var(--info);">
+          <b>真实场景说明</b>:主管医生在出院当天生成二维码 → 患者扫码绑定 → 进入认证。
+          此处为演示入口,直接跳到认证页。
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="assets/layout.js"></script>
+</body>
+</html>

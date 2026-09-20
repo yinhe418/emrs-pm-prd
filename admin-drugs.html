@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>药品库</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <div class="app">
+    <div class="navbar">
+      <button class="back" onclick="location.href='admin-projects.html'"><span style="font-size:22px; font-weight:700; line-height:1;">‹</span></button>
+      <div class="title">药品库</div>
+      <div class="actions">
+        <button onclick="location.href='admin-drug-edit.html'">+ 新增</button>
+      </div>
+    </div>
+
+    <div class="page" style="padding-top:0;">
+      <div style="padding:12px 16px; background:white; border-bottom:1px solid var(--line);">
+        <input class="form-input" placeholder="搜索药品名称" style="background:var(--bg); border-radius:8px; padding:10px 14px; border:1px solid var(--line);">
+      </div>
+
+      <div class="page">
+        <div class="section-title">抗血小板</div>
+        <div class="group">
+          <a href="admin-drug-edit.html" class="cell">
+            <div class="l">
+              <div class="icon"><img src="assets/icons-png/icon-drug-tablet.png" alt="片" /></div>
+              <div class="info"><b>阿司匹林肠溶片</b><span>100mg · 常用抗血小板</span></div>
+            </div>
+            <div class="r"><span class="arrow">›</span></div>
+          </a>
+          <a href="admin-drug-edit.html" class="cell">
+            <div class="l">
+              <div class="icon"><img src="assets/icons-png/icon-drug-tablet.png" alt="片" /></div>
+              <div class="info"><b>硫酸氢氯吡格雷</b><span>75mg · 抗血小板</span></div>
+            </div>
+            <div class="r"><span class="arrow">›</span></div>
+          </a>
+        </div>
+
+        <div class="section-title">抗凝</div>
+        <div class="group">
+          <a href="admin-drug-edit.html" class="cell">
+            <div class="l">
+              <div class="icon"><img src="assets/icons-png/icon-drug-capsule.png" alt="胶" /></div>
+              <div class="info"><b>达比加群酯</b><span>110mg / 150mg · NOAC · 房颤抗凝</span></div>
+            </div>
+            <div class="r"><span class="arrow">›</span></div>
+          </a>
+          <a href="admin-drug-edit.html" class="cell">
+            <div class="l">
+              <div class="icon"><img src="assets/icons-png/icon-drug-capsule.png" alt="胶" /></div>
+              <div class="info"><b>利伐沙班</b><span>10mg / 15mg / 20mg · NOAC</span></div>
+            </div>
+            <div class="r"><span class="arrow">›</span></div>
+          </a>
+          <a href="admin-drug-edit.html" class="cell">
+            <div class="l">
+              <div class="icon"><img src="assets/icons-png/icon-drug-tablet.png" alt="片" /></div>
+              <div class="info"><b>华法林</b><span>2.5mg / 3mg · 维生素 K 拮抗剂</span></div>
+            </div>
+            <div class="r"><span class="arrow">›</span></div>
+          </a>
+        </div>
+
+        <div class="section-title">他汀</div>
+        <div class="group">
+          <a href="admin-drug-edit.html" class="cell">
+            <div class="l">
+              <div class="icon"><img src="assets/icons-png/icon-drug-tablet.png" alt="片" /></div>
+              <div class="info"><b>阿托伐他汀钙</b><span>10mg / 20mg · 强化降脂</span></div>
+            </div>
+            <div class="r"><span class="arrow">›</span></div>
+          </a>
+          <a href="admin-drug-edit.html" class="cell">
+            <div class="l">
+              <div class="icon"><img src="assets/icons-png/icon-drug-tablet.png" alt="片" /></div>
+              <div class="info"><b>瑞舒伐他汀钙</b><span>5mg / 10mg · 强化降脂</span></div>
+            </div>
+            <div class="r"><span class="arrow">›</span></div>
+          </a>
+          <a href="admin-drug-edit.html" class="cell">
+            <div class="l">
+              <div class="icon"><img src="assets/icons-png/icon-drug-tablet.png" alt="片" /></div>
+              <div class="info"><b>辛伐他汀</b><span>20mg / 40mg · 中等降脂</span></div>
+            </div>
+            <div class="r"><span class="arrow">›</span></div>
+          </a>
+          <a href="admin-drug-edit.html" class="cell">
+            <div class="l">
+              <div class="icon"><img src="assets/icons-png/icon-drug-tablet.png" alt="片" /></div>
+              <div class="info"><b>依折麦布</b><span>10mg · 联合降脂</span></div>
+            </div>
+            <div class="r"><span class="arrow">›</span></div>
+          </a>
+        </div>
+
+        <div class="section-title">降压</div>
+        <div class="group">
+          <a href="admin-drug-edit.html" class="cell">
+            <div class="l">
+              <div class="icon"><img src="assets/icons-png/icon-drug-capsule.png" alt="胶" /></div>
+              <div class="info"><b>缬沙坦</b><span>80mg · ARB · 降压 + 靶器官保护</span></div>
+            </div>
+            <div class="r"><span class="arrow">›</span></div>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="tabbar">
+      <a href="admin-projects.html" class="tab"><span <img src="assets/icons-png/icon-tab-projects.png" alt="项" />项目</a>
+      <a href="admin-task-lib.html" class="tab"><span <img src="assets/icons-png/icon-tab-tasklib.png" alt="库" />任务库</a>
+      <a href="admin-drugs.html" class="tab active"><span <img src="assets/icons-png/icon-tab-drugs.png" alt="药" />药品</a>
+      <a href="role-switch.html" class="tab"><span <img src="assets/icons-png/icon-tab-switch.png" alt="切" />切换</a>
+    </div>
+  </div>
+  <script src="assets/layout.js"></script>
+</body>
+</html>

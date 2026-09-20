@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>个人计划</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <div class="app elder">
+    <div class="navbar">
+      <button class="back" onclick="location.href='patient-home.html'"><span style="font-size:22px; font-weight:700; line-height:1;">‹</span></button>
+      <div class="title">个人计划</div>
+      <div class="actions"></div>
+    </div>
+
+    <div class="page">
+      <div class="banner">
+        <b>陈丙英女士 · 出院 12 天</b>
+        90 天管理期 D12 / 90 · 下次复诊 2026-03-14
+      </div>
+
+      <!-- 个体目标(C5) -->
+      <div class="card" style="background:linear-gradient(135deg, var(--brand-light), var(--brand-2-light)); border:none;">
+        <div class="card-title">为您设定的个人目标</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+          <div>
+            <div style="font-size:13px; color:var(--ink-3);">血压</div>
+            <div class="big-number" style="font-size:22px;">130/80<span class="unit">mmHg 以下</span></div>
+          </div>
+          <div>
+            <div style="font-size:13px; color:var(--ink-3);">LDL-C</div>
+            <div class="big-number" style="font-size:22px;">1.8<span class="unit">mmol/L 以下</span></div>
+          </div>
+        </div>
+        <div style="margin-top:10px; font-size:13px; color:var(--brand-dark);">
+          软件只展示当前结果 vs 个人目标,<b>不会自行调整治疗</b>(C1)。
+        </div>
+      </div>
+
+      <!-- 药物 — 严格分两栏(C6) -->
+      <div class="section-title">出院药物(分两栏)</div>
+      <div class="card">
+        <div class="card-title" style="display:flex; align-items:center; gap:6px;">药医嘱使用</div>
+        <div style="font-size:13px; color:var(--ink-2); line-height:1.7;">
+          ① 阿司匹林 100mg · 每日 1 次 · 早餐后<br>
+          ② 阿托伐他汀 20mg · 每晚 1 次 · 睡前<br>
+          ③ 缬沙坦 80mg · 每日 1 次 · 早餐前(降压)<br>
+          ④ 达比加群 110mg · 每日 2 次 · 早晚(抗凝,房颤)
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="color:var(--brand-2);">✓ 实际使用(您的反馈)</div>
+        <div style="font-size:13px; color:var(--ink-2); line-height:1.7;">
+          ① 阿司匹林:已服,无不适<br>
+          ② 阿托伐他汀:今晚漏服 1 次<br>
+          ③ 缬沙坦:已服,无不适<br>
+          ④ 达比加群:已服,偶有胃部轻微不适
+        </div>
+        <div style="margin-top:8px; font-size:11px; color:var(--ink-3);">
+          最近反馈 · 2025-12-27 08:30
+        </div>
+      </div>
+      <div class="card" style="background:var(--info-bg); border:none;">
+        <div style="font-size:12px; color:var(--info);">
+          <b>漏服 / 停药 / 取药不到 / 不清楚用法</b>请直接告诉我们,先了解原因,不直接判定不依从(C6)。
+        </div>
+      </div>
+
+      <!-- 复查安排 -->
+      <div class="section-title">复查安排</div>
+      <div class="group">
+        <div class="cell">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-bp.png" alt="血" /></div>
+            <div class="info"><b>7 天 · 血压记录(每日)</b><span>每日 09:00 前</span></div>
+          </div>
+          <div class="r"><span class="badge badge-brand">进行中</span></div>
+        </div>
+        <div class="cell">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-bp.png" alt="血" /></div>
+            <div class="info"><b>30 天 · 血脂全套</b><span>截止 2026-01-14</span></div>
+          </div>
+          <div class="r"><span class="badge badge-warn">已逾期 LDL-C</span></div>
+        </div>
+        <div class="cell">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-bp.png" alt="血" /></div>
+            <div class="info"><b>90 天 · mRS + 全面评估</b><span>2026-03-14 · 门诊</span></div>
+          </div>
+          <div class="r"><span class="badge badge-gray">未到期</span></div>
+        </div>
+      </div>
+
+      <!-- 康复 -->
+      <div class="section-title">康复安排</div>
+      <div class="card">
+        <div style="font-size:13px; color:var(--ink-2); line-height:1.7;">
+          • 每日步行 30 分钟,可分次完成<br>
+          • 右上肢被动活动,家属协助<br>
+          • 吞咽训练:洼田饮水试验已通过,正常进食<br>
+          • 语言训练:轻度构音障碍,每日朗读 15 分钟
+        </div>
+      </div>
+
+      <!-- 责任联系 -->
+      <div class="section-title">责任联系</div>
+      <div class="group">
+        <div class="cell">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-avatar-doctor.png" alt="医" /></div>
+            <div class="info"><b>主管医生 · 医生甲</b><span>神经内科 · 周一三五门诊</span></div>
+          </div>
+          <div class="r"><a href="patient-im.html" style="color:var(--brand); font-size:13px;">联系 ›</a></div>
+        </div>
+        <div class="cell">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-avatar-nurse.png" alt="护" /></div>
+            <div class="info"><b>主要联系护士 · 护士甲</b><span>工作时段 8:00-17:00 · 139****6688</span></div>
+          </div>
+          <div class="r"><a href="patient-im.html" style="color:var(--brand); font-size:13px;">联系 ›</a></div>
+        </div>
+        <div class="cell">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-avatar-nurse.png" alt="护" /></div>
+            <div class="info"><b>备班护士 · 护士乙</b><span>护士甲休息时接替</span></div>
+          </div>
+          <div class="r"><span class="badge badge-gray">备用</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tabbar">
+      <a href="patient-home.html" class="tab"><span <img src="assets/icons-png/icon-tab-home.png" alt="首" />首页</a>
+      <a href="patient-tasks.html" class="tab"><span <img src="assets/icons-png/icon-tab-tasks.png" alt="任" />任务</a>
+      <a href="patient-im.html" class="tab active"><span <img src="assets/icons-png/icon-im.png" alt="信" />联系</a>
+      <a href="patient-emergency.html" class="tab" style="color:var(--block);"><span <img src="assets/icons-png/icon-sos.png" alt="急" />紧急</a>
+    </div>
+  </div>
+  <script src="assets/layout.js"></script>
+</body>
+</html>

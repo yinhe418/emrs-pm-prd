@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>患者列表</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <div class="app">
+    <div class="navbar">
+      <button class="back" onclick="location.href='nurse-home.html'"><span style="font-size:22px; font-weight:700; line-height:1;">‹</span></button>
+      <div class="title">我的患者</div>
+      <div class="actions"></div>
+    </div>
+
+    <div class="page" style="padding-top:0;">
+      <div style="padding:12px 16px; background:white; border-bottom:1px solid var(--line);">
+        <input class="form-input" placeholder="搜索患者姓名" style="background:var(--bg); border-radius:8px; padding:10px 14px; border:1px solid var(--line);">
+      </div>
+
+      <div class="page">
+        <div class="section-title">最近活跃(按时间倒序)</div>
+        <div class="group">
+          <a href="nurse-patient-detail.html" class="cell">
+            <div class="l">
+              <div class="icon"><img src="assets/icons-png/icon-avatar-patient.png" alt="陈" /></div>
+              <div class="info"><b>陈丙英 · 81 岁</b><span>最近联系:刚刚 · D12</span></div>
+            </div>
+            <div class="r"><span class="badge badge-pass">90天</span></div>
+          </a>
+          <a href="nurse-patient-detail.html" class="cell">
+            <div class="l">
+              <div class="icon">张</div>
+              <div class="info"><b>张桂兰 · 76 岁</b><span>最近联系:昨天 · D30</span></div>
+            </div>
+            <div class="r"><span class="badge badge-pass">90天</span></div>
+          </a>
+          <a href="nurse-patient-detail.html" class="cell" style="background:#FFF3E0;">
+            <div class="l">
+              <div class="icon" style="background:var(--warn-bg); color:var(--warn);">刘</div>
+              <div class="info">
+                <b style="color:var(--warn);">刘文 · 72 岁</b>
+                <span style="color:var(--warn);">3 天未联系上 · D25</span>
+              </div>
+            </div>
+            <div class="r"><span class="badge badge-warn">需跟进</span></div>
+          </a>
+          <a href="nurse-patient-detail.html" class="cell">
+            <div class="l">
+              <div class="icon">赵</div>
+              <div class="info"><b>赵慧 · 69 岁</b><span>最近联系:3 天前 · D45</span></div>
+            </div>
+            <div class="r"><span class="badge badge-pass">90天</span><span class="badge" style="background:var(--purple-bg); color:var(--purple);">研究</span></div>
+          </a>
+          <a href="nurse-patient-detail.html" class="cell">
+            <div class="l">
+              <div class="icon">王</div>
+              <div class="info"><b>王强 · 65 岁</b><span>最近联系:5 天前 · D65</span></div>
+            </div>
+            <div class="r"><span class="badge badge-pass">90天</span></div>
+          </a>
+          <a href="nurse-patient-detail.html" class="cell">
+            <div class="l">
+              <div class="icon">李</div>
+              <div class="info"><b>李明 · 58 岁</b><span>最近联系:2 周前 · D82</span></div>
+            </div>
+            <div class="r"><span class="badge badge-pass">90天</span></div>
+          </a>
+        </div>
+
+        <div class="section-title">共 12 例</div>
+        <div class="card">
+          <div style="font-size:13px; color:var(--ink-2); line-height:1.7;">
+            • 90 天管理:10 例<br>
+            • 同时参加颈动脉研究:3 例<br>
+            • 已完成 90 天结案:2 例<br>
+            • 进入 S7 老年家属协助:4 例
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tabbar">
+      <a href="nurse-home.html" class="tab"><span <img src="assets/icons-png/icon-tab-home.png" alt="首" />主页</a>
+      <a href="nurse-tasks.html" class="tab"><span <img src="assets/icons-png/icon-tab-tasks.png" alt="任" />任务</a>
+      <a href="nurse-patients.html" class="tab active"><span <img src="assets/icons-png/icon-tab-people.png" alt="患" />患者</a>
+      <a href="role-switch.html" class="tab"><span <img src="assets/icons-png/icon-tab-switch.png" alt="切" />切换</a>
+    </div>
+  </div>
+  <script src="assets/layout.js"></script>
+</body>
+</html>
