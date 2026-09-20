@@ -87,7 +87,11 @@
         </div>
         <div class="form-item">
           <span class="form-label">备注(选填)</span>
-          <textarea class="form-textarea" placeholder="如:D45 重点关注 LDL-C..."></textarea>
+          <textarea class="form-textarea" id="issueNote" placeholder="如:D45 重点关注 LDL-C..." style="min-height:96px;"></textarea>
+          <button type="button" class="voice-input-wide" onclick="mockVoiceIssue()" id="voiceIssueBtn" aria-label="语音录入备注">
+            <span class="ico">🎤</span>
+            <span>点击语音录入</span>
+          </button>
         </div>
       </div>
 
@@ -103,5 +107,36 @@
     </div>
   </div>
   <script src="assets/layout.js"></script>
+  <script>
+    var issueToastEl = null;
+    function showIssueToast(msg) {
+      if (!issueToastEl) {
+        issueToastEl = document.createElement('div');
+        issueToastEl.className = 'quick-input-toast';
+        issueToastEl.style.background = 'rgba(46, 125, 50, 0.95)';
+        document.body.appendChild(issueToastEl);
+      }
+      issueToastEl.className = 'quick-input-toast show';
+      issueToastEl.textContent = msg;
+      setTimeout(function () { if (issueToastEl) issueToastEl.className = 'quick-input-toast'; }, 2000);
+    }
+
+    function mockVoiceIssue() {
+      var btn = document.getElementById('voiceIssueBtn');
+      btn.disabled = true;
+      btn.querySelector('.ico').textContent = '⏳';
+      btn.querySelector('span:last-child').textContent = '正在聆听…(请说)';
+      setTimeout(function () {
+        document.getElementById('issueNote').value =
+          '重点关注 D45 血脂复查结果。患者近期 LDL-C 反弹,' +
+          '若仍未达标考虑加强化他汀方案。同时关注血压控制,' +
+          '若连续 3 天收缩压超过 140 提前安排随访。';
+        btn.disabled = false;
+        btn.querySelector('.ico').textContent = '🎤';
+        btn.querySelector('span:last-child').textContent = '点击语音录入';
+        showIssueToast('识别成功 · 请确认内容');
+      }, 2500);
+    }
+  </script>
 </body>
 </html>
