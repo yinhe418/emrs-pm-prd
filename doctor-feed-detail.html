@@ -129,6 +129,18 @@
     }
 
     function goBack() {
+      // 优先看 URL 上的 from 参数(更稳定,不受 referrer 限制)
+      var from = getParam('from');
+      if (from === 'nurse') {
+        // 尝试回上一页(若是 nurse-home),否则直接跳
+        if (document.referrer && document.referrer.indexOf('nurse-home') !== -1) {
+          history.back();
+        } else {
+          location.href = 'nurse-home.html';
+        }
+        return;
+      }
+      // 默认医生端
       if (document.referrer && document.referrer.indexOf('doctor-patient-detail') !== -1) {
         history.back();
       } else {
