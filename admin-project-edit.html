@@ -106,6 +106,57 @@
       font-weight: 500;
     }
     .dim-check:hover { border-color: var(--brand); }
+
+    /* 日期三选项(每天 / 出院前 / D N 天) */
+    .date-pills {
+      flex: 1;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    }
+    .date-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      font-size: 12px;
+      color: var(--ink-2);
+      cursor: pointer;
+      background: white;
+      transition: all 0.12s ease;
+    }
+    .date-pill input[type="radio"] { margin: 0; cursor: pointer; }
+    .date-pill input[type="number"] {
+      width: 44px;
+      padding: 1px 4px;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      font-size: 12px;
+      text-align: center;
+      background: white;
+      font-family: inherit;
+      -moz-appearance: textfield;
+    }
+    .date-pill input[type="number"]::-webkit-outer-spin-button,
+    .date-pill input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    .date-pill input[type="number"]:disabled {
+      background: var(--bg);
+      color: var(--ink-3);
+      cursor: not-allowed;
+    }
+    .date-pill:has(input[type="radio"]:checked) {
+      background: var(--brand-light);
+      border-color: var(--brand);
+      color: var(--brand);
+      font-weight: 500;
+    }
+    .date-pill:hover { border-color: var(--brand); }
   </style>
 </head>
 <body>
@@ -164,10 +215,6 @@
             <input class="form-input" type="number" value="100" min="0" step="10" style="flex:1; font-size:18px; font-weight:600;">
             <span style="font-size:14px; color:var(--ink-3);">元</span>
           </div>
-          <div class="form-helper" style="font-size:12px; color:var(--ink-3); margin-top:6px;">
-            默认:<b>90 天 = ¥100 · 180 天 = ¥200 · 365 天 = 待医院定价</b><br>
-            (实际价格由医院 / 科室使用前确定 · §13.1)
-          </div>
         </div>
       </div>
 
@@ -175,7 +222,7 @@
       <div class="section-title">任务模板(从任务库组合)</div>
       <div style="background:var(--info-bg); border:1px solid rgba(2, 119, 189, 0.15); padding:10px 14px; border-radius:10px; margin-bottom:12px; font-size:12px; color:var(--info); line-height:1.6;">
         <b>配置两个维度:</b><br>
-        📅 <b>日期</b>:每日 / D0(出院前) / D7 / D30 / D80 / D90 ...(单选)<br>
+        📅 <b>日期</b>:<b>每天</b> / <b>出院前</b>(预设 2 项) / <b>D N 天</b>(N 由管理员输入,可任意)<br>
         👥 <b>目标人</b>:主管医生 / 护士 / 患者 — <b>可多选</b>(如上传检查报告可同时分配给患者和主管医生)
       </div>
 
@@ -191,14 +238,7 @@
           <div class="task-dims">
             <div class="dim-row">
               <span class="dim-label">📅 日期</span>
-              <select class="dim-select">
-                <option selected>D0(出院前)</option>
-                <option>每日</option>
-                <option>D7</option>
-                <option>D30</option>
-                <option>D80</option>
-                <option>D90</option>
-              </select>
+              <div class="date-pills"><label class="date-pill"><input type="radio" name="date-4" value="daily" ><span>每天</span></label><label class="date-pill"><input type="radio" name="date-4" value="pre" checked><span>出院前</span></label><label class="date-pill"><input type="radio" name="date-4" value="custom" ><span>D</span><input type="number" value="7" min="0" disabled><span>天</span></label></div>
             </div>
             <div class="dim-row">
               <span class="dim-label">👥 目标人</span>
@@ -221,14 +261,7 @@
           <div class="task-dims">
             <div class="dim-row">
               <span class="dim-label">📅 日期</span>
-              <select class="dim-select">
-                <option selected>D0(出院前)</option>
-                <option>每日</option>
-                <option>D7</option>
-                <option>D30</option>
-                <option>D80</option>
-                <option>D90</option>
-              </select>
+              <div class="date-pills"><label class="date-pill"><input type="radio" name="date-3" value="daily" ><span>每天</span></label><label class="date-pill"><input type="radio" name="date-3" value="pre" checked><span>出院前</span></label><label class="date-pill"><input type="radio" name="date-3" value="custom" ><span>D</span><input type="number" value="7" min="0" disabled><span>天</span></label></div>
             </div>
             <div class="dim-row">
               <span class="dim-label">👥 目标人</span>
@@ -251,14 +284,7 @@
           <div class="task-dims">
             <div class="dim-row">
               <span class="dim-label">📅 日期</span>
-              <select class="dim-select">
-                <option selected>D0(出院前)</option>
-                <option>每日</option>
-                <option>D7</option>
-                <option>D30</option>
-                <option>D80</option>
-                <option>D90</option>
-              </select>
+              <div class="date-pills"><label class="date-pill"><input type="radio" name="date-2" value="daily" ><span>每天</span></label><label class="date-pill"><input type="radio" name="date-2" value="pre" checked><span>出院前</span></label><label class="date-pill"><input type="radio" name="date-2" value="custom" ><span>D</span><input type="number" value="7" min="0" disabled><span>天</span></label></div>
             </div>
             <div class="dim-row">
               <span class="dim-label">👥 目标人</span>
@@ -281,14 +307,7 @@
           <div class="task-dims">
             <div class="dim-row">
               <span class="dim-label">📅 日期</span>
-              <select class="dim-select">
-                <option selected>D0(出院前)</option>
-                <option>每日</option>
-                <option>D7</option>
-                <option>D30</option>
-                <option>D80</option>
-                <option>D90</option>
-              </select>
+              <div class="date-pills"><label class="date-pill"><input type="radio" name="date-1" value="daily" ><span>每天</span></label><label class="date-pill"><input type="radio" name="date-1" value="pre" checked><span>出院前</span></label><label class="date-pill"><input type="radio" name="date-1" value="custom" ><span>D</span><input type="number" value="7" min="0" disabled><span>天</span></label></div>
             </div>
             <div class="dim-row">
               <span class="dim-label">👥 目标人</span>
@@ -311,14 +330,7 @@
           <div class="task-dims">
             <div class="dim-row">
               <span class="dim-label">📅 日期</span>
-              <select class="dim-select">
-                <option>D0(出院前)</option>
-                <option>每日</option>
-                <option selected>D7</option>
-                <option>D30</option>
-                <option>D80</option>
-                <option>D90</option>
-              </select>
+              <div class="date-pills"><label class="date-pill"><input type="radio" name="date-5" value="daily" ><span>每天</span></label><label class="date-pill"><input type="radio" name="date-5" value="pre" ><span>出院前</span></label><label class="date-pill"><input type="radio" name="date-5" value="custom" checked><span>D</span><input type="number" value="7" min="0" ><span>天</span></label></div>
             </div>
             <div class="dim-row">
               <span class="dim-label">👥 目标人</span>
@@ -341,14 +353,7 @@
           <div class="task-dims">
             <div class="dim-row">
               <span class="dim-label">📅 日期</span>
-              <select class="dim-select">
-                <option>D0(出院前)</option>
-                <option>每日</option>
-                <option>D7</option>
-                <option selected>D30</option>
-                <option>D80</option>
-                <option>D90</option>
-              </select>
+              <div class="date-pills"><label class="date-pill"><input type="radio" name="date-6" value="daily" ><span>每天</span></label><label class="date-pill"><input type="radio" name="date-6" value="pre" ><span>出院前</span></label><label class="date-pill"><input type="radio" name="date-6" value="custom" checked><span>D</span><input type="number" value="30" min="0" ><span>天</span></label></div>
             </div>
             <div class="dim-row">
               <span class="dim-label">👥 目标人</span>
@@ -372,14 +377,7 @@
           <div class="task-dims">
             <div class="dim-row">
               <span class="dim-label">📅 日期</span>
-              <select class="dim-select">
-                <option>D0(出院前)</option>
-                <option>每日</option>
-                <option>D7</option>
-                <option selected>D30</option>
-                <option>D80</option>
-                <option>D90</option>
-              </select>
+              <div class="date-pills"><label class="date-pill"><input type="radio" name="date-7" value="daily" ><span>每天</span></label><label class="date-pill"><input type="radio" name="date-7" value="pre" ><span>出院前</span></label><label class="date-pill"><input type="radio" name="date-7" value="custom" checked><span>D</span><input type="number" value="30" min="0" ><span>天</span></label></div>
             </div>
             <div class="dim-row">
               <span class="dim-label">👥 目标人</span>
@@ -402,14 +400,7 @@
           <div class="task-dims">
             <div class="dim-row">
               <span class="dim-label">📅 日期</span>
-              <select class="dim-select">
-                <option>D0(出院前)</option>
-                <option selected>每日</option>
-                <option>D7</option>
-                <option>D30</option>
-                <option>D80</option>
-                <option>D90</option>
-              </select>
+              <div class="date-pills"><label class="date-pill"><input type="radio" name="date-8" value="daily" checked><span>每天</span></label><label class="date-pill"><input type="radio" name="date-8" value="pre" ><span>出院前</span></label><label class="date-pill"><input type="radio" name="date-8" value="custom" ><span>D</span><input type="number" value="7" min="0" disabled><span>天</span></label></div>
             </div>
             <div class="dim-row">
               <span class="dim-label">👥 目标人</span>
@@ -432,14 +423,7 @@
           <div class="task-dims">
             <div class="dim-row">
               <span class="dim-label">📅 日期</span>
-              <select class="dim-select">
-                <option>D0(出院前)</option>
-                <option>每日</option>
-                <option>D7</option>
-                <option>D30</option>
-                <option>D80</option>
-                <option selected>D90</option>
-              </select>
+              <div class="date-pills"><label class="date-pill"><input type="radio" name="date-9" value="daily" ><span>每天</span></label><label class="date-pill"><input type="radio" name="date-9" value="pre" ><span>出院前</span></label><label class="date-pill"><input type="radio" name="date-9" value="custom" checked><span>D</span><input type="number" value="90" min="0" ><span>天</span></label></div>
             </div>
             <div class="dim-row">
               <span class="dim-label">👥 目标人</span>
@@ -462,14 +446,7 @@
           <div class="task-dims">
             <div class="dim-row">
               <span class="dim-label">📅 日期</span>
-              <select class="dim-select">
-                <option>D0(出院前)</option>
-                <option>每日</option>
-                <option>D7</option>
-                <option>D30</option>
-                <option>D80</option>
-                <option selected>D90</option>
-              </select>
+              <div class="date-pills"><label class="date-pill"><input type="radio" name="date-10" value="daily" ><span>每天</span></label><label class="date-pill"><input type="radio" name="date-10" value="pre" ><span>出院前</span></label><label class="date-pill"><input type="radio" name="date-10" value="custom" checked><span>D</span><input type="number" value="90" min="0" ><span>天</span></label></div>
             </div>
             <div class="dim-row">
               <span class="dim-label">👥 目标人</span>
