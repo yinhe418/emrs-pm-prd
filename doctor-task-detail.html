@@ -232,13 +232,13 @@
         <div class="divider"></div>
         <div class="kv"><span class="k">检查机构</span><span class="v">H 市第一医院</span></div>
         <div class="kv"><span class="k">检查日期</span><span class="v">2025-12-29</span></div>
-        <div class="kv"><span class="k">报告</span><span class="v"><a href="javascript:void(0)" onclick="showReport()" class="link-brand">查看原报告.jpg</a></span></div>
+        <div class="kv"><span class="k">报告</span><span class="v"><a href="javascript:void(0)" onclick="toggleReport()" class="link-brand" id="reportLink">查看原报告.jpg ▾</a></span></div>
       </div>
 
-      <!-- 报告图片(JS 动态生成,点击放大) -->
+      <!-- 报告图片(JS 动态生成,点链接 toggle 显隐,点图片放大) -->
       <div id="reportArea" style="display:none;">
         <img id="reportImg" class="report-thumb" src="" alt="检验报告" onclick="enlargeReport()" />
-        <div class="report-caption">点击图片放大 · 模拟 H 市第一医院检验报告</div>
+        <div class="report-caption">点图片放大 · 模拟 H 市第一医院检验报告</div>
       </div>
 
       <!-- AI 病情简报(报告 OCR + AI 分析,仅医生端可见) -->
@@ -444,18 +444,26 @@
     }
 
     var reportGenerated = false;
-    function showReport() {
+    function toggleReport() {
       var area = document.getElementById('reportArea');
+      var link = document.getElementById('reportLink');
       var img = document.getElementById('reportImg');
-      if (!reportGenerated) {
-        img.src = buildReportSVG();
-        reportGenerated = true;
+      if (area.style.display === 'none') {
+        // 展开
+        if (!reportGenerated) {
+          img.src = buildReportSVG();
+          reportGenerated = true;
+        }
+        area.style.display = 'block';
+        link.textContent = '收起报告 ▴';
+        setTimeout(function () {
+          area.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
+      } else {
+        // 收起
+        area.style.display = 'none';
+        link.textContent = '查看原报告.jpg ▾';
       }
-      area.style.display = 'block';
-      // 平滑滚到图
-      setTimeout(function () {
-        area.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }, 100);
     }
 
     function enlargeReport() {
