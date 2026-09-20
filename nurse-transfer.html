@@ -76,7 +76,11 @@
         </div>
         <div class="form-item">
           <span class="form-label">补充说明</span>
-          <textarea class="form-textarea" placeholder="如:LDL-C 1.95 超过个人目标,需医生评估是否调整他汀剂量..."></textarea>
+          <textarea class="form-textarea" id="transferNote" placeholder="如:LDL-C 1.95 超过个人目标,需医生评估是否调整他汀剂量..." style="min-height:96px;"></textarea>
+          <button type="button" class="voice-input-wide" onclick="mockVoiceTransfer()" id="voiceTransferBtn" aria-label="语音录入补充说明">
+            <span class="ico">🎤</span>
+            <span>点击语音录入</span>
+          </button>
         </div>
       </div>
 
@@ -127,5 +131,40 @@
     </div>
   </div>
   <script src="assets/layout.js"></script>
+  <script>
+    var transferToastEl = null;
+    function showTransferToast(msg) {
+      if (!transferToastEl) {
+        transferToastEl = document.createElement('div');
+        transferToastEl.className = 'quick-input-toast';
+        transferToastEl.style.background = 'rgba(46, 125, 50, 0.95)';
+        document.body.appendChild(transferToastEl);
+      }
+      transferToastEl.className = 'quick-input-toast show';
+      transferToastEl.textContent = msg;
+      setTimeout(function () {
+        if (transferToastEl) transferToastEl.className = 'quick-input-toast';
+      }, 2200);
+    }
+
+    function mockVoiceTransfer() {
+      var btn = document.getElementById('voiceTransferBtn');
+      btn.disabled = true;
+      btn.querySelector('.ico').textContent = '⏳';
+      btn.querySelector('span:last-child').textContent = '正在录入…(请说)';
+      setTimeout(function () {
+        document.getElementById('transferNote').value =
+          '陈丙英 LDL-C 复查 1.95 mmol/L,超过个人目标 1.8,'
+          + '较 D7(1.72)反弹 +0.23。他汀 20mg 控制力度不足,'
+          + '建议主管医生评估是否需要调整为 40mg 或联合依折麦布。'
+          + '已电话告知患者 LDL-C 略高,本人知晓并同意转医生判断。'
+          + '本次电话接通,患者情绪稳定,无不适反馈。';
+        btn.disabled = false;
+        btn.querySelector('.ico').textContent = '🎤';
+        btn.querySelector('span:last-child').textContent = '点击语音录入';
+        showTransferToast('识别成功 · 请确认内容');
+      }, 2500);
+    }
+  </script>
 </body>
 </html>
