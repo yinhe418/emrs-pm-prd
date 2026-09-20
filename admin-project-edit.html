@@ -5,6 +5,108 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>编辑项目</title>
   <link rel="stylesheet" href="assets/styles.css">
+  <style>
+    /* 任务配置维度(日期 + 目标人) */
+    .task-cell {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+    .task-cell .head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .task-cell .head .icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: var(--brand-light);
+      color: var(--brand);
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      font-size: 13px;
+      font-weight: 600;
+      overflow: hidden;
+    }
+    .task-cell .head .icon img {
+      width: 22px;
+      height: 22px;
+    }
+    .task-cell .head .info { flex: 1; min-width: 0; }
+    .task-cell .head .info b {
+      display: block;
+      font-size: 14px;
+      color: var(--ink);
+      line-height: 1.3;
+    }
+    .task-cell .head .info .sub {
+      font-size: 12px;
+      color: var(--ink-3);
+      margin-top: 2px;
+    }
+
+    .task-dims {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px dashed var(--line);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .dim-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+    }
+    .dim-row .dim-label {
+      color: var(--ink-3);
+      flex-shrink: 0;
+      width: 56px;
+    }
+    .dim-row select.dim-select {
+      flex: 1;
+      height: 32px;
+      padding: 0 8px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: white;
+      font-size: 13px;
+      font-family: inherit;
+      color: var(--ink);
+    }
+    .dim-row .dim-checks {
+      flex: 1;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .dim-check {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      font-size: 12px;
+      color: var(--ink-2);
+      cursor: pointer;
+      background: white;
+      transition: all 0.12s ease;
+    }
+    .dim-check input { margin: 0; cursor: pointer; }
+    .dim-check.checked {
+      background: var(--brand-light);
+      border-color: var(--brand);
+      color: var(--brand);
+      font-weight: 500;
+    }
+    .dim-check:hover { border-color: var(--brand); }
+  </style>
 </head>
 <body>
   <div class="app">
@@ -52,78 +154,334 @@
         </div>
       </div>
 
+      <!-- 项目定价 -->
+      <div class="section-title">项目定价</div>
+      <div class="card">
+        <div class="form-item">
+          <span class="form-label"><span class="req">*</span>定价</span>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:18px; font-weight:600; color:var(--ink-3);">¥</span>
+            <input class="form-input" type="number" value="100" min="0" step="10" style="flex:1; font-size:18px; font-weight:600;">
+            <span style="font-size:14px; color:var(--ink-3);">元</span>
+          </div>
+          <div class="form-helper" style="font-size:12px; color:var(--ink-3); margin-top:6px;">
+            默认:<b>90 天 = ¥100 · 180 天 = ¥200 · 365 天 = 待医院定价</b><br>
+            (实际价格由医院 / 科室使用前确定 · §13.1)
+          </div>
+        </div>
+      </div>
+
+      <!-- 任务模板(突出两个维度:日期 + 目标人) -->
       <div class="section-title">任务模板(从任务库组合)</div>
+      <div style="background:var(--info-bg); border:1px solid rgba(2, 119, 189, 0.15); padding:10px 14px; border-radius:10px; margin-bottom:12px; font-size:12px; color:var(--info); line-height:1.6;">
+        <b>配置两个维度:</b><br>
+        📅 <b>日期</b>:每日 / D0(出院前) / D7 / D30 / D80 / D90 ...(单选)<br>
+        👥 <b>目标人</b>:主管医生 / 护士 / 患者 — <b>可多选</b>(如上传检查报告可同时分配给患者和主管医生)
+      </div>
+
       <div class="group">
-        <div class="cell" style="background:var(--brand-light);">
-          <div class="l">
+
+        <!-- 任务 1:出院前 · 完成病患口述病例 -->
+        <div class="task-cell">
+          <div class="head">
             <div class="icon"><img src="assets/icons-png/icon-document.png" alt="文" /></div>
-            <div class="info"><b>出院前 · 完成病患口述病例</b><span>负责人:主管医生 · 截止入院 D0</span></div>
+            <div class="info"><b>完成病患口述病例</b><span class="sub">出院前 · 截止入院 D0</span></div>
+            <input type="checkbox" checked>
           </div>
-          <div class="r"><input type="checkbox" checked></div>
+          <div class="task-dims">
+            <div class="dim-row">
+              <span class="dim-label">📅 日期</span>
+              <select class="dim-select">
+                <option selected>D0(出院前)</option>
+                <option>每日</option>
+                <option>D7</option>
+                <option>D30</option>
+                <option>D80</option>
+                <option>D90</option>
+              </select>
+            </div>
+            <div class="dim-row">
+              <span class="dim-label">👥 目标人</span>
+              <div class="dim-checks">
+                <label class="dim-check checked"><input type="checkbox" checked>主管医生</label>
+                <label class="dim-check"><input type="checkbox">护士</label>
+                <label class="dim-check"><input type="checkbox">患者</label>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="cell" style="background:var(--brand-light);">
-          <div class="l">
+
+        <!-- 任务 2:出院前 · 完成药物清单 -->
+        <div class="task-cell">
+          <div class="head">
             <div class="icon"><img src="assets/icons-png/icon-document.png" alt="文" /></div>
-            <div class="info"><b>出院前 · 完成药物清单</b><span>负责人:主管医生</span></div>
+            <div class="info"><b>完成药物清单</b><span class="sub">出院前</span></div>
+            <input type="checkbox" checked>
           </div>
-          <div class="r"><input type="checkbox" checked></div>
+          <div class="task-dims">
+            <div class="dim-row">
+              <span class="dim-label">📅 日期</span>
+              <select class="dim-select">
+                <option selected>D0(出院前)</option>
+                <option>每日</option>
+                <option>D7</option>
+                <option>D30</option>
+                <option>D80</option>
+                <option>D90</option>
+              </select>
+            </div>
+            <div class="dim-row">
+              <span class="dim-label">👥 目标人</span>
+              <div class="dim-checks">
+                <label class="dim-check checked"><input type="checkbox" checked>主管医生</label>
+                <label class="dim-check"><input type="checkbox">护士</label>
+                <label class="dim-check"><input type="checkbox">患者</label>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="cell" style="background:var(--brand-light);">
-          <div class="l">
+
+        <!-- 任务 3:出院前 · 完成检查计划 -->
+        <div class="task-cell">
+          <div class="head">
             <div class="icon"><img src="assets/icons-png/icon-document.png" alt="文" /></div>
-            <div class="info"><b>出院前 · 完成检查计划</b><span>负责人:主管医生</span></div>
+            <div class="info"><b>完成检查计划</b><span class="sub">出院前</span></div>
+            <input type="checkbox" checked>
           </div>
-          <div class="r"><input type="checkbox" checked></div>
+          <div class="task-dims">
+            <div class="dim-row">
+              <span class="dim-label">📅 日期</span>
+              <select class="dim-select">
+                <option selected>D0(出院前)</option>
+                <option>每日</option>
+                <option>D7</option>
+                <option>D30</option>
+                <option>D80</option>
+                <option>D90</option>
+              </select>
+            </div>
+            <div class="dim-row">
+              <span class="dim-label">👥 目标人</span>
+              <div class="dim-checks">
+                <label class="dim-check checked"><input type="checkbox" checked>主管医生</label>
+                <label class="dim-check"><input type="checkbox">护士</label>
+                <label class="dim-check"><input type="checkbox">患者</label>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="cell" style="background:var(--brand-light);">
-          <div class="l">
+
+        <!-- 任务 4:出院前 · 患者信息授权 -->
+        <div class="task-cell">
+          <div class="head">
             <div class="icon"><img src="assets/icons-png/icon-document.png" alt="文" /></div>
-            <div class="info"><b>出院前 · 患者信息授权</b><span>负责人:患者</span></div>
+            <div class="info"><b>患者信息授权</b><span class="sub">出院前 · 小程序录入基本信息</span></div>
+            <input type="checkbox" checked>
           </div>
-          <div class="r"><input type="checkbox" checked></div>
+          <div class="task-dims">
+            <div class="dim-row">
+              <span class="dim-label">📅 日期</span>
+              <select class="dim-select">
+                <option selected>D0(出院前)</option>
+                <option>每日</option>
+                <option>D7</option>
+                <option>D30</option>
+                <option>D80</option>
+                <option>D90</option>
+              </select>
+            </div>
+            <div class="dim-row">
+              <span class="dim-label">👥 目标人</span>
+              <div class="dim-checks">
+                <label class="dim-check"><input type="checkbox">主管医生</label>
+                <label class="dim-check"><input type="checkbox">护士</label>
+                <label class="dim-check checked"><input type="checkbox" checked>患者</label>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="cell" style="background:var(--brand-light);">
-          <div class="l">
+
+        <!-- 任务 5:D7 · 电话回访 -->
+        <div class="task-cell">
+          <div class="head">
             <div class="icon"><img src="assets/icons-png/icon-call.png" alt="电" /></div>
-            <div class="info"><b>D7 · 电话回访</b><span>负责人:护士 · 7±2</span></div>
+            <div class="info"><b>电话回访</b><span class="sub">D7 · 7±2 天</span></div>
+            <input type="checkbox" checked>
           </div>
-          <div class="r"><input type="checkbox" checked></div>
+          <div class="task-dims">
+            <div class="dim-row">
+              <span class="dim-label">📅 日期</span>
+              <select class="dim-select">
+                <option>D0(出院前)</option>
+                <option>每日</option>
+                <option selected>D7</option>
+                <option>D30</option>
+                <option>D80</option>
+                <option>D90</option>
+              </select>
+            </div>
+            <div class="dim-row">
+              <span class="dim-label">👥 目标人</span>
+              <div class="dim-checks">
+                <label class="dim-check"><input type="checkbox">主管医生</label>
+                <label class="dim-check checked"><input type="checkbox" checked>护士</label>
+                <label class="dim-check"><input type="checkbox">患者</label>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="cell" style="background:var(--brand-light);">
-          <div class="l">
+
+        <!-- 任务 6:D30 · 复查指标 + 上传报告(多选示例:患者 + 主管医生) -->
+        <div class="task-cell" style="border-color:var(--brand);">
+          <div class="head">
             <div class="icon"><img src="assets/icons-png/icon-call.png" alt="电" /></div>
-            <div class="info"><b>D30 · 复查指标 + 上传报告</b><span>负责人:患者 · LDL-C/sdLDL-C/颈动脉超声</span></div>
+            <div class="info"><b>复查指标 + 上传报告</b><span class="sub">D30 · LDL-C / sdLDL-C / 颈动脉超声</span></div>
+            <input type="checkbox" checked>
           </div>
-          <div class="r"><input type="checkbox" checked></div>
+          <div class="task-dims">
+            <div class="dim-row">
+              <span class="dim-label">📅 日期</span>
+              <select class="dim-select">
+                <option>D0(出院前)</option>
+                <option>每日</option>
+                <option>D7</option>
+                <option selected>D30</option>
+                <option>D80</option>
+                <option>D90</option>
+              </select>
+            </div>
+            <div class="dim-row">
+              <span class="dim-label">👥 目标人</span>
+              <div class="dim-checks">
+                <label class="dim-check checked"><input type="checkbox" checked>主管医生</label>
+                <label class="dim-check"><input type="checkbox">护士</label>
+                <label class="dim-check checked"><input type="checkbox" checked>患者</label>
+              </div>
+            </div>
+            <div style="font-size:11px; color:var(--brand); padding-left:64px;">↑ 多选示例:上传报告由患者上传 + 主管医生复核</div>
+          </div>
         </div>
-        <div class="cell" style="background:var(--brand-light);">
-          <div class="l">
+
+        <!-- 任务 7:D30 · 电话回访 -->
+        <div class="task-cell">
+          <div class="head">
             <div class="icon"><img src="assets/icons-png/icon-call.png" alt="电" /></div>
-            <div class="info"><b>D30 · 电话回访</b><span>负责人:护士 · 30±7</span></div>
+            <div class="info"><b>电话回访</b><span class="sub">D30 · 30±7 天</span></div>
+            <input type="checkbox" checked>
           </div>
-          <div class="r"><input type="checkbox" checked></div>
+          <div class="task-dims">
+            <div class="dim-row">
+              <span class="dim-label">📅 日期</span>
+              <select class="dim-select">
+                <option>D0(出院前)</option>
+                <option>每日</option>
+                <option>D7</option>
+                <option selected>D30</option>
+                <option>D80</option>
+                <option>D90</option>
+              </select>
+            </div>
+            <div class="dim-row">
+              <span class="dim-label">👥 目标人</span>
+              <div class="dim-checks">
+                <label class="dim-check"><input type="checkbox">主管医生</label>
+                <label class="dim-check checked"><input type="checkbox" checked>护士</label>
+                <label class="dim-check"><input type="checkbox">患者</label>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="cell" style="background:var(--brand-light);">
-          <div class="l">
+
+        <!-- 任务 8:每日 · 血压 / 血糖记录 -->
+        <div class="task-cell">
+          <div class="head">
             <div class="icon">每日</div>
-            <div class="info"><b>每日 · 血压 / 血糖记录</b><span>负责人:患者</span></div>
+            <div class="info"><b>血压 / 血糖记录</b><span class="sub">每日 1-3 次 · 自动对比目标</span></div>
+            <input type="checkbox" checked>
           </div>
-          <div class="r"><input type="checkbox" checked></div>
+          <div class="task-dims">
+            <div class="dim-row">
+              <span class="dim-label">📅 日期</span>
+              <select class="dim-select">
+                <option>D0(出院前)</option>
+                <option selected>每日</option>
+                <option>D7</option>
+                <option>D30</option>
+                <option>D80</option>
+                <option>D90</option>
+              </select>
+            </div>
+            <div class="dim-row">
+              <span class="dim-label">👥 目标人</span>
+              <div class="dim-checks">
+                <label class="dim-check"><input type="checkbox">主管医生</label>
+                <label class="dim-check"><input type="checkbox">护士</label>
+                <label class="dim-check checked"><input type="checkbox" checked>患者</label>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="cell" style="background:var(--brand-light);">
-          <div class="l">
+
+        <!-- 任务 9:D90 · 复核回访 + 标记阶段完成 -->
+        <div class="task-cell">
+          <div class="head">
             <div class="icon"><img src="assets/icons-png/icon-call.png" alt="电" /></div>
-            <div class="info"><b>D90 · 复核回访 + 标记阶段完成</b><span>负责人:主管医生 · 90±14</span></div>
+            <div class="info"><b>复核回访 + 标记阶段完成</b><span class="sub">D90 · 90±14 天</span></div>
+            <input type="checkbox" checked>
           </div>
-          <div class="r"><input type="checkbox" checked></div>
+          <div class="task-dims">
+            <div class="dim-row">
+              <span class="dim-label">📅 日期</span>
+              <select class="dim-select">
+                <option>D0(出院前)</option>
+                <option>每日</option>
+                <option>D7</option>
+                <option>D30</option>
+                <option>D80</option>
+                <option selected>D90</option>
+              </select>
+            </div>
+            <div class="dim-row">
+              <span class="dim-label">👥 目标人</span>
+              <div class="dim-checks">
+                <label class="dim-check checked"><input type="checkbox" checked>主管医生</label>
+                <label class="dim-check"><input type="checkbox">护士</label>
+                <label class="dim-check"><input type="checkbox">患者</label>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="cell" style="background:var(--brand-light);">
-          <div class="l">
+
+        <!-- 任务 10:D90 · 电话回访 + 安排接续 -->
+        <div class="task-cell">
+          <div class="head">
             <div class="icon"><img src="assets/icons-png/icon-call.png" alt="电" /></div>
-            <div class="info"><b>D90 · 电话回访 + 安排接续</b><span>负责人:护士</span></div>
+            <div class="info"><b>电话回访 + 安排接续</b><span class="sub">D90 · 转基层或随访门诊</span></div>
+            <input type="checkbox" checked>
           </div>
-          <div class="r"><input type="checkbox" checked></div>
+          <div class="task-dims">
+            <div class="dim-row">
+              <span class="dim-label">📅 日期</span>
+              <select class="dim-select">
+                <option>D0(出院前)</option>
+                <option>每日</option>
+                <option>D7</option>
+                <option>D30</option>
+                <option>D80</option>
+                <option selected>D90</option>
+              </select>
+            </div>
+            <div class="dim-row">
+              <span class="dim-label">👥 目标人</span>
+              <div class="dim-checks">
+                <label class="dim-check"><input type="checkbox">主管医生</label>
+                <label class="dim-check checked"><input type="checkbox" checked>护士</label>
+                <label class="dim-check"><input type="checkbox">患者</label>
+              </div>
+            </div>
+          </div>
         </div>
+
         <a href="admin-task-lib.html?from=project-edit&project=90day" class="cell">
           <div class="l">
             <div class="icon"><img src="assets/icons-png/icon-plus.png" alt="＋" /></div>
