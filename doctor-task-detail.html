@@ -61,22 +61,24 @@
       border: none;
     }
 
-    /* AI 病情简报 */
+    /* AI 病情简报(可折叠,默认收起) */
     .ai-summary {
       background: linear-gradient(135deg, #F3E5F5, #FFFFFF);
       border: 1px solid #CE93D8;
       border-radius: 12px;
-      padding: 14px;
+      padding: 0;
       margin-bottom: 16px;
+      overflow: hidden;
     }
     .ai-summary .head {
       display: flex;
       align-items: center;
       gap: 8px;
-      margin-bottom: 10px;
-      padding-bottom: 8px;
-      border-bottom: 1px dashed #CE93D8;
+      padding: 14px;
+      cursor: pointer;
+      user-select: none;
     }
+    .ai-summary .head:active { background: rgba(206, 147, 216, 0.12); }
     .ai-summary .head .badge-ai {
       background: #6A1B9A;
       color: white;
@@ -85,10 +87,30 @@
       border-radius: 10px;
       font-weight: 500;
     }
-    .ai-summary .head .meta {
+    .ai-summary .head .title-text {
+      font-size: 14px;
+      color: #6A1B9A;
+      font-weight: 600;
+    }
+    .ai-summary .head .title-hint {
       font-size: 11px;
       color: var(--ink-3);
+    }
+    .ai-summary .head .chevron {
       margin-left: auto;
+      font-size: 14px;
+      color: #6A1B9A;
+      transition: transform 0.2s ease;
+      width: 24px;
+      height: 24px;
+      display: grid;
+      place-items: center;
+    }
+    .ai-summary.collapsed .chevron { transform: rotate(-90deg); }
+    .ai-summary.collapsed .body { display: none; }
+    .ai-summary .body {
+      padding: 0 14px 14px;
+      border-top: 1px dashed #CE93D8;
     }
     .ai-summary .section {
       font-size: 13px;
@@ -105,12 +127,41 @@
       color: var(--block);
       margin-top: 10px;
     }
-    .ai-actions {
+
+    /* 语音录入大按钮(手指友好) */
+    .voice-input-wide {
       display: flex;
-      gap: 8px;
-      margin-top: 12px;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      height: 56px;
+      margin-top: 10px;
+      padding: 0 16px;
+      background: linear-gradient(135deg, var(--brand-light), #fff);
+      border: 2px solid var(--brand);
+      border-radius: 14px;
+      color: var(--brand);
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.15s ease;
     }
-    .ai-actions .btn { flex: 1; }
+    .voice-input-wide:hover {
+      background: var(--brand);
+      color: white;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(46, 125, 215, 0.25);
+    }
+    .voice-input-wide:active { transform: translateY(0); }
+    .voice-input-wide:disabled {
+      opacity: 0.55;
+      cursor: wait;
+    }
+    .voice-input-wide .ico {
+      font-size: 24px;
+    }
   </style>
 </head>
 <body>
@@ -192,38 +243,34 @@
 
       <!-- AI 病情简报(报告 OCR + AI 分析,仅医生端可见) -->
       <div class="section-title">AI 病情简报</div>
-      <div class="ai-summary">
-        <div class="head">
+      <div class="ai-summary collapsed" id="aiSummary">
+        <div class="head" onclick="toggleAiSummary()">
           <span class="badge-ai">AI</span>
-          <b style="font-size:14px; color:var(--purple);">检查报告分析</b>
-          <span class="meta">mock-v0.1 · 2025-12-29</span>
+          <span class="title-text">检查报告分析</span>
+          <span class="title-hint">· 仅供参考 · 医生自行判断</span>
+          <span class="chevron">▼</span>
         </div>
+        <div class="body">
+          <div class="section">
+            <b>关键异常:</b>LDL-C 1.95 mmol/L,超过目标值(1.8 mmol/L)<b style="color:var(--block);"> ↑ 0.15</b>;TC 4.85 mmol/L 处于临界(参考区间上限 5.20);HDL-C 1.20、TG 1.45 处于正常范围。
+          </div>
 
-        <div class="section">
-          <b>关键异常:</b>LDL-C 1.95 mmol/L,超过目标值(1.8 mmol/L)<b style="color:var(--block);"> ↑ 0.15</b>;TC 4.85 mmol/L 处于临界(参考区间上限 5.20);HDL-C 1.20、TG 1.45 处于正常范围。
-        </div>
+          <div class="section">
+            <b>趋势对比:</b>较 D7 复查(1.72)反弹 +0.23,提示他汀 20mg qN 控制力度不足。
+          </div>
 
-        <div class="section">
-          <b>趋势对比:</b>较 D7 复查(1.72)反弹 +0.23,提示他汀 20mg qN 控制力度不足。
-        </div>
+          <div class="section">
+            <b>风险提示:</b>患者为缺血性卒中(心源性)+ 房颤,LDL-C 未达标与卒中复发风险直接相关。建议结合患者 81 岁、肝肾功能,考虑强化降脂方案。
+          </div>
 
-        <div class="section">
-          <b>风险提示:</b>患者为缺血性卒中(心源性)+ 房颤,LDL-C 未达标与卒中复发风险直接相关。建议结合患者 81 岁、肝肾功能,考虑强化降脂方案。
-        </div>
+          <div class="section">
+            <b>可能方案:</b>
+            ① 阿托伐他汀 20 → 40mg qN(强化单药);② 联合依折麦布 10mg qd(联合方案);③ 维持 1 月复查(保守)。
+          </div>
 
-        <div class="section">
-          <b>可能方案:</b>
-          ① 阿托伐他汀 20 → 40mg qN(强化单药);② 联合依折麦布 10mg qd(联合方案);③ 维持 1 月复查(保守)。
-        </div>
-
-        <div class="verdict">
-          <b>AI 建议:</b>综合年龄 + 卒中史 + LDL-C 反弹幅度,倾向方案①(强化他汀)。<b style="display:block; margin-top:4px;">⚠ 仅供医生参考,不替代临床判断(C1)。</b>
-        </div>
-
-        <div class="ai-actions">
-          <a href="javascript:void(0)" onclick="aiAdopt()" class="btn btn-primary btn-sm">采纳建议</a>
-          <a href="javascript:void(0)" onclick="aiIgnore()" class="btn btn-outline btn-sm">忽略</a>
-          <a href="javascript:void(0)" onclick="aiEdit()" class="btn btn-outline btn-sm">手动修改</a>
+          <div class="verdict">
+            <b>AI 建议:</b>综合年龄 + 卒中史 + LDL-C 反弹幅度,倾向方案①(强化他汀)。<b style="display:block; margin-top:4px;">⚠ 仅供医生参考,不替代临床判断(C1)。</b>
+          </div>
         </div>
       </div>
 
@@ -281,13 +328,12 @@
         </div>
 
         <div class="form-item">
-          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
-            <span class="form-label" style="margin-bottom:0;"><span class="req">*</span>判断说明(必须)</span>
-            <button type="button" class="quick-input-mini" onclick="mockVoiceJudge()" id="voiceJudgeBtn">
-              🎤 语音录入
-            </button>
-          </div>
-          <textarea class="form-textarea" id="judgeNote" placeholder="如:LDL-C 升高 0.15,合并他汀不达标,建议升级..."></textarea>
+          <span class="form-label"><span class="req">*</span>判断说明(必须)</span>
+          <textarea class="form-textarea" id="judgeNote" placeholder="如:LDL-C 升高 0.15,合并他汀不达标,建议升级..." style="min-height:96px;"></textarea>
+          <button type="button" class="voice-input-wide" onclick="mockVoiceJudge()" id="voiceJudgeBtn" aria-label="语音录入判断说明">
+            <span class="ico">🎤</span>
+            <span>点击语音录入</span>
+          </button>
         </div>
         <div class="form-item">
           <span class="form-label">复查安排</span>
@@ -442,23 +488,13 @@
     }
 
     function aiAdopt() {
-      // 自动选择"调整他汀剂量"+ 填入判断说明
-      document.getElementById('treatment-select').value = 'statin';
-      toggleDosePanel();
-      document.getElementById('judgeNote').value =
-        '采纳 AI 建议。患者 LDL-C 1.95 mmol/L,超过目标(1.8)且较 D7 反弹 +0.23,' +
-        '考虑他汀 20mg 控制力度不足,加强化单药方案:阿托伐他汀 40mg qN,D45 复查血脂全套 + 肝功能。';
-      showAiToast('已采纳 · 自动填充处理方案 + 判断说明');
-      document.getElementById('judgeNote').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // 已废弃 — 折叠版不再需要采纳按钮
     }
-
     function aiIgnore() {
-      showAiToast('已忽略 AI 建议 · 请手动填写');
+      // 已废弃
     }
-
     function aiEdit() {
-      showAiToast('请在判断说明里手动修改');
-      document.getElementById('judgeNote').focus();
+      // 已废弃
     }
 
     // ─────────────────────────────────────────────
@@ -467,18 +503,25 @@
     function mockVoiceJudge() {
       var btn = document.getElementById('voiceJudgeBtn');
       btn.disabled = true;
-      btn.style.opacity = '0.55';
-      btn.textContent = '🎤 正在聆听…';
+      btn.querySelector('.ico').textContent = '⏳';
+      btn.querySelector('span:last-child').textContent = '正在聆听…(请说)';
       setTimeout(function () {
         document.getElementById('judgeNote').value =
           '患者 LDL-C 1.95,超过目标值 1.8,较 D7 反弹 0.23。' +
           '考虑他汀 20 毫克控制力度不足,加强化单药,调整为阿托伐他汀 40 毫克 每晚一次,' +
           '嘱 45 天后复查血脂全套和肝功能,关注肌酶。';
         btn.disabled = false;
-        btn.style.opacity = '1';
-        btn.textContent = '🎤 语音录入';
+        btn.querySelector('.ico').textContent = '🎤';
+        btn.querySelector('span:last-child').textContent = '点击语音录入';
         showAiToast('识别成功 · 请确认内容');
       }, 2800);
+    }
+
+    // ─────────────────────────────────────────────
+    // AI 简报 · 折叠展开
+    // ─────────────────────────────────────────────
+    function toggleAiSummary() {
+      document.getElementById('aiSummary').classList.toggle('collapsed');
     }
   </script>
 
