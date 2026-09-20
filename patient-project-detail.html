@@ -146,16 +146,69 @@
           '<a href="patient-home.html" class="btn btn-primary btn-block btn-lg">回到首页看任务</a>';
       } else {
         ctaHtml =
-          '<a href="patient-privacy.html?id=' + encodeURIComponent(id) + '" '
-          + 'class="btn btn-primary btn-block btn-lg" '
-          + 'style="background:var(--warn); color:white;">'
-          + '购买服务 ' + proj.priceLabel + ' ›</a>';
+          '<div style="text-align:center; margin-bottom:10px;">'
+          + '<a href="patient-privacy.html?id=' + encodeURIComponent(id) + '" '
+          + 'style="color:var(--ink-3); font-size:12px; text-decoration:underline;">'
+          + '阅读《隐私协议》</a>'
+          + '</div>'
+          + '<label style="display:flex; align-items:flex-start; gap:8px; '
+          + 'padding:12px; background:var(--bg); border-radius:8px; '
+          + 'margin-bottom:12px; cursor:pointer; line-height:1.5;">'
+          + '<input type="checkbox" id="agreePrivacy" onclick="toggleAgree()" '
+          + 'style="margin-top:2px; flex-shrink:0;">'
+          + '<span style="font-size:13px; color:var(--ink-2);">'
+          + '我已阅读并同意'
+          + '<a href="patient-privacy.html?id=' + encodeURIComponent(id) + '" '
+          + 'target="_blank" '
+          + 'style="color:var(--brand); text-decoration:none;">《隐私协议》</a>'
+          + '</span>'
+          + '</label>'
+          + '<button type="button" id="buyBtn" disabled '
+          + 'class="btn btn-block btn-lg" '
+          + 'style="background:var(--line); color:var(--ink-3); '
+          + 'cursor:not-allowed; border:none;" '
+          + 'onclick="goBuy()">'
+          + '购买服务 ' + proj.priceLabel + ' ›</button>';
       }
       document.getElementById('projCTA').innerHTML = ctaHtml;
 
       // 顶部 navbar title 同步
       document.querySelector('.navbar .title').textContent = proj.name;
     })();
+
+    // 勾选隐私协议 → 解锁购买按钮
+    function toggleAgree() {
+      var cb = document.getElementById('agreePrivacy');
+      var btn = document.getElementById('buyBtn');
+      if (!cb || !btn) return;
+      btn.disabled = !cb.checked;
+      if (cb.checked) {
+        btn.style.background = 'var(--block)';
+        btn.style.color = 'white';
+        btn.style.cursor = 'pointer';
+      } else {
+        btn.style.background = 'var(--line)';
+        btn.style.color = 'var(--ink-3)';
+        btn.style.cursor = 'not-allowed';
+      }
+    }
+
+    // 购买服务 → mock 支付页
+    function goBuy() {
+      var cb = document.getElementById('agreePrivacy');
+      if (cb && !cb.checked) return;
+      var qs = location.search.replace(/^\?/, '');
+      var id = '90d_health';
+      try {
+        if (qs) {
+          qs.split('&').forEach(function (kv) {
+            var p = kv.split('=');
+            if (p[0] === 'id' && p[1]) id = decodeURIComponent(p[1]);
+          });
+        }
+      } catch (e) {}
+      location.href = 'patient-pay.html?id=' + encodeURIComponent(id);
+    }
   </script>
 </body>
 </html>

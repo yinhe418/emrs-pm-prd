@@ -89,7 +89,8 @@
       return PROJ_ID;
     }
     function goBack() {
-      location.href = 'patient-signature.html?id=' + encodeURIComponent(getProjId());
+      // 新流程:支付前从项目详情进入(勾选同意后),回项目详情
+      location.href = 'patient-project-detail.html?id=' + encodeURIComponent(getProjId());
     }
     function mockPay(e) {
       var btn = document.getElementById('payBtn');
