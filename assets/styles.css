@@ -700,6 +700,34 @@ body {
   color: var(--ink);
   line-height: var(--lh-loose);
 }
+/* feed item 可点击(doctor-patient-detail 等处用) */
+.feed-item-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  margin: 0 -16px;
+  padding: 12px 16px;
+  border-radius: 0;
+  transition: background 0.12s ease;
+}
+.feed-item-link:hover {
+  background: var(--bg);
+}
+.feed-item-link:active {
+  background: var(--brand-light);
+}
+.feed-item-link .meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.feed-item-link .feed-arrow {
+  margin-left: auto;
+  color: var(--ink-3);
+  font-size: 18px;
+  line-height: 1;
+}
 
 /* ============ IM 气泡 ============ */
 .im-bubble {
