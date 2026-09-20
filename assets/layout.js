@@ -46,7 +46,7 @@
         { name: '家属代填', icon: 'icon-family', href: 'patient-elderly-help.html' },
         { name: '老年关怀', icon: 'icon-info', href: 'patient-auth.html' },
         { name: '项目登记', icon: 'icon-microscope', href: 'patient-research.html' },
-        { name: '双项目管理', icon: 'icon-folder', href: 'patient-dual-project.html' },
+        { name: '项目详情', icon: 'icon-folder', href: 'patient-project-detail.html' },
         { name: '90 天报告', icon: 'icon-document', href: 'patient-report-90.html' },
         { name: '紧急求助', icon: 'icon-sos', href: 'patient-emergency.html' },
         { name: '急救记录', icon: 'icon-document', href: 'patient-emergency-recorded.html' },

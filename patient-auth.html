@@ -21,20 +21,6 @@
     </div>
 
     <div class="page">
-      <div class="step-indicator">
-        <span class="done">认证</span>
-        <span class="sep"></span>
-        <span>选项目</span>
-        <span class="sep"></span>
-        <span>隐私</span>
-        <span class="sep"></span>
-        <span>签署</span>
-        <span class="sep"></span>
-        <span>付费</span>
-        <span class="sep"></span>
-        <span>主页</span>
-      </div>
-
       <div class="banner">
         <b>首次进入,请补充基本信息</b>
         已从病案档案自动带入的字段不可修改。需补充项以红色 * 标注。
@@ -97,8 +83,8 @@
         </div>
       </div>
 
-      <a href="patient-dual-project.html" class="btn btn-primary btn-block" style="margin-top:20px;" onclick="return finishAuth(event)">
-        完成认证,选择项目
+      <a href="patient-home.html" class="btn btn-primary btn-block" style="margin-top:20px;" onclick="return finishAuth(event)">
+        完成认证,进入个人中心
       </a>
 
       <div style="margin-top:12px; font-size:11px; color:var(--ink-3); text-align:center;">
@@ -111,8 +97,12 @@
   <script src="assets/layout.js"></script>
   <script src="assets/font-size.js"></script>
   <script>
+    // hub 模式:认证完直接进入首页,不强制走"选项目"门控
     function finishAuth(e) {
-      try { localStorage.setItem('emrs_authed', '1'); } catch (e2) {}
+      try {
+        localStorage.setItem('emrs_authed', '1');
+        localStorage.setItem('emrs_authed_time', new Date().toISOString());
+      } catch (e2) {}
       return true;
     }
   </script>

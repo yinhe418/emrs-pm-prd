@@ -9,29 +9,14 @@
 <body>
   <div class="app">
     <div class="navbar">
-      <button class="back" onclick="location.href='patient-dual-project.html'"><span style="font-size:22px; font-weight:700; line-height:1;">‹</span></button>
-      <div class="title">项目隐私与安全</div>
+      <button class="back" onclick="goBack()"><span style="font-size:22px; font-weight:700; line-height:1;">‹</span></button>
+      <div class="title" id="pageTitle">项目隐私与安全</div>
       <div class="actions"></div>
     </div>
 
     <div class="page">
-      <!-- 进度指示 -->
-      <div class="step-indicator">
-        <span class="done">认证</span>
-        <span class="sep"></span>
-        <span class="done">选项目</span>
-        <span class="sep"></span>
-        <span class="active">隐私</span>
-        <span class="sep"></span>
-        <span>签署</span>
-        <span class="sep"></span>
-        <span>付费</span>
-        <span class="sep"></span>
-        <span>主页</span>
-      </div>
-
       <div class="banner">
-        <b>请仔细阅读 · 进入下一步前必须读完</b>
+        <b id="projLabel">请仔细阅读 · 进入下一步前必须读完</b>
         您的资料只用于本项目的随访工作,不向第三方营销,不提供无关人员(C10)。
       </div>
 
@@ -73,7 +58,7 @@
 
       <div style="display:flex; gap:8px; margin-top:20px;">
         <button class="btn btn-outline" style="flex:1;" onclick="markRead()">我已通读</button>
-        <a href="patient-signature.html" class="btn btn-primary" style="flex:1;" id="nextBtn" onclick="return ensureRead(event)">下一步:签署同意</a>
+        <a href="#" class="btn btn-primary" style="flex:1;" id="nextBtn" onclick="return ensureRead(event)">下一步:签署同意</a>
       </div>
       <div style="margin-top:8px; font-size:11px; color:var(--ink-3); text-align:center;">
         点击"我已通读"以解锁下一步
@@ -81,8 +66,32 @@
     </div>
   </div>
   <script src="assets/layout.js"></script>
+  <script src="assets/projects.js"></script>
   <script>
-    // 隐私页门控:必须先"我已通读"才放行
+    // hub 模式:隐私页从项目详情页进入(带 ?id=xxx),签署 / 付费都按项目
+    var PROJ_ID = '90d_health';
+
+    function getProjId() {
+      try {
+        var qs = location.search.replace(/^\?/, '');
+        if (qs) {
+          qs.split('&').forEach(function (kv) {
+            var p = kv.split('=');
+            if (p[0] === 'id' && p[1]) PROJ_ID = decodeURIComponent(p[1]);
+          });
+        }
+      } catch (e) {}
+      return PROJ_ID;
+    }
+
+    function goBack() {
+      // 从项目详情来 → 回项目详情;否则回首页
+      var back = document.referrer && document.referrer.indexOf('patient-project-detail') !== -1
+        ? 'patient-project-detail.html?id=' + encodeURIComponent(getProjId())
+        : 'patient-home.html';
+      location.href = back;
+    }
+
     function markRead() {
       try { localStorage.setItem('emrs_privacy_read', '1'); } catch (e) {}
       showToast('已记录 · 请继续');
@@ -95,10 +104,21 @@
           return false;
         }
       } catch (e2) {}
-      return true;
+      // 跳到签署页,带 id
+      location.href = 'patient-signature.html?id=' + encodeURIComponent(getProjId());
+      e.preventDefault();
+      return false;
     }
-    // 启动时回填状态(可选 UX 增强)
+    // 启动时回填状态 + 项目名
     (function () {
+      var id = getProjId();
+      var p = PROJECT_HELPERS.getProject(id);
+      if (p) {
+        var titleEl = document.getElementById('pageTitle');
+        if (titleEl) titleEl.textContent = '隐私与安全 · ' + p.name;
+        var labelEl = document.getElementById('projLabel');
+        if (labelEl) labelEl.textContent = '请仔细阅读《' + p.name + '》隐私条款';
+      }
       try {
         if (localStorage.getItem('emrs_privacy_read') === '1') {
           var btn = document.getElementById('nextBtn');

@@ -28,7 +28,7 @@
         </div>
       </div>
 
-      <a href="patient-auth.html" class="btn btn-primary btn-block" style="margin-top:24px;">
+      <a href="patient-auth.html" id="scanEntry" class="btn btn-primary btn-block" style="margin-top:24px;">
         模拟扫码进入
       </a>
 
@@ -49,5 +49,15 @@
     </div>
   </div>
   <script src="assets/layout.js"></script>
+  <script>
+    // hub 模式:扫码后根据认证状态分流
+    (function () {
+      var btn = document.getElementById('scanEntry');
+      var authed = false;
+      try { authed = localStorage.getItem('emrs_authed') === '1'; } catch (e) {}
+      // 未认证 → auth;已认证 → 直接到 hub 首页
+      btn.setAttribute('href', authed ? 'patient-home.html' : 'patient-auth.html');
+    })();
+  </script>
 </body>
 </html>

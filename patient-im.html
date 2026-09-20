@@ -17,14 +17,17 @@
     </div>
 
     <div class="page" style="padding:16px;">
-      <!-- 付费前门控遮罩 -->
+      <!-- 未订阅门控遮罩 -->
       <div id="imPayGate" style="display:none;">
         <div class="card" style="background:#FFEBEE; border:1px dashed var(--block); text-align:center;">
           <div style="font-size:14px; color:var(--block);">
-            <b>未付费</b>(§13.4)· 联系医患按钮已隐藏
+            <b>尚未签约项目</b>· 联系医患按钮已隐藏
+          </div>
+          <div style="margin-top:8px; font-size:12px; color:var(--ink-3);">
+            请先在首页选择一个项目签约
           </div>
           <div style="margin-top:8px;">
-            <a href="patient-pay.html" class="btn btn-block" style="background:var(--block); color:white;">立即付费 ¥100 ›</a>
+            <a href="patient-home.html" class="btn btn-block" style="background:var(--block); color:white;">去首页选择项目 ›</a>
           </div>
         </div>
       </div>
@@ -113,12 +116,12 @@
     </div>
   </div>
   <script src="assets/layout.js"></script>
+  <script src="assets/projects.js"></script>
   <script>
-    // §13.4 付费前门控
+    // §7.1.0 hub 模式:门控改为"已订阅至少一个项目"
     (function () {
-      var paid = false;
-      try { paid = localStorage.getItem('emrs_paid') === '1'; } catch (e) {}
-      if (paid) return;
+      var subscribed = PROJECT_HELPERS.getSubscribed();
+      if (subscribed.length > 0) return; // 已订阅 → 不拦截
       var g = document.getElementById('imPayGate');
       var list = document.getElementById('imNurseList');
       var input = document.getElementById('imInput');
