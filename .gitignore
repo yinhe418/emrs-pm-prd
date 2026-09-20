@@ -1,0 +1,68 @@
+# ──────────────────────────────────────────────
+#  OS metadata
+# ──────────────────────────────────────────────
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.fseventsd
+.TemporaryItems
+.Trashes
+.DocumentRevisions-V100
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Windows
+Thumbs.db
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# Linux
+*~
+.directory
+.nfs*
+
+# ──────────────────────────────────────────────
+#  Editors & IDEs
+# ──────────────────────────────────────────────
+
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-project
+*.sublime-workspace
+.fleet/
+.cursor/
+
+# ──────────────────────────────────────────────
+#  Logs & temp files
+# ──────────────────────────────────────────────
+
+*.log
+*.tmp
+*.bak
+*.orig
+*.rej
+*.cache
+.tmp/
+
+# ──────────────────────────────────────────────
+#  Project: protect PRD from accidental push
+# ──────────────────────────────────────────────
+
+# PRD / 内部文档 不入 git,按需通过其他渠道分发
+prd.md
+PRD.md
+docs/
+*.pdf
+
+# 本地预览 / 隧道日志
+/tmp/lt.log
+/tmp/http.log
