@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>预警规则 · 后台管理</title>
+  <link rel="stylesheet" href="assets/back.css">
+</head>
+<body data-page="rules" data-crumb='[{"name":"后台管理"},{"name":"任务与预警"},{"name":"预警规则"}]'>
+
+<main class="back-main">
+
+  <div class="page-head">
+    <h1>预警规则</h1>
+    <div class="sub">医生和患者看到的告警是怎么算出来的 —— 三层优先级与冲突处理一览。</div>
+  </div>
+
+  <div id="scopeStrip"></div>
+
+  <!-- ============ 监控健康度 ============ -->
+  <div class="kpi-row">
+    <div class="kpi blue"><div class="kpi-n" id="kMon">0</div><div class="kpi-t">监控字段(全院)</div></div>
+    <div class="kpi green"><div class="kpi-n" id="kOk">0</div><div class="kpi-t">报警线已配置</div></div>
+    <div class="kpi orange"><div class="kpi-n" id="kMiss">0</div><div class="kpi-t">监控但缺报警线</div></div>
+    <div class="kpi red"><div class="kpi-n" id="kCov">0</div><div class="kpi-t">医生个体覆盖数</div></div>
+  </div>
+
+  <!-- ============ 三层优先级 ============ -->
+  <div class="card">
+    <div class="card-head"><h3>三层优先级(决定告警怎么算)</h3></div>
+
+    <div class="rule-flow">
+      <div class="rule-layer top">L1 · 录入有效区间(物理极限)</div>
+      <div class="rule-layer sep" style="left:6%">└─</div>
+      <div class="rule-layer mid">L2 · 科室组件报警线</div>
+      <div class="rule-layer sep" style="left:6%">└─</div>
+      <div class="rule-layer bot">L3 · 医生个体目标范围</div>
+    </div>
+
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead>
+          <tr><th style="width:60px">层</th><th style="width:170px">谁设的</th><th>作用</th><th style="width:90px">可被覆盖</th><th style="width:120px">权威</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="badge badge-warn">L1</span></td>
+            <td><b>临床规则权威</b><br><span class="cell-sub">field-constraints.md</span></td>
+            <td>录入值超出时:<b>硬阻断</b>(HARD),禁止保存。例如 SBP 录入 49 mmHg 系统拒绝保存。</td>
+            <td><span class="badge badge-block">不可覆盖</span></td>
+            <td class="fz-12">临床专家</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-info">L2</span></td>
+            <td><b>科室管理员</b><br><span class="cell-sub">后台 · 组件库</span></td>
+            <td>录入值落在区间内但超出报警线时:<b>软告警</b>(SOFT),推送医生和护士。例如 90 ≤ SBP ≤ 140。</td>
+            <td><span class="badge badge-pass">可被 L3 覆盖</span></td>
+            <td class="fz-12">科室</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-brand">L3</span></td>
+            <td><b>主管医生</b><br><span class="cell-sub">小程序 · 个体设定</span></td>
+            <td>主管医生为本患者设定的目标范围,例如本患者 SBP 控制目标 100-150 mmHg,优先于 L2。</td>
+            <td><span class="badge badge-pass">最终生效</span></td>
+            <td class="fz-12">主管医生</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note note-info" style="margin:14px 0 0">
+      <img src="assets/icons-png/icon-info.png">
+      <div>
+        <b>后台只看 L1 和 L2</b>(因为它们是科室级规则,且必须由科室确定)。<br>
+        L3 <b>由医生在小程序端设置,后台不提供配置入口,只读取并在患者档案上方显示来源</b>(C5)。
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 17 个冲突场景 ============ -->
+  <div class="card">
+    <div class="card-head">
+      <h3>17 类提示文案(医生和患者会看到的原话)</h3>
+      <span class="ch-desc">这些是产品文案,不是算法;凡是上报、阻断都必须用一致的句式</span>
+    </div>
+
+    <div class="tbl-wrap">
+      <table class="tbl fz-12">
+        <thead>
+          <tr><th style="width:80px">编号</th><th style="width:130px">冲突</th><th>提示文案</th></tr>
+        </thead>
+        <tbody id="cfBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ============ 监控覆盖度(组件级) ============ -->
+  <div class="card">
+    <div class="card-head">
+      <h3>监控覆盖度</h3>
+      <span class="ch-desc">每个数值型字段,L1 / L2 / L3 是否完整</span>
+    </div>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>组件 / 字段</th>
+            <th style="width:120px">录入区间</th>
+            <th style="width:140px">科室报警线(L2)</th>
+            <th style="width:160px">医生个体(L3)</th>
+            <th style="width:140px">覆盖度</th>
+          </tr>
+        </thead>
+        <tbody id="covBody"></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<script src="assets/back-data.js"></script>
+<script src="assets/back-layout.js"></script>
+<script>
+  /* ============ 健康度 ============ */
+  function flatten() {
+    var arr = [];
+    Back.hospFilter(BACK_DATA.components, 'components').forEach(function (c) {
+      c.fields.filter(function (f) { return f.type === 'num'; }).forEach(function (f) {
+        arr.push({ cId: c.id, c: c.name, fId: f.id, f: f.name,
+                   validMin: f.validMin, validMax: f.validMax, validUnit: f.unit,
+                   alertMin: f.alertMin, alertMax: f.alertMax, monitor: f.monitor,
+                   custom: f.custom });
+      });
+    });
+    return arr;
+  }
+  if (!Back.requireHospitalAndApply()) { document.querySelector('.back-main').innerHTML = ''; }
+  var all = flatten();
+  var mon = all.filter(function (x) { return x.monitor; });
+  var ok = mon.filter(function (x) { return x.alertMin !== null || x.alertMax !== null; });
+  var miss = mon.filter(function (x) { return x.alertMin === null && x.alertMax === null; });
+
+  document.getElementById('kMon').textContent = mon.length;
+  document.getElementById('kOk').textContent = ok.length;
+  document.getElementById('kMiss').textContent = miss.length;
+
+  /* L3 覆盖数(估算:有医生个体覆盖的患者档案数) */
+  var covCount = Back.hospFilter(BACK_DATA.patients, 'patients').filter(function (x) {
+    return x.base && x.base.src === 'doctor';
+  }).length;
+  document.getElementById('kCov').textContent = covCount;
+
+  var sh = document.getElementById('scopeStrip');
+  if (sh) sh.innerHTML = Back.scopeStrip('三层优先级 / 17 类文案 / 监控覆盖度,均按本院组件库聚合');
+
+  /* ============ 冲突文案 ============ */
+  var RU = [
+    { id: 'CF01', tag: '正常告警', text: '⚠️ <b>本次收缩压 156 mmHg</b>,超出<span class="badge badge-warn">科室标准 &lt; 140 mmHg</span>(医生甲 为本患者设定 100–150 mmHg),<b>已通知医生</b>。' },
+    { id: 'CF02', tag: 'L3 覆盖 L2', text: '本患者目标由<b>主管医生个体设定</b>:<b>150 / 90 mmHg</b>(<b>已覆盖</b>科室标准 140/90)。' },
+    { id: 'CF03', tag: 'L3 半覆盖', text: '上限由<b>医生个体设定</b>为 150 mmHg;<b>下限沿用科室标准 &lt; 90 mmHg</b>。' },
+    { id: 'CF04', tag: 'L1 硬阻断', text: '<b>超出该指标有效区间 50–280 mmHg,无法保存</b>。请重新输入。' },
+    { id: 'CF05', tag: 'L1 边界提示', text: '已靠近<b>物理下限</b>(50 mmHg),临床罕见,请复核是否输入有误。' },
+    { id: 'CF06', tag: '缺失报警线', text: '该字段<b>已开启监控但未配置报警线</b>(C8),暂不告警。请管理员在「任务组件库」补全。' },
+    { id: 'CF07', tag: '医生无个体', text: '本患者<b>未设定个体目标</b>,沿用科室标准 90–140 mmHg。医生可在小程序端为本人管辖患者调整。' },
+    { id: 'CF08', tag: '个体越界', text: '⚠️ 您为本患者设定的目标 <b>90–140 mmHg</b> 与录入区间 50–280 mmHg 不冲突,但与<b>同患者其他医生</b>的目标不同,以先设定者为准。' },
+    { id: 'CF09', tag: '组件停用', text: '该组件已被停用,历史报警线依然<b>只读生效</b>;新数据不写入监控表。' },
+    { id: 'CF10', tag: '权限阻断', text: '您(bbb.医生)非本患者主管医生,<b>无权调整个体目标</b>。请联系 主管医生 或提交转诊。' },
+    { id: 'CF11', tag: '转科后冲突', text: '本患者<b>已转科</b>到 神经外科,原报警线(L2)来自 神经内科,继续沿用并<mark>标记「跨科沿用」</mark>。' },
+    { id: 'CF12', tag: '重复测量', text: '本次记录与 12 分钟前的记录<b>差距较大</b>(Δ &gt; 25 mmHg),请确认是否切换体位或设备。' },
+    { id: 'CF13', tag: '时段偏离', text: '⚠️ <b>02:17 测量</b>,接近夜间,目标自动放宽 ±10 mmHg。' },
+    { id: 'CF14', tag: '设备校验', text: '本设备上次校验 <b>已超过 90 天</b>,测量数据仅<b>作参考</b>,请尽快校验。' },
+    { id: 'CF15', tag: '亲属代测', text: '<b>由家属代测</b>,误差概率较高,告警阈值动态放宽 ±10%。' },
+    { id: 'CF16', tag: '未开监控', text: '该字段未开启监控,录入数据<b>只校验</b>,不产生任何告警。' },
+    { id: 'CF17', tag: '自定义冲突', text: '<b>自定义字段</b>「瞳孔直径」与现有字段重复,<b>请复用现有</b> 或 申请组件编辑。' }
+  ];
+  document.getElementById('cfBody').innerHTML = RU.map(function (r) {
+    return '<tr><td class="mono fz-11">' + r.id + '</td>'
+      + '<td><span class="badge badge-info">' + r.tag + '</span></td>'
+      + '<td>' + r.text + '</td></tr>';
+  }).join('');
+
+  /* ============ 覆盖度表 ============ */
+  document.getElementById('covBody').innerHTML = all.map(function (x) {
+    var L1 = '<span class="badge badge-pass">✓</span> ' + x.validMin + '–' + x.validMax + ' ' + (x.validUnit || '');
+    var L2 = !x.monitor ? '<span class="badge badge-gray">未开启</span>'
+      : (x.alertMin === null && x.alertMax === null
+          ? '<span class="badge badge-warn">⚠️ 未设置</span>'
+          : '<span class="badge badge-pass">✓ '
+            + (x.alertMin == null ? '–' : x.alertMin) + ' ~ '
+            + (x.alertMax == null ? '–' : x.alertMax) + '</span>');
+    var L3 = '<span class="text-3 fz-12">医生个体,<br>小程序端设置</span>';
+    var full = !!(x.alertMin !== null || x.alertMax !== null);
+    var pct = !x.monitor ? 50 : (full ? 100 : 50);
+    return '<tr>'
+      + '<td><div class="cell-main">' + x.c + '</div><div class="cell-sub">' + x.f
+      +   (x.custom ? ' <span class="badge badge-warn">自定义</span>' : '')
+      + '</div></td>'
+      + '<td>' + L1 + '</td>'
+      + '<td>' + L2 + '</td>'
+      + '<td>' + L3 + '</td>'
+      + '<td><div class="prog" style="width:110px"><div class="prog-fill" style="width:' + pct + '%;background:' + (pct === 100 ? 'var(--pass)' : 'var(--warn)') + '"></div></div>'
+      +   '<span class="fz-12">' + pct + '%</span></td></tr>';
+  }).join('');
+</script>
+</body>
+</html>

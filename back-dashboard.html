@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>工作台 · 后台管理</title>
+  <link rel="stylesheet" href="assets/back.css">
+</head>
+<body data-page="dashboard" data-crumb='[{"name":"后台管理"},{"name":"工作台"}]'>
+
+<main class="back-main">
+
+  <div class="page-head">
+    <h1>工作台</h1>
+    <div class="sub">H 市第一医院 · 神经内科　|　后台登录后默认落地页</div>
+  </div>
+
+  <!-- ============ KPI ============ -->
+  <div class="kpi-row">
+    <div class="kpi red">
+      <a href="back-staff.html?tab=pending">去处理 ›</a>
+      <div class="k-lab">待分配科室</div>
+      <div class="k-val" id="kpiPending">3</div>
+      <div class="k-sub">扫码后尚未设置科室 / 职称</div>
+    </div>
+    <div class="kpi orange">
+      <a href="back-component-lib.html?tab=noalert">去处理 ›</a>
+      <div class="k-lab">监控字段缺报警线</div>
+      <div class="k-val">1</div>
+      <div class="k-sub">已开监控但未设报警线(C8 由科室定)</div>
+    </div>
+    <div class="kpi blue">
+      <a href="back-patients.html?filter=nonurse">去处理 ›</a>
+      <div class="k-lab">病患待分配护士</div>
+      <div class="k-val">1</div>
+      <div class="k-sub">已绑定医生,尚未指定归属护士</div>
+    </div>
+    <div class="kpi green">
+      <div class="k-lab">本日配置变更</div>
+      <div class="k-val">2</div>
+      <div class="k-sub">全部操作留痕,可追溯</div>
+    </div>
+  </div>
+
+  <!-- ============ 待处理 ============ -->
+  <div class="two-col" style="grid-template-columns:1.5fr 1fr">
+
+    <div class="card">
+      <div class="card-head">
+        <h3>待处理</h3>
+        <span class="ch-desc">阻塞临床端使用的配置缺口</span>
+        <div class="ch-right"><span class="badge badge-block">3 项待办</span></div>
+      </div>
+
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th style="width:90px">类型</th>
+            <th>事项</th>
+            <th style="width:130px">影响</th>
+            <th style="width:96px">状态</th>
+            <th class="col-act" style="width:78px">操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="row-danger">
+            <td><span class="badge badge-block">人员</span></td>
+            <td>
+              <div class="cell-main">6 人扫码后未设置科室 / 职称</div>
+              <div class="cell-sub">最早一人停留 10 天 · 扫码人仍无法使用小程序</div>
+            </td>
+            <td class="fz-12 text-3">阻塞 6 人使用</td>
+            <td><span class="badge badge-block">待处理</span></td>
+            <td class="col-act"><a class="btn-text" href="back-staff.html?tab=pending">去处理</a></td>
+          </tr>
+          <tr class="row-warn">
+            <td><span class="badge badge-warn">预警</span></td>
+            <td>
+              <div class="cell-main">「记录血糖」餐后血糖 已开监控但未设报警线</div>
+              <div class="cell-sub">系统不预填报警线(C8),须科室在使用前确定</div>
+            </td>
+            <td class="fz-12 text-3">该项不触发告警</td>
+            <td><span class="badge badge-warn">待补齐</span></td>
+            <td class="col-act"><a class="btn-text" href="back-component-field.html?c=T2&amp;f=F12">去配置</a></td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-info">归属</span></td>
+            <td>
+              <div class="cell-main">王建国(65 岁 · 男)未指定归属护士</div>
+              <div class="cell-sub">已绑定医生甲 · 护士侧无法纳入随访</div>
+            </td>
+            <td class="fz-12 text-3">护士漏管风险</td>
+            <td><span class="badge badge-warn">待指派</span></td>
+            <td class="col-act"><a class="btn-text" href="back-patients.html?filter=nonurse">去指派</a></td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-gray">交接</span></td>
+            <td>
+              <div class="cell-main">医生庚 已停用,名下 2 例患者需移交</div>
+              <div class="cell-sub">停用原因:离职(2026-08-31)</div>
+            </td>
+            <td class="fz-12 text-3">存在无主患者</td>
+            <td><span class="badge badge-gray">未完成</span></td>
+            <td class="col-act"><a class="btn-text" href="back-patients.html?filter=handover">去处理</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h3>快捷入口</h3></div>
+      <div class="two-col" style="gap:9px">
+        <a class="btn btn-default" href="back-hospital-pick.html">+ 添加 / 切换医院</a>
+        <a class="btn btn-default" href="back-org-edit.html?type=department">+ 添加科室</a>
+        <a class="btn btn-default" href="back-positions.html?new=1">+ 新增职位</a>
+        <a class="btn btn-default" href="back-staff-edit.html">+ 新增人员</a>
+        <a class="btn btn-default" href="back-component-edit.html">+ 新建组件</a>
+        <a class="btn btn-default" href="back-drug-edit.html">+ 新增药品</a>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="card-head"><h3>本 Demo 覆盖范围</h3></div>
+      <div class="fz-12 text-3" style="line-height:1.9">
+        · 组织与人员:医院 / 科室 / 职位 / 工作人员 / 病患 / 二维码<br>
+        · 任务组件库:组件 + 字段定义 + 监控开关 + 报警线<br>
+        · 预警规则:组件指标唯一可配,医生个体优先(后台只读)<br>
+        · 药品库:11 个演示药品主数据<br>
+        <span class="text-orange">· 未覆盖:项目模板 / 权限矩阵 / 审计日志 / 患者详情页</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 最近配置变更 ============ -->
+  <div class="card">
+    <div class="card-head">
+      <h3>最近配置变更</h3>
+      <span class="ch-desc">谁 · 什么时候 · 改了什么(最近 6 条,只读)</span>
+      <div class="ch-right"><span class="badge badge-outline">操作审计日志 本期不做</span></div>
+    </div>
+    <table class="tbl">
+      <thead>
+        <tr>
+          <th style="width:145px">时间</th>
+          <th style="width:90px">操作人</th>
+          <th style="width:190px">操作对象</th>
+          <th>明细</th>
+          <th style="width:80px">类别</th>
+        </tr>
+      </thead>
+      <tbody id="auditBody"></tbody>
+    </table>
+  </div>
+
+</main>
+
+<div class="drawer-mask" id="auditMask"></div>
+<div class="drawer" id="auditDrawer" data-mask="auditMask">
+  <div class="drawer-head"><h3>操作留痕说明</h3><button class="d-close">×</button></div>
+  <div class="drawer-body">
+    <div class="note note-info"><img src="assets/icons-png/icon-info.png"><div>
+      <b>本期只做展示</b><br>完整的操作审计日志模块(可检索、可导出)不在本轮范围。留痕字段设计已定,后续单独设计。
+    </div></div>
+    <h4 style="font-size:13px;margin-bottom:9px">必须留痕的四类操作</h4>
+    <ul style="font-size:12.5px;line-height:2;color:var(--ink-2)">
+      <li>① 配置变更(谁在何时改了报警线 / 组件 / 职位 / 头像)</li>
+      <li>② 超限输入(数值超出有效区间的提交)</li>
+      <li>③ 病患归属调整(操作人 / 原归属 / 新归属 / 原因)</li>
+      <li>④ 越权访问与敏感字段查看(如查看完整身份证号)</li>
+    </ul>
+  </div>
+</div>
+
+<script src="assets/back-data.js"></script>
+<script src="assets/back-layout.js"></script>
+<script>
+  document.getElementById('kpiPending').textContent = BACK_DATA.pendingCount;
+
+  var tb = document.getElementById('auditBody');
+  BACK_DATA.audits.forEach(function (a) {
+    var tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td class="mono">' + a.t + '</td>'
+      + '<td>' + a.who + '</td>'
+      + '<td>' + a.what + '</td>'
+      + '<td class="fz-12 text-3">' + a.detail + '</td>'
+      + '<td><span class="badge badge-gray">' + a.tag + '</span></td>';
+    tb.appendChild(tr);
+  });
+
+  var card = document.querySelectorAll('.card-head')[2];
+  card.querySelector('.badge').style.cursor = 'pointer';
+  card.querySelector('.badge').addEventListener('click', function () {
+    Back.drawer('auditDrawer', true);
+  });
+</script>
+</body>
+</html>

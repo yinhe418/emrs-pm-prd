@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>职位字典 · 后台管理</title>
+  <link rel="stylesheet" href="assets/back.css">
+</head>
+<body data-page="positions" data-crumb='[{"name":"后台管理"},{"name":"组织与人员"},{"name":"职位字典"}]'>
+
+<main class="back-main">
+
+  <div class="page-head">
+    <h1>职位字典</h1>
+    <div class="sub">三类职位,后台可自由增删改。初装的 6 个职位只是<b>种子数据</b>,不是写死的枚举。</div>
+  </div>
+
+  <div class="note note-info">
+    <img src="assets/icons-png/icon-info.png">
+    <div><b>职位 = 小程序端的身份标签,不是后台权限。</b>
+      本轮<b>不做后台权限</b>,谁都能登录后台。职位只用于:① 人员归属 ② 病患归属筛选(按医生 / 按护士)③ 科室主任唯一性约束。</div>
+  </div>
+
+  <div class="filters">
+    <div class="search-wrap">
+      <img src="assets/icons-png/icon-search.png" alt="">
+      <input class="ipt search-ipt" id="kw" placeholder="职位名称">
+    </div>
+    <select class="sel" id="catSel">
+      <option value="">全部类别</option>
+      <option value="admin">行政职务</option>
+      <option value="title">技术职称</option>
+      <option value="other">其他</option>
+    </select>
+    <select class="sel" id="stSel"><option value="">状态:全部</option><option value="on">启用</option><option value="off">停用</option></select>
+    <span class="ml-auto"></span>
+    <button class="btn btn-primary" id="newBtn"><img src="assets/icons-png/icon-plus.png" alt="">新增职位</button>
+  </div>
+
+  <div id="catWrap"></div>
+</main>
+
+<!-- ========== 新增 / 编辑职位 抽屉 ========== -->
+<div class="drawer-mask" id="pMask"></div>
+<div class="drawer" id="pDrawer" data-mask="pMask">
+  <div class="drawer-head">
+    <h3 id="pTitle">新增职位</h3>
+    <button class="d-close">×</button>
+  </div>
+  <div class="drawer-body">
+    <div class="form-sec">
+      <h4>职位定义</h4>
+      <div class="fi">
+        <label><span class="req">*</span>职位名称</label>
+        <input class="ipt" name="pName" placeholder="如:主治医师 / 护士长 / 科研助理">
+        <span class="err-msg"></span>
+      </div>
+      <div class="fi mt-12">
+        <label><span class="req">*</span>职位类别</label>
+        <select class="sel" name="pCat">
+          <option value="admin">行政职务 — 如科室主任、护士长</option>
+          <option value="title">技术职称 — 如医师、主治医师、副主任医师、护士、护师</option>
+          <option value="other">其他 — 后台自定义</option>
+        </select>
+        <span class="err-msg"></span>
+      </div>
+      <div class="fi mt-12">
+        <label>状态</label>
+        <select class="sel" name="pStatus"><option value="on">启用</option><option value="off">停用</option></select>
+        <span class="hint">停用后不在新建 / 编辑的下拉中,历史数据保留</span>
+      </div>
+    </div>
+    <div class="note" id="pHint"></div>
+  </div>
+  <div class="drawer-foot">
+    <span class="fz-12 text-3" id="pFootTip"></span>
+    <div class="df-right">
+      <button class="btn btn-default" onclick="Back.drawer('pDrawer',false)">取消</button>
+      <button class="btn btn-primary" id="pSave">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 删除 / 停用 确认弹窗 ========== -->
+<div class="modal-mask" id="delModal">
+  <div class="modal">
+    <div class="modal-head">
+      <img src="assets/icons-png/icon-warning.png" alt="">
+      <h3 id="delTitle">确认操作</h3>
+    </div>
+    <div class="modal-body" id="delBody"></div>
+    <div class="modal-foot">
+      <button class="btn btn-default" onclick="Back.modal('delModal',false)">取消</button>
+      <button class="btn btn-danger" id="delOk">确认</button>
+    </div>
+  </div>
+</div>
+
+<script src="assets/back-data.js"></script>
+<script src="assets/back-layout.js"></script>
+<script>
+  var CAT_ORDER = ['admin', 'title', 'other'];
+  var editingId = null;
+  var pendingDel = null;
+
+  function countUsed(posId) {
+    return BACK_DATA.staff.filter(function (s) { return s.posId === posId && s.status === 'on'; }).length;
+  }
+  function isDirectorPos(posId) {
+    var p = BACK_DATA.pos(posId);
+    return p && p.name === '科室主任';
+  }
+  function directorOf(deptId) {
+    var d = BACK_DATA.byId(BACK_DATA.departments, deptId);
+    return d && d.directorId ? BACK_DATA.member(d.directorId) : null;
+  }
+
+  function render() {
+    var kw = document.getElementById('kw').value.trim();
+    var cat = document.getElementById('catSel').value;
+    var st = document.getElementById('stSel').value;
+
+    var wrap = document.getElementById('catWrap');
+    wrap.innerHTML = '';
+
+    CAT_ORDER.forEach(function (c) {
+      if (cat && c !== cat) return;
+      var meta = BACK_DATA.POS_CATS[c];
+      var rows = BACK_DATA.positions.filter(function (p) {
+        if (p.cat !== c) return false;
+        if (kw && p.name.indexOf(kw) < 0) return false;
+        if (st && p.status !== st) return false;
+        return true;
+      }).sort(function (a, b) { return a.order - b.order; });
+
+      var card = document.createElement('div');
+      card.className = 'card flat';
+
+      var hint = meta.hint;
+      if (c === 'admin') {
+        var dirs = BACK_DATA.departments.filter(function (d) { return d.directorId; });
+        hint += ' 当前已任命 <b>' + dirs.length + '</b> 个科室主任,待任命 <b>'
+          + (BACK_DATA.departments.filter(function (d) { return !d.directorId; }).length) + '</b> 个。';
+      }
+      if (c === 'title') {
+        hint += ' 每个工作人员<b>必填</b>一个技术职称。';
+      }
+
+      card.innerHTML =
+        '<div class="card-head" style="padding:13px 16px 0;margin-bottom:0">'
+        + '<h3>' + meta.label + ' <span class="badge badge-outline">' + rows.length + '</span></h3>'
+        + '<span class="ch-desc">' + hint + '</span>'
+        + '<div class="ch-right"><button class="btn btn-sm btn-default" data-new="' + c + '">+ 在此类新增</button></div>'
+        + '</div>'
+        + '<div class="tbl-wrap"><table class="tbl"><thead><tr>'
+        + '<th style="width:56px">排序</th><th>职位名称</th><th style="width:96px">类别</th>'
+        + '<th style="width:110px">在岗人数</th><th style="width:88px">状态</th>'
+        + '<th style="width:118px">来源</th><th class="col-act" style="width:150px">操作</th>'
+        + '</tr></thead><tbody>'
+        + (rows.length ? rows.map(function (p) {
+            var used = countUsed(p.id);
+            return '<tr' + (p.status === 'off' ? ' class="row-muted"' : '') + '>'
+            + '<td><div class="flex" style="gap:2px">'
+            +   '<button class="btn btn-sm btn-default" data-move="up" data-id="' + p.id + '" style="padding:0 6px">↑</button>'
+            +   '<button class="btn btn-sm btn-default" data-move="down" data-id="' + p.id + '" style="padding:0 6px">↓</button>'
+            + '</div></td>'
+            + '<td><span class="cell-main">' + p.name + '</span>'
+            +   (isDirectorPos(p.id) ? ' <span class="badge badge-brand">科室责任人</span>' : '') + '</td>'
+            + '<td><span class="badge badge-gray">' + meta.label + '</span></td>'
+            + '<td class="num-cell">' + used + (used ? ' 人' : '') + '</td>'
+            + '<td>' + Back.onOff(p.status) + '</td>'
+            + '<td>' + (p.seeded ? '<span class="badge badge-outline">初装种子</span>'
+                                   : '<span class="badge badge-info">后台自定义</span>') + '</td>'
+            + '<td class="col-act">'
+            +   '<a class="btn-text" data-edit="' + p.id + '">编辑</a>'
+            +   (p.status === 'on'
+                  ? '<a class="btn-text danger" data-del="' + p.id + '">停用</a>'
+                  : '<a class="btn-text" data-en="' + p.id + '">启用</a>')
+            +   (used ? '' : '<a class="btn-text danger" data-hard="' + p.id + '">删除</a>')
+            + '</td></tr>';
+          }).join('')
+          : '<tr><td colspan="7"><div class="empty"><img src="assets/icons-png/icon-empty-box.png" alt="">'
+            + '<div class="e-t">该类别下暂无职位</div><div class="e-d">点右上角「在此类新增」添加</div></div></td></tr>')
+        + '</tbody></table></div>';
+      wrap.appendChild(card);
+    });
+  }
+
+  /* ---------- 新增 / 编辑 ---------- */
+  function openDrawer(id, cat) {
+    editingId = id || null;
+    var d = document.getElementById('pDrawer');
+    document.getElementById('pTitle').textContent = id ? '编辑职位' : '新增职位';
+    var n = document.querySelector('[name="pName"]');
+    var c = document.querySelector('[name="pCat"]');
+    var s = document.querySelector('[name="pStatus"]');
+    document.querySelector('#pDrawer .fi').classList.remove('has-err');
+
+    if (id) {
+      var p = BACK_DATA.pos(id);
+      n.value = p.name; c.value = p.cat; s.value = p.status;
+      document.getElementById('pHint').className = 'note note-gray';
+      document.getElementById('pHint').innerHTML =
+        '<img src="assets/icons-png/icon-info.png"><div>该职位在岗 <b>' + countUsed(id)
+        + '</b> 人。修改名称不影响已有人员的历史显示。</div>';
+      document.getElementById('pFootTip').textContent = '停用前需先转职或停用人员';
+    } else {
+      n.value = ''; c.value = cat || 'title'; s.value = 'on';
+      var meta = BACK_DATA.POS_CATS[c.value || 'title'];
+      document.getElementById('pHint').className = 'note note-info';
+      document.getElementById('pHint').innerHTML =
+        '<img src="assets/icons-png/icon-info.png"><div><b>' + meta.label + '</b><br>' + meta.hint + '</div>';
+      document.getElementById('pFootTip').textContent = '';
+    }
+    Back.drawer('pDrawer', true);
+  }
+
+  document.getElementById('newBtn').addEventListener('click', function () { openDrawer(null, ''); });
+
+  document.body.addEventListener('click', function (e) {
+    var t = e.target;
+    var g = function (a) { return t.getAttribute && t.getAttribute(a); };
+
+    if (g('data-new')) return openDrawer(null, g('data-new'));
+    if (g('data-edit')) return openDrawer(g('data-edit'));
+
+    if (g('data-en')) {
+      BACK_DATA.pos(g('data-en')).status = 'on';
+      render(); return Back.toast('已启用', 'ok');
+    }
+
+    if (g('data-move')) {
+      var pid = g('data-id'), dir = g('data-move') === 'up' ? -1 : 1;
+      var list = BACK_DATA.positions.slice().sort(function (a, b) { return a.order - b.order; });
+      var i = list.findIndex(function (x) { return x.id === pid; });
+      var j = i + dir;
+      if (j < 0 || j >= list.length) return Back.toast('已经在' + (dir < 0 ? '最前' : '最后') + '一位', 'warn');
+      var tmp = list[i].order; list[i].order = list[j].order; list[j].order = tmp;
+      render(); return;
+    }
+
+    if (g('data-del')) { return askStop(g('data-del')); }
+    if (g('data-hard')) { return askDelete(g('data-hard')); }
+  });
+
+  /* ---------- 停用 ---------- */
+  function askStop(pid) {
+    var p = BACK_DATA.pos(pid), used = countUsed(pid);
+    var blockers = [];
+    if (used) blockers.push('该职位下仍有 <b>' + used + '</b> 名在岗人员,请先转职或停用人员');
+    if (p.name === '科室主任') {
+      var d = BACK_DATA.departments.filter(function (x) { return x.directorId; })
+        .map(function (x) { return directorOf(x.id); })
+        .filter(function (m) { return m && m.posId === pid; });
+      if (d.length) blockers.push('仍被 <b>' + d.map(function (m) { return m.name; }).join('、')
+        + '</b> 担任科室主任,请先在组织架构中更换责任人');
+    }
+    pendingDel = { mode: 'stop', id: pid };
+    document.getElementById('delTitle').textContent = '停用职位「' + p.name + '」';
+    document.getElementById('delBody').innerHTML = blockers.length
+      ? '<div class="note note-block" style="margin:0"><img src="assets/icons-png/icon-warning.png"><div><b>无法停用</b><br>' + blockers.join(';') + '。</div></div>'
+      : '<div>停用后该职位不再出现在新建 / 编辑的下拉中,<b>历史数据全部保留</b>,可随时启用。</div>';
+    document.getElementById('delOk').disabled = blockers.length > 0;
+    document.getElementById('delOk').textContent = blockers.length ? '存在阻塞项' : '确认停用';
+    Back.modal('delModal', true);
+  }
+
+  /* ---------- 彻底删除(仅无引用时) ---------- */
+  function askDelete(pid) {
+    var p = BACK_DATA.pos(pid), used = countUsed(pid);
+    pendingDel = { mode: 'del', id: pid };
+    document.getElementById('delTitle').textContent = '删除职位「' + p.name + '」';
+    document.getElementById('delBody').innerHTML = used
+      ? '<div class="note note-block" style="margin:0"><img src="assets/icons-png/icon-warning.png">'
+        + '<div>该职位下仍有 <b>' + used + '</b> 名人员,不可删除。请改用「停用」。</div></div>'
+      : '<div>该职位<b>从未被任何人员使用</b>,可以彻底删除。此操作不可撤销(演示环境仅影响本页)。</div>';
+    document.getElementById('delOk').disabled = used > 0;
+    document.getElementById('delOk').textContent = used ? '存在阻塞项' : '确认删除';
+    Back.modal('delModal', true);
+  }
+
+  document.getElementById('delOk').addEventListener('click', function () {
+    if (this.disabled || !pendingDel) return;
+    var p = BACK_DATA.pos(pendingDel.id);
+    if (pendingDel.mode === 'stop') {
+      p.status = 'off'; Back.toast('已停用:' + p.name, 'ok');
+    } else {
+      BACK_DATA.positions = BACK_DATA.positions.filter(function (x) { return x.id !== p.id; });
+      Back.toast('已删除:' + p.name, 'ok');
+    }
+    Back.modal('delModal', false);
+    render();
+  });
+
+  /* ---------- 保存 ---------- */
+  document.querySelector('[name="pCat"]').addEventListener('change', function () {
+    var meta = BACK_DATA.POS_CATS[this.value];
+    document.getElementById('pHint').className = 'note note-info';
+    document.getElementById('pHint').innerHTML =
+      '<img src="assets/icons-png/icon-info.png"><div><b>' + meta.label + '</b><br>' + meta.hint + '</div>';
+  });
+
+  document.getElementById('pSave').addEventListener('click', function () {
+    var n = document.querySelector('[name="pName"]');
+    var c = document.querySelector('[name="pCat"]').value;
+    var s = document.querySelector('[name="pStatus"]').value;
+    var v = n.value.trim();
+
+    document.querySelector('#pDrawer .fi').classList.remove('has-err');
+    var fi = n.closest('.fi');
+    if (!v) { fi.classList.add('has-err'); fi.querySelector('.err-msg').textContent = '请输入职位名称'; return; }
+    if (v.length < 2 || v.length > 20) {
+      fi.classList.add('has-err'); fi.querySelector('.err-msg').textContent = '职位名称 2–20 字(当前 ' + v.length + ')'; return;
+    }
+    var dup = BACK_DATA.positions.filter(function (p) { return p.name === v && p.id !== editingId; })[0];
+    if (dup) {
+      fi.classList.add('has-err');
+      fi.querySelector('.err-msg').textContent = '职位名称已存在:' + dup.name + '(' + BACK_DATA.POS_CATS[dup.cat].label + ')';
+      return;
+    }
+
+    if (editingId) {
+      var p = BACK_DATA.pos(editingId);
+      var wasDir = isDirectorPos(editingId);
+      p.name = v; p.cat = c; p.status = s;
+      Back.toast('已保存', 'ok');
+      if (wasDir && v !== '科室主任') {
+        // 主任职位被改名 → 释放科室主任任命
+        var dirs = BACK_DATA.departments.filter(function (x) {
+          var m = directorOf(x.id); return m && m.posId === editingId;
+        });
+        dirs.forEach(function (x) { x.directorId = ''; });
+        Back.toast('职位已改名,已释放 ' + dirs.length + ' 个科室的主任任命', 'warn');
+      }
+    } else {
+      var maxOrder = Math.max.apply(null, BACK_DATA.positions.map(function (p) { return p.order; }).concat([0]));
+      BACK_DATA.positions.push({
+        id: 'P' + Date.now(), name: v, cat: c, status: s, order: maxOrder + 1, seeded: false
+      });
+      Back.toast('已新增职位:' + v, 'ok');
+    }
+    Back.drawer('pDrawer', false);
+    render();
+  });
+
+  ['kw', 'catSel', 'stSel'].forEach(function (id) {
+    var el = document.getElementById(id);
+    el.addEventListener('input', render);
+    el.addEventListener('change', render);
+  });
+
+  if (Back.qs('new')) openDrawer(null, Back.qs('new'));
+  render();
+</script>
+</body>
+</html>

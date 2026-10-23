@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>认领设置 · 后台管理</title>
+  <link rel="stylesheet" href="assets/back.css">
+</head>
+<body data-page="staff" data-crumb='[{"name":"后台管理"},{"name":"组织与人员"},{"href":"back-staff.html","name":"工作人员"},{"name":"认领设置"}]'>
+
+<main class="back-main">
+
+  <div class="note note-warn" id="countdownBar">
+    <img src="assets/icons-png/icon-warning.png">
+    <div>
+      <b>认领有效期 <span id="cd" style="font-family:ui-monospace,Menlo,monospace">23:41:08</span></b>
+      — 超过 24 小时未完成设置,认领将自动退回队列并通知原认领人。
+    </div>
+  </div>
+
+  <div class="split">
+    <!-- ========== 左:微信原始信息(只读) ========== -->
+    <div style="width:330px;flex:none">
+      <div class="card">
+        <div class="card-head"><h3>扫码登记信息</h3><span class="ch-desc">来自微信授权,只读</span></div>
+
+        <div class="flex" style="gap:12px;margin-bottom:14px">
+          <span class="av-sm" id="pAv" style="width:48px;height:48px;font-size:18px;background:#8A94A6">—</span>
+          <div>
+            <div style="font-size:15px;font-weight:600" id="pNick">—</div>
+            <div class="fz-12 text-3" id="pOpenid">微信标识:wx_****（脱敏）</div>
+          </div>
+        </div>
+
+        <div class="divider" style="margin:0 0 12px"></div>
+
+        <table class="tbl" style="font-size:12.5px">
+          <tbody>
+            <tr><td class="text-3" style="width:96px;border:none">扫码时间</td><td class="mono" style="border:none" id="pScan">—</td></tr>
+            <tr><td class="text-3" style="border:none">停留时长</td><td style="border:none" id="pDays">—</td></tr>
+            <tr><td class="text-3" style="border:none">扫码来源</td><td style="border:none" id="pSrc">—</td></tr>
+            <tr><td class="text-3" style="border:none">二维码归属</td><td style="border:none">工作人员邀请码(医院级)</td></tr>
+            <tr><td class="text-3" style="border:none">认领人</td><td style="border:none" id="pClaim">—</td></tr>
+            <tr><td class="text-3" style="border:none">认领时间</td><td style="border:none" id="pClaimAt">—</td></tr>
+          </tbody>
+        </table>
+
+        <div class="divider"></div>
+
+        <div class="note note-gray" style="margin:0">
+          <img src="assets/icons-png/icon-info.png">
+          <div><b>设置前请核对身份</b><br>扫码只证明此人持有本院邀请码,<b>不能证明其为本院职工</b>。
+            建议当面核对工牌后再设置科室与职称。</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>处理记录</h3></div>
+        <div class="timeline">
+          <div class="tl-item hi"><div class="tl-t" id="tl1">—</div><div class="tl-b">扫码进入小程序,进入待分配队列</div></div>
+          <div class="tl-item" id="tl2row"><div class="tl-t" id="tl2">—</div><div class="tl-b">管理员认领</div></div>
+          <div class="tl-item" id="tl3row"><div class="tl-t">待完成</div><div class="tl-b">设置科室与职称</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== 右:设置表单 ========== -->
+    <div class="grow">
+      <div class="page-head">
+        <h1>认领并设置</h1>
+        <div class="sub">科室与职称<b>都是必填</b>,设置完成后该人员即可正常使用小程序,无需重新扫码。</div>
+      </div>
+
+      <div class="card">
+        <form id="f">
+          <div class="form-sec">
+            <h4>身份信息<span class="req-all">* 为必填</span></h4>
+            <div class="form-grid">
+              <div class="fi">
+                <label><span class="req">*</span>姓名</label>
+                <input class="ipt" name="sName" placeholder="2–20 字,可修改微信昵称">
+                <span class="err-msg"></span>
+              </div>
+              <div class="fi">
+                <label>手机号</label>
+                <input class="ipt" name="sPhone" placeholder="选填,11 位">
+                <span class="err-msg"></span>
+              </div>
+              <div class="fi">
+                <label>头像</label>
+                <div class="flex">
+                  <span class="av-sm" id="avPrev" style="background:#8A94A6">—</span>
+                  <button type="button" class="btn btn-sm btn-default" id="upBtn">替换头像</button>
+                  <button type="button" class="btn btn-sm btn-text muted" id="rstBtn">恢复微信头像</button>
+                </div>
+                <span class="hint">替换后小程序端<b>优先使用</b>后台设置的头像</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-sec">
+            <h4>归属设置<span class="req-all">* 科室与职称均为必填</span></h4>
+            <div class="form-grid">
+              <div class="fi">
+                <label><span class="req">*</span>所属科室</label>
+                <select class="sel" name="sDept"></select>
+                <span class="err-msg"></span>
+              </div>
+              <div class="fi full">
+                <label><span class="req">*</span>职称(技术职称必填)</label>
+                <div id="posPick" class="flex flex-wrap" style="gap:8px"></div>
+                <span class="hint">技术职称为每个工作人员的<b>必填项</b>;行政职务(如科室主任)可在此一并指定</span>
+                <span class="err-msg"></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="note note-gray">
+            <img src="assets/icons-png/icon-info.png">
+            <div><b>建议首次只设「医师 / 护士」层级。</b>升为科室主任 / 护士长建议走任命流程,避免扫码即得高权限(本轮后台不做权限,仅作流程建议)。</div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div style="position:sticky;bottom:0;background:var(--bg);padding:12px 0;border-top:1px solid var(--line);display:flex;gap:9px;z-index:5">
+    <a class="btn btn-default" href="back-staff.html?tab=pending">← 返回队列</a>
+    <a class="btn btn-text danger" href="#" id="archBtn" style="margin-left:6px">归档此人</a>
+    <span class="ml-auto"></span>
+    <button class="btn btn-default" id="saveLater">保存并稍后处理</button>
+    <button class="btn btn-primary" id="saveBtn">完成设置</button>
+  </div>
+</main>
+
+<div class="modal-mask" id="archModal">
+  <div class="modal">
+    <div class="modal-head">
+      <img src="assets/icons-png/icon-warning.png" alt="">
+      <h3>归档此人</h3>
+    </div>
+    <div class="modal-body">
+      <p>归档后此人从待办队列移除,<b>数据保留 180 天</b>,可在「已归档」Tab 恢复。</p>
+      <div class="fi mt-12">
+        <label><span class="req">*</span>归档原因</label>
+        <select class="sel" id="archReason">
+          <option value="">请选择</option>
+          <option>误扫(非本院人员)</option>
+          <option>重复扫码</option>
+          <option>已离职</option>
+          <option>测试账号</option>
+          <option>其他</option>
+        </select>
+        <span class="err-msg">请选择归档原因</span>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-default" onclick="Back.modal('archModal',false)">取消</button>
+      <button class="btn btn-danger" id="archOk">确认归档</button>
+    </div>
+  </div>
+</div>
+
+<script src="assets/back-data.js"></script>
+<script src="assets/back-layout.js"></script>
+<script>
+  var w = BACK_DATA.byId(BACK_DATA.pending, Back.qs('id')) || BACK_DATA.pending[0];
+  var avatarMode = 'wechat';
+  var pickedPos = '';
+  var pickedAdmin = '';
+
+  /* 回填左栏 */
+  document.getElementById('pNick').textContent = w.nick;
+  document.getElementById('pAv').textContent = w.avatarText;
+  document.getElementById('avPrev').textContent = w.avatarText;
+  document.getElementById('pScan').textContent = w.scanAt;
+  document.getElementById('pDays').innerHTML = '<span class="' + (w.days > 3 ? 'text-red fw-5' : 'text-orange') + '">'
+    + w.days + ' 天</span>（超过 7 天将自动归档）';
+  document.getElementById('pSrc').textContent = w.source;
+  document.getElementById('pClaim').innerHTML = w.claimedBy
+    ? '<span class="badge badge-info">' + w.claimedBy + '</span>' : '<span class="badge badge-block">未认领</span>';
+  document.getElementById('pClaimAt').textContent = w.claimAt || '—';
+  document.getElementById('tl1').textContent = w.scanAt;
+  if (w.claimedBy) {
+    document.getElementById('tl2').textContent = w.claimAt;
+    document.getElementById('tl2row').classList.add('hi');
+  } else {
+    document.getElementById('tl2row').style.opacity = '.5';
+    document.getElementById('tl2').textContent = '尚未认领';
+  }
+
+  /* 倒计时 */
+  var sec = 23 * 3600 + 41 * 60 + 8;
+  setInterval(function () {
+    sec--;
+    if (sec < 0) sec = 0;
+    var h = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60), s = sec % 60;
+    var pad = function (x) { return x < 10 ? '0' + x : '' + x; };
+    document.getElementById('cd').textContent = pad(h) + ':' + pad(m) + ':' + pad(s);
+  }, 1000);
+
+  /* 表单默认 */
+  document.querySelector('[name="sName"]').value = w.nick.replace('**', '');
+  /* 人员来自本院邀请码,自动归入当前医院,不需要再选 */
+  var curH = Back.currentHospital();
+  var hSel = { value: curH ? curH.id : '' };
+  fillDept();
+
+  function fillDept() {
+    var dSel = document.querySelector('[name="sDept"]');
+    dSel.innerHTML = '<option value="">请选择科室</option>';
+    Back.hospFilter(BACK_DATA.departments, 'depts')
+      .filter(function (x) { return x.status === 'on'; })
+      .forEach(function (x) { dSel.insertAdjacentHTML('beforeend', '<option value="' + x.id + '">' + x.name + '</option>'); });
+  }
+
+  /* 职称选择:技术职称必填 + 行政职务可选 */
+  function renderPos() {
+    var box = document.getElementById('posPick');
+    box.innerHTML = '';
+    ['title', 'admin'].forEach(function (cat) {
+      var meta = BACK_DATA.POS_CATS[cat];
+      var group = document.createElement('div');
+      group.style.cssText = 'display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:6px';
+      group.innerHTML = '<span class="fz-11 text-3" style="width:66px">' + meta.label + '</span>';
+      BACK_DATA.positions.filter(function (p) { return p.cat === cat && p.status === 'on'; })
+        .forEach(function (p) {
+          var checked = cat === 'title' ? pickedPos === p.id : pickedAdmin === p.id;
+          var lbl = '<label class="chk" style="border:1px solid ' + (checked ? 'var(--brand)' : 'var(--line)')
+            + ';padding:4px 9px;border-radius:14px;background:' + (checked ? 'var(--brand-light)' : '#fff') + '">'
+            + '<input type="radio" name="pos_' + cat + '" value="' + p.id + '"' + (checked ? ' checked' : '')
+            + (cat === 'admin' ? ' data-adm="1"' : '') + '>' + p.name + '</label>';
+          group.insertAdjacentHTML('beforeend', lbl);
+        });
+      box.appendChild(group);
+    });
+    box.querySelectorAll('input').forEach(function (r) {
+      r.addEventListener('change', function () {
+        if (r.getAttribute('data-adm')) pickedAdmin = r.value; else pickedPos = r.value;
+        renderPos();
+      });
+    });
+  }
+  renderPos();
+
+  /* 头像替换演示 */
+  document.getElementById('upBtn').addEventListener('click', function () {
+    avatarMode = 'override';
+    document.getElementById('avPrev').style.background = '#2E7DD7';
+    document.getElementById('avPrev').insertAdjacentHTML('afterend', '');
+    document.getElementById('upBtn').textContent = '已上传新头像 ✓';
+    Back.toast('头像已替换,小程序端将优先使用', 'ok');
+  });
+  document.getElementById('rstBtn').addEventListener('click', function () {
+    avatarMode = 'wechat';
+    document.getElementById('avPrev').style.background = '#8A94A6';
+    document.getElementById('upBtn').textContent = '替换头像';
+    Back.toast('已恢复使用微信头像', 'warn');
+  });
+
+  /* 保存 */
+  function collect() {
+    return {
+      sName: document.querySelector('[name="sName"]').value.trim(),
+      sPhone: document.querySelector('[name="sPhone"]').value.trim(),
+      sHosp: hSel.value,
+      sDept: document.querySelector('[name="sDept"]').value
+    };
+  }
+  function validate(v) {
+    var f = document.getElementById('f');
+    var ok = Back.validate(f, {
+      sName:  { required: true, minLen: 2, maxLen: 20, msg: '姓名 2–20 字' },
+      sPhone: { pattern: /^1[3-9]\d{9}$/, msg: '手机号格式不正确(11 位)' }
+    });
+    document.querySelectorAll('#posPick .err-msg').forEach(function (e) { e.style.display = 'none'; });
+    if (!v.sDept) {
+      var fd = document.querySelector('[name="sDept"]').closest('.fi');
+      fd.classList.add('has-err'); fd.querySelector('.err-msg').textContent = '请选择所属科室';
+      ok = false;
+    }
+    if (!pickedPos) {
+      Back.toast('请选择技术职称(必填)', 'err');
+      ok = false;
+    }
+    return ok;
+  }
+
+  document.getElementById('saveBtn').addEventListener('click', function () {
+    var v = collect();
+    if (!validate(v)) return;
+    w.state = 'done'; w.claimedBy = w.claimedBy || '后台管理员';
+    Back.toast('已设置:' + v.sName + ' · ' + BACK_DATA.dept(v.sDept).name
+      + ' · ' + BACK_DATA.pos(pickedPos).name + ',对方立即可用', 'ok');
+    setTimeout(function () { location.href = 'back-staff.html?tab=set'; }, 1100);
+  });
+
+  document.getElementById('saveLater').addEventListener('click', function () {
+    w.state = 'claimed'; w.claimedBy = '后台管理员'; w.claimAt = '2026-10-21 09:20';
+    Back.toast('已保留认领,24 小时内可回来继续', 'warn');
+    setTimeout(function () { location.href = 'back-staff.html?tab=pending'; }, 900);
+  });
+
+  document.getElementById('archBtn').addEventListener('click', function (e) {
+    e.preventDefault();
+    document.querySelector('#archModal .fi').classList.remove('has-err');
+    Back.modal('archModal', true);
+  });
+  document.getElementById('archOk').addEventListener('click', function () {
+    var r = document.getElementById('archReason').value;
+    if (!r) { document.querySelector('#archModal .fi').classList.add('has-err'); return; }
+    w.state = 'archived'; w.archivedReason = r;
+    Back.modal('archModal', false);
+    Back.toast('已归档,可在「已归档」Tab 恢复', 'warn');
+    setTimeout(function () { location.href = 'back-staff.html?tab=archived'; }, 900);
+  });
+</script>
+</body>
+</html>

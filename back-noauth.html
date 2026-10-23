@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, 1.0">
+  <title>权限不足 · 后台管理</title>
+  <link rel="stylesheet" href="assets/back.css">
+</head>
+<body data-page="dashboard" data-crumb='[{"name":"后台管理"},{"name":"权限不足"}]'>
+
+<main class="back-main">
+  <div style="margin:80px auto;max-width:540px;text-align:center">
+    <img src="assets/icons-png/icon-warning.png" alt="" style="width:120px;height:120px">
+    <h1 style="margin:14px 0 8px">您没有访问该页面的权限</h1>
+    <div class="text-3 fz-13" style="margin:0 auto 22px;line-height:1.7">
+      当前账号 <b>医生甲</b> 在本医院属于 <b>神经内科 · 主治医师</b>。<br>
+      没有访问 <b>任务组件库</b> / <b>预警规则</b> 等科室级资源的权限。<br>
+      如需调整,请联系本科室管理员 或 主任。
+    </div>
+
+    <div class="card" style="text-align:left">
+      <div class="card-head"><h3>当前账户</h3></div>
+      <div class="form-grid" style="grid-template-columns:1fr 1fr">
+        <div class="fi"><label>账号</label><div class="cell-main">admin@hospital.cn</div></div>
+        <div class="fi"><label>姓名</label><div class="cell-main">医生甲</div></div>
+        <div class="fi"><label>医院</label><div class="cell-main">H 市第一医院</div></div>
+        <div class="fi"><label>科室</label><div class="cell-main">神经内科(卒中中心)</div></div>
+        <div class="fi"><label>职位</label><div>
+          <span class="badge badge-info">主治医师</span>&nbsp;<span class="text-3 fz-12">技术职称</span>
+        </div></div>
+        <div class="fi"><label>权限组</label><div>
+          <span class="badge badge-gray">临床医师</span>
+          <div class="fz-12 text-3" style="margin-top:6px">
+            可访问:工作台 · 工作人员(本院只读) · 病患(本院只读) · 个人二维码
+          </div>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="flex" style="gap:9px;justify-content:center;margin-top:22px">
+      <a class="btn btn-default" href="back-dashboard.html">返回工作台</a>
+      <a class="btn btn-default" href="back-staff-detail.html">查看本人档案</a>
+      <a class="btn btn-primary" href="back-login.html">切换其他账号</a>
+    </div>
+
+    <div class="note note-warn" style="text-align:left;margin-top:26px">
+      <img src="assets/icons-png/icon-warning.png">
+      <div>
+        <b>本期范围提示</b><br>
+        后台权限矩阵本轮 <b>暂不交付</b>。不同职位之间的访问范围由 <b>种子账户分组</b> 模拟;
+        严格权限设计推迟到 <b>Q2 / Q3</b>。
+      </div>
+    </div>
+  </div>
+</main>
+
+<script src="assets/back-data.js"></script>
+<script src="assets/back-layout.js"></script>
+</body>
+</html>

@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>新增/编辑 · 组织架构</title>
+  <link rel="stylesheet" href="assets/back.css">
+</head>
+<body data-page="org" data-crumb='[{"name":"后台管理"},{"name":"组织与人员"},{"href":"back-org.html","name":"组织架构"},{"name":"编辑"}]'>
+
+<main class="back-main">
+  <div class="split">
+    <div class="grow">
+      <div class="page-head">
+        <h1 id="pageTitle">添加医院</h1>
+        <div class="sub" id="pageSub">医院是租户级的组织单元,一个医院对应一个邀请码。</div>
+      </div>
+
+      <div class="card">
+        <form id="f">
+          <!-- 医院表单 -->
+          <div id="secHospital">
+            <div class="form-sec">
+              <h4>医院图片<span class="req-all">展示在顶栏与选医院卡片</span></h4>
+              <div class="image-up">
+                <div class="iu-preview" id="hImgPrev"><div>暂无图<br>上传后显示在这里</div></div>
+                <div class="iu-main">
+                  <div class="iu-btns">
+                    <label class="btn btn-default btn-sm" for="hImgFile">上传图片</label>
+                    <button class="btn btn-default btn-sm" id="hImgDemo" type="button">使用演示图</button>
+                    <button class="btn btn-text danger" id="hImgClear" type="button">移除</button>
+                    <input id="hImgFile" type="file" accept="image/*">
+                  </div>
+                  <div class="iu-hint">支持 jpg / png / webp / gif,≤ 2 MB。<b>DEMO 阶段</b>图片转 base64 存本地,不上传服务器。</div>
+                </div>
+              </div>
+            </div>
+            <div class="form-sec">
+              <h4>基本信息<span class="req-all">* 为必填</span></h4>
+              <div class="form-grid">
+                <div class="fi full">
+                  <label><span class="req">*</span>医院名称</label>
+                  <input class="ipt" name="hName" placeholder="如:H 市第一医院">
+                  <span class="err-msg"></span>
+                </div>
+                <div class="fi">
+                  <label>医院简称</label>
+                  <input class="ipt" name="hShort" placeholder="如:H 市一院(留空取名称前 6 字)">
+                  <span class="err-msg"></span>
+                </div>
+                <div class="fi">
+                  <label>行政区划</label>
+                  <input class="ipt" name="hArea" placeholder="如:H 市 / 城东区">
+                  <span class="err-msg"></span>
+                </div>
+                <div class="fi">
+                  <label>医院等级</label>
+                  <select class="sel" name="hLevel">
+                    <option value="">请选择</option>
+                    <option>三级甲等</option><option>三级乙等</option>
+                    <option>二级甲等</option><option>二级乙等</option><option>未定级</option>
+                  </select>
+                  <span class="err-msg"></span>
+                </div>
+                <div class="fi">
+                  <label>联系电话</label>
+                  <input class="ipt" name="hPhone" placeholder="固话或手机号">
+                  <span class="err-msg"></span>
+                </div>
+                <div class="fi full">
+                  <label>医院地址</label>
+                  <input class="ipt" name="hAddr" placeholder="最多 100 字">
+                  <span class="err-msg"></span>
+                </div>
+                <div class="fi">
+                  <label>床位数</label>
+                  <input class="ipt" name="hBeds" type="number" min="10" max="10000" placeholder="10-10000">
+                  <span class="err-msg"></span>
+                </div>
+                <div class="fi">
+                  <label>状态</label>
+                  <select class="sel" name="hStatus"><option value="on">启用</option><option value="off">停用</option></select>
+                </div>
+                <div class="fi full">
+                  <label>医院简介</label>
+                  <textarea class="ta" name="hIntro" placeholder="≤200 字,展示在医院档案卡上"></textarea>
+                  <div class="counter"><span id="hIntroN">0</span> / 200</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 科室表单 -->
+          <div id="secDept" class="hidden">
+            <div class="form-sec">
+              <h4>基本信息<span class="req-all">* 为必填</span></h4>
+              <div class="form-grid">
+                <div class="fi">
+                  <label>所属医院</label>
+                  <select class="sel" name="dHosp"></select>
+                  <span class="hint">登录时已选定当前医院,科室默认建在本院下,不可跨院</span>
+                  <span class="err-msg"></span>
+                </div>
+                <div class="fi">
+                  <label><span class="req">*</span>科室名称</label>
+                  <input class="ipt" name="dName" placeholder="如:神经内科">
+                  <span class="err-msg"></span>
+                </div>
+                <div class="fi">
+                  <label>科室主任(责任人)</label>
+                  <select class="sel" name="dDir"><option value="">暂不指定</option></select>
+                  <span class="hint">行政职务。一个科室有且只有一个科室主任,也可稍后在科室列表指定</span>
+                  <span class="err-msg"></span>
+                </div>
+                <div class="fi">
+                  <label>状态</label>
+                  <select class="sel" name="dStatus"><option value="on">启用</option><option value="off">停用</option></select>
+                </div>
+                <div class="fi full">
+                  <label>科室简介</label>
+                  <textarea class="ta" name="dIntro" placeholder="最多 200 字"></textarea>
+                  <div class="counter"><span id="dIntroN">0</span> / 200</div>
+                  <span class="err-msg"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="note note-gray" id="tipBox"></div>
+        </form>
+      </div>
+    </div>
+
+    <!-- 右侧规则提示 -->
+    <div style="width:300px;flex:none">
+      <div class="card">
+        <div class="card-head"><h3>校验规则</h3></div>
+        <ul class="fz-12 text-2" style="line-height:2.1;padding-left:2px" id="ruleList"></ul>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>快捷返回</h3></div>
+        <a class="btn btn-default w-full mb-8" href="back-org.html">← 组织架构列表</a>
+        <a class="btn btn-default w-full" href="back-staff.html">工作人员列表</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 底部操作条 -->
+  <div style="position:sticky;bottom:0;background:var(--bg);padding:12px 0;margin-top:-4px;
+              border-top:1px solid var(--line);display:flex;gap:9px;z-index:5">
+    <a class="btn btn-default" href="back-org.html">取消</a>
+    <span class="ml-auto"></span>
+    <button class="btn btn-primary" id="saveBtn">保存</button>
+  </div>
+</main>
+
+<script src="assets/back-data.js"></script>
+<script src="assets/back-layout.js"></script>
+<script>
+  var type = Back.qs('type') || 'hospital';
+  var id   = Back.qs('id');
+  var isEdit = !!id;
+
+  document.getElementById('secHospital').classList.toggle('hidden', type !== 'hospital');
+  document.getElementById('secDept').classList.toggle('hidden', type !== 'department');
+
+  if (type === 'hospital') {
+    document.title = (isEdit ? '编辑医院' : '添加医院') + ' · 后台管理';
+    document.getElementById('pageTitle').textContent = isEdit ? '编辑医院' : '添加医院';
+    document.getElementById('pageSub').textContent = '医院是租户级的组织单元,一个医院对应一个工作人员邀请码。';
+    document.getElementById('tipBox').innerHTML =
+      '<img src="assets/icons-png/icon-info.png"><div><b>停用语义</b>:停用后该医院不可新增人员,下有启用科室时无法停用。历史数据全部保留,可随时恢复。</div>';
+    document.getElementById('ruleList').innerHTML =
+      '<li>医院名称 2–50 字,<b>全局唯一</b></li>'
+      + '<li>简称留空时自动取名称前 6 字</li>'
+      + '<li>床位 10–10000 的整数</li>'
+      + '<li>电话校验固话 / 手机格式</li>'
+      + '<li>地址最多 100 字;简介最多 200 字</li>';
+  } else {
+    document.title = (isEdit ? '编辑科室' : '添加科室') + ' · 后台管理';
+    document.getElementById('pageTitle').textContent = isEdit ? '编辑科室' : '添加科室';
+    document.getElementById('pageSub').textContent = '科室隶属医院,带责任人(科室主任),每个科室有且只有一个科室主任。';
+    document.getElementById('tipBox').innerHTML =
+      '<img src="assets/icons-png/icon-info.png"><div><b>停用语义</b>:科室下有在岗人员时<b>无法停用</b>,必须先转移人员。停用后该科室邀请码自动失效。</div>';
+    document.getElementById('ruleList').innerHTML =
+      '<li>科室自动归属<b>当前医院</b>,不可跨院</li>'
+      + '<li>科室名称 2–30 字,同医院内唯一</li>'
+      + '<li>科室主任必须是本院「科室主任」职位</li>'
+      + '<li>同一科室不允许出现两个科室主任</li>'
+      + '<li>简介最多 200 字</li>';
+  }
+
+  /* 医院图片上传(仅 type=hospital 时启用) */
+  var hImg = '';
+  function paintHImg() {
+    document.getElementById('hImgPrev').innerHTML = hImg
+      ? '<img src="' + hImg + '" alt="">'
+      : '<div>暂无图<br>上传后显示在这里</div>';
+  }
+  if (type === 'hospital') {
+    document.getElementById('hImgFile').addEventListener('change', function (e) {
+      var f = e.target.files[0]; if (!f) return;
+      if (f.size > 2 * 1024 * 1024) { Back.toast('图片超过 2 MB,请压缩后再传', 'err'); return; }
+      var r = new FileReader();
+      r.onload = function (ev) { hImg = ev.target.result; paintHImg(); };
+      r.readAsDataURL(f);
+    });
+    document.getElementById('hImgDemo').addEventListener('click', function () {
+      hImg = 'assets/sample-hospital.svg'; paintHImg();
+    });
+    document.getElementById('hImgClear').addEventListener('click', function () {
+      hImg = ''; document.getElementById('hImgFile').value = ''; paintHImg();
+    });
+    document.querySelector('[name="hIntro"]').addEventListener('input', function () {
+      document.getElementById('hIntroN').textContent = this.value.length;
+    });
+  }
+
+  /* 下拉数据 —— 科室的「所属医院」固定为当前医院(登录时已选定,不再让用户重复选) */
+  var hSel = document.querySelector('[name="dHosp"]');
+  var curH = Back.currentHospital();
+  if (curH && curH.status === 'on') {
+    hSel.innerHTML = '<option value="' + curH.id + '">' + curH.name + '</option>';
+    hSel.value = curH.id;
+  }
+  hSel.disabled = true;
+  var dirSel = document.querySelector('[name="dDir"]');
+  BACK_DATA.staff.forEach(function (s) {
+    if (s.status === 'on' && BACK_DATA.pos(s.posId) && BACK_DATA.pos(s.posId).name === '科室主任') {
+      dirSel.insertAdjacentHTML('beforeend', '<option value="' + s.id + '">' + s.name + '</option>');
+    }
+  });
+
+  /* 编辑回填 */
+  if (isEdit) {
+    var o = type === 'hospital' ? BACK_DATA.hospital(id) : BACK_DATA.byId(BACK_DATA.departments, id);
+    if (o) {
+      if (type === 'hospital') {
+        set('hName', o.name); set('hShort', o.short);
+        set('hArea', o.area); set('hLevel', o.level); set('hPhone', o.phone);
+        set('hStatus', o.status);
+        set('hBeds', o.beds); set('hIntro', o.intro || '');
+        document.getElementById('hIntroN').textContent = (o.intro || '').length;
+        if (o.image) { hImg = o.image; paintHImg(); }
+      } else {
+        set('dHosp', o.hospitalId); set('dName', o.name);
+        set('dDir', o.directorId); set('dStatus', o.status);
+        set('dIntro', o.intro || ''); document.getElementById('dIntroN').textContent = (o.intro || '').length;
+      }
+    }
+  }
+  function set(n, v) { var e = document.querySelector('[name="' + n + '"]'); if (e) e.value = v || ''; }
+
+  var intro = document.querySelector('[name="dIntro"]');
+  intro.addEventListener('input', function () {
+    document.getElementById('dIntroN').textContent = intro.value.length;
+  });
+
+  /* 保存校验 */
+  document.getElementById('saveBtn').addEventListener('click', function () {
+    var f = document.getElementById('f');
+    var rules;
+    if (type === 'hospital') {
+      rules = {
+        hName: { required: true, minLen: 2, maxLen: 50, msg: '医院名称 2–50 字' },
+        hShort: { maxLen: 20, msg: '简称最多 20 字' },
+        hPhone: { pattern: /^[0-9\- ]{7,20}$/, msg: '电话格式不正确' },
+        hAddr: { maxLen: 100, msg: '地址最多 100 字' },
+        hBeds: { pattern: /^$|^[1-9][0-9]{0,3}$|^10000$/, msg: '床位填 10–10000 的整数' },
+        hIntro: { maxLen: 200, msg: '简介最多 200 字' }
+      };
+    } else {
+      rules = {
+        dHosp: { required: true, msg: '请选择所属医院' },
+        dName: { required: true, minLen: 2, maxLen: 30, msg: '科室名称 2–30 字' },
+        dIntro: { maxLen: 200, msg: '简介最多 200 字' }
+      };
+    }
+    if (!Back.validate(f, rules)) return;
+
+    // 唯一性校验
+    if (type === 'hospital') {
+      var nm = document.querySelector('[name="hName"]').value.trim();
+      var dup = BACK_DATA.hospitals.filter(function (h) {
+        return h.name === nm && h.id !== id;
+      })[0];
+      if (dup) {
+        var fi = document.querySelector('[name="hName"]').closest('.fi');
+        fi.classList.add('has-err');
+        fi.querySelector('.err-msg').textContent = '医院名称已存在:' + dup.name;
+        return;
+      }
+    } else {
+      var dn = document.querySelector('[name="dName"]').value.trim();
+      var hh = document.querySelector('[name="dHosp"]').value;
+      var dupd = BACK_DATA.departments.filter(function (d) {
+        return d.name === dn && d.hospitalId === hh && d.id !== id;
+      })[0];
+      if (dupd) {
+        var fi2 = document.querySelector('[name="dName"]').closest('.fi');
+        fi2.classList.add('has-err');
+        fi2.querySelector('.err-msg').textContent = '该医院下已存在同名科室';
+        return;
+      }
+      var did = document.querySelector('[name="dDir"]').value;
+      var busy = BACK_DATA.departments.filter(function (d) {
+        return d.directorId === did && d.id !== id;
+      })[0];
+      if (busy) {
+        var fi3 = document.querySelector('[name="dDir"]').closest('.fi');
+        fi3.classList.add('has-err');
+        fi3.querySelector('.err-msg').textContent =
+          BACK_DATA.member(did).name + ' 已担任「' + busy.name + '」的科室主任,请先解除原任命';
+        return;
+      }
+    }
+
+    /* 写回演示数据(让后续页面立刻看到变化) */
+    if (type === 'hospital') {
+      var h = id ? BACK_DATA.hospital(id) : null;
+      var hName = document.querySelector('[name="hName"]').value.trim();
+      var hShort = document.querySelector('[name="hShort"]').value.trim();
+      if (!h) {
+        h = { id: 'H' + Date.now().toString().slice(-4), image: '', createdAt: new Date().toISOString().slice(0, 10) };
+        BACK_DATA.hospitals.push(h);
+      }
+      h.name = hName;
+      h.short = hShort || hName.slice(0, 6);
+      h.area = document.querySelector('[name="hArea"]').value.trim();
+      h.level = document.querySelector('[name="hLevel"]').value || '未定级';
+      h.phone = document.querySelector('[name="hPhone"]').value.trim();
+      h.addr = document.querySelector('[name="hAddr"]').value.trim();
+      h.beds = parseInt(document.querySelector('[name="hBeds"]').value, 10) || null;
+      h.intro = document.querySelector('[name="hIntro"]').value.trim();
+      h.image = hImg;
+      h.status = document.querySelector('[name="hStatus"]').value;
+      Back.toast('已保存医院档案:' + h.name, 'ok');
+    } else {
+      var d = id ? BACK_DATA.byId(BACK_DATA.departments, id) : null;
+      var dName = document.querySelector('[name="dName"]').value.trim();
+      if (!d) {
+        d = { id: 'D' + Date.now().toString().slice(-4) };
+        BACK_DATA.departments.push(d);
+      }
+      d.hospitalId = document.querySelector('[name="dHosp"]').value;
+      d.name = dName;
+      d.directorId = document.querySelector('[name="dDir"]').value;
+      d.status = document.querySelector('[name="dStatus"]').value;
+      d.intro = document.querySelector('[name="dIntro"]').value.trim();
+      Back.toast('已保存科室:' + d.name, 'ok');
+    }
+    setTimeout(function () { location.href = 'back-org.html'; }, 700);
+  });
+</script>
+</body>
+</html>

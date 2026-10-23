@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>编辑药品 · 后台管理</title>
+  <link rel="stylesheet" href="assets/back.css">
+</head>
+<body data-page="drugs" data-crumb='[{"name":"后台管理"},{"href":"back-drugs.html","name":"药品库"},{"name":"编辑药品"}]'>
+
+<main class="back-main">
+
+  <div class="page-head">
+    <h1 id="ttl">编辑药品</h1>
+    <div class="sub">药品库是 EMRS 的<b>字典</b>,不构成处方依据(C1)。</div>
+  </div>
+
+  <div class="note note-warn">
+    <img src="assets/icons-png/icon-warning.png">
+    <div>
+      <b>本药品信息仅作参考展示,不构成处方依据</b>(C1)。
+      所有处方相关动作(开方 / 调剂 / 用法用量剂量上限 / 配伍禁忌校验)由 <b>医院 HIS 系统</b> 负责。
+      EMRS 不录入处方 / 不干预医生开方 / 不展示处方剂量上限。
+    </div>
+  </div>
+
+  <!-- ============ 基本信息 ============ -->
+  <div class="card">
+    <div class="card-head"><h3>基本信息</h3></div>
+    <div class="form-grid">
+      <div class="fi">
+        <label><span class="req">*</span>通用名</label>
+        <input class="ipt" name="gn" placeholder="2–40 字">
+        <span class="hint">同医院内唯一</span>
+        <span class="err-msg"></span>
+      </div>
+      <div class="fi">
+        <label>商品名</label>
+        <input class="ipt" name="bn" placeholder="选填">
+      </div>
+      <div class="fi">
+        <label><span class="req">*</span>类别</label>
+        <select class="sel" name="cat"></select>
+        <span class="err-msg"></span>
+      </div>
+      <div class="fi">
+        <label><span class="req">*</span>规格</label>
+        <input class="ipt" name="spec" placeholder="如 100mg/片">
+        <span class="err-msg"></span>
+      </div>
+      <div class="fi">
+        <label><span class="req">*</span>剂型</label>
+        <select class="sel" name="form">
+          <option>片剂</option><option>胶囊</option><option>注射液</option>
+          <option>缓释片</option><option>分散片</option>
+        </select>
+      </div>
+      <div class="fi">
+        <label>状态</label>
+        <select class="sel" name="status"><option value="on">启用</option><option value="off">停用</option></select>
+      </div>
+      <div class="fi">
+        <label>OTC / Rx</label>
+        <select class="sel" name="otc"><option value="rx">处方药 Rx</option><option value="otc">非处方 OTC</option></select>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 详细信息 ============ -->
+  <div class="card">
+    <div class="card-head"><h3>详细信息(选填)</h3><span class="ch-desc">便于医生和护士快速检索和识别</span></div>
+    <div class="form-grid">
+      <div class="fi full">
+        <label>常用剂量</label>
+        <input class="ipt" name="dose" placeholder="例:口服,100mg/次,1 次/日">
+        <span class="hint">仅用于医生参考,不替代处方剂量</span>
+      </div>
+      <div class="fi full">
+        <label>主要适应症</label>
+        <textarea class="ta" name="ind" placeholder="例:抗血小板聚集,用于缺血性心脑血管疾病"></textarea>
+      </div>
+      <div class="fi full">
+        <label>常见不良反应</label>
+        <textarea class="ta" name="adverse" placeholder="例:胃部不适 / 出血风险"></textarea>
+      </div>
+      <div class="fi full">
+        <label>禁忌</label>
+        <textarea class="ta" name="contra" placeholder="例:活动性消化道溃疡 / 出血性疾病"></textarea>
+      </div>
+      <div class="fi full">
+        <label>相互作用</label>
+        <textarea class="ta" name="interact" placeholder="例:与抗凝药合用增加出血风险"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 照片 ============ -->
+  <div class="card">
+    <div class="card-head"><h3>药品照片</h3><span class="ch-desc">便于患者识别,但<b>不用于配药核对</b></span></div>
+    <div class="form-grid">
+      <div class="fi full">
+        <label>照片 URL</label>
+        <div class="flex" style="gap:12px">
+          <div class="av-xs" id="phPrev" style="background:var(--bg-3);width:60px;height:60px;border-radius:6px;display:flex;align-items:center;justify-content:center">
+            <img src="assets/icons-png/icon-drug-package.png" style="width:60%;height:60%">
+          </div>
+          <div style="flex:1">
+            <input class="ipt" name="photoUrl" id="phInput" placeholder="如 /uploads/drugs/m1.png(暂不上传图片,只填 URL)">
+            <div class="fz-12 text-3 mt-8">DEMO 阶段不上传,模拟填写 URL;</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 操作记录占位 ============ -->
+  <div class="card">
+    <div class="card-head"><h3>操作记录</h3></div>
+    <div class="timeline">
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">2026-10-15 09:12</div><div><b>主任丙</b> 修改「常见不良反应」追加「出血风险」</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">2026-09-30 14:35</div><div><b>医生甲</b> 修正「常用剂量」表达</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">2026-09-18 11:00</div><div><b>系统</b> 从 HIS 同步该药品档案(C1,仅供参考)</div></div>
+    </div>
+  </div>
+
+  <div style="position:sticky;bottom:0;background:var(--bg);padding:12px 0;border-top:1px solid var(--line);display:flex;gap:9px;z-index:5">
+    <a class="btn btn-default" href="back-drugs.html">取消</a>
+    <span class="ml-auto"></span>
+    <button class="btn btn-primary" id="saveBtn">保存药品</button>
+  </div>
+</main>
+
+<script src="assets/back-data.js"></script>
+<script src="assets/back-layout.js"></script>
+<script>
+  var id = Back.qs('id');
+  var d = id ? BACK_DATA.byId(BACK_DATA.drugs, id) : null;
+  var isEdit = !!d;
+  if (!d) d = { id: 'MNEW', gn: '', bn: '', cat: '其他', spec: '', form: '片剂', status: 'on', otc: 'rx',
+                photoUrl: '', dose: '', ind: '', adverse: '', contra: '', interact: '' };
+
+  document.getElementById('ttl').textContent = isEdit ? '编辑药品 · ' + d.gn : '新建药品';
+
+  /* 类别下拉 */
+  (function () {
+    var cs = document.querySelector('[name="cat"]');
+    var set = {};
+    BACK_DATA.drugs.forEach(function (x) { if (x.cat) set[x.cat] = true; });
+    Object.keys(set).forEach(function (k) { cs.insertAdjacentHTML('beforeend', '<option>' + k + '</option>'); });
+    cs.insertAdjacentHTML('beforeend', '<option>其他</option>');
+  })();
+
+  /* 回填 */
+  ['gn', 'bn', 'cat', 'spec', 'form', 'status', 'otc', 'photoUrl',
+   'dose', 'ind', 'adverse', 'contra', 'interact'].forEach(function (n) {
+    document.querySelector('[name="' + n + '"]').value = d[n] || '';
+  });
+
+  /* 照片预览 */
+  function updatePhoto() {
+    var v = document.getElementById('phInput').value;
+    var p = document.getElementById('phPrev');
+    p.innerHTML = v
+      ? '<img src="' + v + '" style="width:100%;height:100%;border-radius:6px;object-fit:cover" onerror="this.parentNode.innerHTML=\'<img src=assets/icons-png/icon-drug-package.png style=width:60%;height:60%>\'">'
+      : '<img src="assets/icons-png/icon-drug-package.png" style="width:60%;height:60%">';
+  }
+  document.getElementById('phInput').addEventListener('input', updatePhoto);
+  updatePhoto();
+
+  /* 保存 */
+  document.getElementById('saveBtn').addEventListener('click', function () {
+    var ok = Back.validate(document.body, {
+      gn: { required: true, minLen: 2, maxLen: 40, msg: '通用名 2–40 字' },
+      spec: { required: true, msg: '请输入规格' }
+    });
+    var name = document.querySelector('[name="gn"]').value.trim();
+    var dup = BACK_DATA.drugs.filter(function (x) { return x.gn === name && x.id !== d.id; })[0];
+    if (dup) {
+      var fi = document.querySelector('[name="gn"]').closest('.fi');
+      fi.classList.add('has-err'); fi.querySelector('.err-msg').textContent = '该通用名已存在';
+      ok = false;
+    }
+    if (!ok) return;
+
+    d.gn = name;
+    d.bn = document.querySelector('[name="bn"]').value.trim();
+    d.cat = document.querySelector('[name="cat"]').value;
+    d.spec = document.querySelector('[name="spec"]').value.trim();
+    d.form = document.querySelector('[name="form"]').value;
+    d.status = document.querySelector('[name="status"]').value;
+    d.otc = document.querySelector('[name="otc"]').value;
+    d.photoUrl = document.querySelector('[name="photoUrl"]').value.trim();
+    d.dose = document.querySelector('[name="dose"]').value;
+    d.ind = document.querySelector('[name="ind"]').value;
+    d.adverse = document.querySelector('[name="adverse"]').value;
+    d.contra = document.querySelector('[name="contra"]').value;
+    d.interact = document.querySelector('[name="interact"]').value;
+
+    if (!isEdit) BACK_DATA.drugs.push(d);
+    Back.toast(isEdit ? '已保存药品' : '已新建药品', 'ok');
+    setTimeout(function () { location.href = 'back-drugs.html'; }, 700);
+  });
+</script>
+</body>
+</html>

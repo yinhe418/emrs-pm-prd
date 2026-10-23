@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, 1.0">
+  <title>关于本 Demo · 后台管理</title>
+  <link rel="stylesheet" href="assets/back.css">
+</head>
+<body data-page="dashboard" data-crumb='[{"name":"后台管理"},{"name":"关于本 Demo"}]'>
+
+<main class="back-main">
+
+  <div class="page-head">
+    <h1>关于本 Demo</h1>
+    <div class="sub">后台管理系统 · Q1 产品原型</div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h3>产品定位</h3></div>
+    <div class="text-2" style="line-height:1.85">
+      本后台是 <b>EMRS(智病历 AIS)</b> 的 <b>医院侧管理工具</b>,与小程序并行运行。<br>
+      服务对象是:<b>医院管理员 / 科室主任</b>。<br>
+      主要职责是:<b>建档</b>(组织、职位、人员、组件库、药品字典)、<b>核口径</b>(监控报警线、组件字段约束)、<b>补缺口</b>(待分配队列、待分配护士)、<b>看大盘</b>(本院运转全景)。<br><br>
+      后台 <b>不</b> 处理诊疗活动,不写处方、不读 PACS / LIS、不发出院小结。
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h3>设计原则</h3></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
+      <div class="note note-info" style="margin:0"><img src="assets/icons-png/icon-info.png"><div>
+        <b>0.0 可回放</b><br>所有数据存在浏览器本地 mock 里,<br>关页面即重置。便于演示。
+      </div></div>
+      <div class="note note-pass" style="margin:0"><img src="assets/icons-png/icon-check-circle.png"><div>
+        <b>不写死</b><br>职位字典、组件字段、报警线、组件监控阈值,<br>全部可编辑。
+      </div></div>
+      <div class="note note-warn" style="margin:0"><img src="assets/icons-png/icon-warning.png"><div>
+        <b>不替医生决策</b><br>医生个体目标范围(L3)在医生小程序端设置,<br>后台只读,不替代。
+      </div></div>
+      <div class="note note-block" style="margin:0"><img src="assets/icons-png/icon-warning.png"><div>
+        <b>不写处方</b><br>药品库只作字典(C1),<br>所有处方由 HIS 负责。
+      </div></div>
+      <div class="note note-gray" style="margin:0"><img src="assets/icons-png/icon-info.png"><div>
+        <b>只软删除</b><br>字典 / 组件 / 字段 全部停用,<br>不物理删除。
+      </div></div>
+      <div class="note note-pass" style="margin:0"><img src="assets/icons-png/icon-check-circle.png"><div>
+        <b>所有链接可点击</b><br>每个 href 真实存在一个 .html 文件,<br>走通完整流程。
+      </div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h3>本期范围(Q1)做什么 / 不做什么</h3></div>
+    <div class="two-col">
+      <div>
+        <h4 style="margin:0 0 10px;color:var(--pass)">在做 ✅</h4>
+        <ul>
+          <li>组织架构(医院 / 科室),含科室主任唯一性</li>
+          <li>职位字典(行政 / 技术职称 / 其他)可增删改</li>
+          <li>工作人员建档 + 微信扫码入队列 + 认领 / 归档</li>
+          <li>二维码中心(医院邀请码 + 医生患者码)</li>
+          <li>任务组件库(字段定义 + 监控 + 报警线,C8)</li>
+          <li>预警规则(三层优先级 + 17 类文案,L1/L2/L3)</li>
+          <li>病患列表(归属 + 预警基线来源只读)</li>
+          <li>药品库(字典,不作处方依据,C1)</li>
+        </ul>
+      </div>
+      <div>
+        <h4 style="margin:0 0 10px;color:var(--text-4)">不在做 ❌</h4>
+        <ul>
+          <li>权限矩阵(本期用种子账户分组模拟)</li>
+          <li>HIS / PACS / LIS 真实对接(全部 mock)</li>
+          <li>电子签名 / CA 认证</li>
+          <li>移动端 App(本期只做 H5 + 微信小程序)</li>
+          <li>处方录入 / 审方 / 调剂</li>
+          <li>病历文书录入(Q1 前台只做监控 / 任务中心,文书留 Q2)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h3>页面索引</h3></div>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead><tr><th style="width:200px">页面</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td><a href="back-login.html">back-login</a></td><td>登录(医院管理员 / 科室主任 / 受权普通账号)</td></tr>
+          <tr><td><a href="back-hospital-pick.html">back-hospital-pick</a></td><td><b>登录后第一站:</b>选择 / 添加医院;新医院支持上传图片;选定后顶栏持续显示该医院徽章,所有列表自动按本院过滤</td></tr>
+          <tr><td><a href="back-dashboard.html">back-dashboard</a></td><td>工作台:4 KPI + 待处理 + 快捷入口 + 最近变更</td></tr>
+          <tr><td><a href="back-org.html">back-org</a></td><td>科室管理(单视图;只显示当前医院,已无「医院」Tab 和「所属医院」筛选)</td></tr>
+          <tr><td><a href="back-org-edit.html">back-org-edit</a></td><td>科室 / 医院档案编辑(新建 / 改名 / 改主任 / 换医院图)</td></tr>
+          <tr><td><a href="back-positions.html">back-positions</a></td><td>职位字典(行政 / 技术职称 / 其他)</td></tr>
+          <tr><td><a href="back-staff.html">back-staff</a></td><td>工作人员(已设置 / 待分配 / 已归档)</td></tr>
+          <tr><td><a href="back-staff-pending-detail.html">back-staff-pending-detail</a></td><td>认领并设置(科室 + 职位)</td></tr>
+          <tr><td><a href="back-staff-edit.html">back-staff-edit</a></td><td>工作人员编辑(基本 / 头像 / 简介 / 内部信息)</td></tr>
+          <tr><td><a href="back-staff-detail.html">back-staff-detail</a></td><td>工作人员详情(4 Tab:基本信息 / 简介 / 二维码 / 操作记录)</td></tr>
+          <tr><td><a href="back-patients.html">back-patients</a></td><td>病患列表(归属调整 + 预警基线来源)</td></tr>
+          <tr><td><a href="back-qrcode.html">back-qrcode</a></td><td>二维码中心(医院邀请码 + 医生患者码)</td></tr>
+          <tr><td><a href="back-component-lib.html">back-component-lib</a></td><td>任务组件库</td></tr>
+          <tr><td><a href="back-component-edit.html">back-component-edit</a></td><td>组件编辑(3 列表格 + 自定义字段行)</td></tr>
+          <tr><td><a href="back-component-field.html">back-component-field</a></td><td>字段配置(录入区间只读 / 报警线可编辑)</td></tr>
+          <tr><td><a href="back-monitor-rules.html">back-monitor-rules</a></td><td>预警规则(L1/L2/L3 + 17 类文案)</td></tr>
+          <tr><td><a href="back-drugs.html">back-drugs</a></td><td>药品库</td></tr>
+          <tr><td><a href="back-drug-edit.html">back-drug-edit</a></td><td>药品编辑</td></tr>
+          <tr><td><a href="back-empty.html">back-empty</a></td><td>空状态示范</td></tr>
+          <tr><td><a href="back-noauth.html">back-noauth</a></td><td>权限不足示范</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h3>数据存储</h3></div>
+    <div class="text-2" style="line-height:1.85">
+      演示数据落在 <code class="k">assets/back-data.js</code>,
+      包括:<br>
+      · <b>2 个医院</b>:H 市第一医院(运营中)、H 市中医医院<br>
+      · <b>5 个科室</b>:神经内科(卒中中心) / 神经外科 / 急诊科 / 康复医学科 / 神经内科@H2<br>
+      · <b>9 个职位</b>(3 类:行政职务 / 技术职称 / 其他)<br>
+      · <b>11 名医护人员</b>(含 1 名已停用)<br>
+      · <b>5 名待分配</b>的微信扫码用户<br>
+      · <b>7 名病患</b>(含 1 名基线超期)<br>
+      · <b>8 个任务组件</b>(含 1 个自定义字段演示)<br>
+      · <b>11 种药品</b>(含 1 个停用)<br><br>
+      真实病例取自档案 (陈丙英·81岁·女,4 次住院),
+      其余字段为演示需要,均经脱敏 + 不展示真实人名。
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h3>反馈与协作</h3></div>
+    <div class="note note-info">
+      <img src="assets/icons-png/icon-info.png">
+      <div>
+        · 设计讨论 → 联系 <b>产品经理(PM)</b>;<br>
+        · 字段 / 数值口径 / 临床规则 → 联系 <b>临床专家(clinical-expert)</b>;<br>
+        · 视觉细节 / 配色 / 组件 → 联系 <b>UI 设计师</b>;<br>
+        · 流程问题 / 闭环缺失 → 在本 Demo 上<b>直接点一遍</b>路径,把卡住的一步告诉 PM。
+      </div>
+    </div>
+  </div>
+</main>
+
+<script src="assets/back-data.js"></script>
+<script src="assets/back-layout.js"></script>
+</body>
+</html>

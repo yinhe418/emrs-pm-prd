@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>选择医院 · 后台管理</title>
+  <link rel="stylesheet" href="assets/back.css">
+</head>
+<body data-page="dashboard" data-crumb='[{"name":"后台管理"},{"name":"选择医院"}]'>
+
+<main class="back-main">
+
+  <div style="text-align:center;padding:38px 0 16px">
+    <h1 style="font-size:24px;letter-spacing:-.4px">选择医院</h1>
+    <div style="font-size:13px;color:var(--ink-3);margin-top:6px">
+      登录成功 · 第一步:<b>选择</b>或<b>添加</b>一个医院。后续所有数据(科室 / 人员 / 任务组件 / 药品 / 病患)都按所选医院过滤。
+    </div>
+  </div>
+
+  <div class="hp-scope" style="margin:0 auto 22px;max-width:960px">
+    <img src="assets/icons-png/icon-info.png" style="width:16px;height:16px">
+    <div>
+      切换医院不会丢失数据,只是<b>改变作用域</b>。
+      <b>未来</b>:普通管理员只具备单一医院的权限,登录后自动进入其所属医院;
+      <b>超级管理员</b>可以从顶栏的医院徽章直接切换医院。
+    </div>
+  </div>
+
+  <div style="max-width:960px;margin:0 auto">
+
+    <div class="hp-grid" id="grid"></div>
+
+    <div class="card" style="margin-top:20px">
+      <div class="card-head"><h3>说明</h3></div>
+      <div class="text-2" style="line-height:1.85;font-size:12.5px">
+        · <b>本轮范围:</b>医院字段在医院档案阶段配齐(图片 / 名称 / 简称 / 级别 / 床位 / 联系电话 / 简介);<br>
+        · <b>本轮限制:</b>后台暂不实施基于角色的自动匹配;当前以<b>手动选择</b>为入口。<br>
+        · <b>软删除约定:</b>医院只停用、不物理删除,与组件 / 药品字典一致。<br>
+        · <b>图片用途:</b>展示在顶栏当前医院徽章和选医院卡片上,后端不会用于临床匹配。
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<div class="drawer-mask" id="newMask"></div>
+<div class="drawer" id="newDrawer" data-mask="newMask">
+  <div class="drawer-head"><h3>添加医院</h3><button class="d-close">×</button></div>
+  <div class="drawer-body">
+
+    <div class="card">
+      <div class="card-head"><h3>医院图片</h3><span class="ch-desc">建议 600×400,jpg / png,≤ 2 MB</span></div>
+      <div class="image-up">
+        <div class="iu-preview" id="phPrev">
+          <div>暂无图<br>上传后将显示在这里</div>
+        </div>
+        <div class="iu-main">
+          <div class="iu-btns">
+            <label class="btn btn-default btn-sm" for="imgFile">上传图片</label>
+            <button class="btn btn-default btn-sm" id="imgDemo" type="button">使用演示图</button>
+            <button class="btn btn-text danger" id="imgClear" type="button">移除</button>
+            <input id="imgFile" type="file" accept="image/*">
+          </div>
+          <div class="iu-hint">
+            支持 jpg / png / webp / gif,大小 ≤ 2 MB。<br>
+            <b>DEMO 阶段:</b>上传后预览保存为 base64,不传到服务器。
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h3>基本信息</h3></div>
+      <div class="form-grid">
+        <div class="fi">
+          <label><span class="req">*</span>医院名称</label>
+          <input class="ipt" name="hName" placeholder="2–30 字">
+          <span class="err-msg"></span>
+        </div>
+        <div class="fi">
+          <label><span class="req">*</span>医院简称</label>
+          <input class="ipt" name="hShort" placeholder="2–10 字">
+          <span class="err-msg"></span>
+        </div>
+        <div class="fi">
+          <label>级别</label>
+          <select class="sel" name="hLevel">
+            <option>三级甲等</option><option>三级乙等</option>
+            <option>三级丙等</option><option>二级甲等</option>
+            <option>二级乙等</option><option>一级</option>
+          </select>
+        </div>
+        <div class="fi">
+          <label>床位数</label>
+          <input class="ipt" name="hBeds" type="number" min="10" max="10000" placeholder="10-10000">
+          <span class="err-msg"></span>
+        </div>
+        <div class="fi">
+          <label>联系电话</label>
+          <input class="ipt" name="hPhone" placeholder="如 0571-8888 0003">
+        </div>
+        <div class="fi full">
+          <label>所在区域</label>
+          <input class="ipt" name="hArea" placeholder="如 H 市 / 城南区">
+        </div>
+        <div class="fi full">
+          <label>简介</label>
+          <textarea class="ta" name="hIntro" placeholder="≤200 字,展示在医院档案卡上"></textarea>
+          <div class="counter"><span id="nIntro">0</span> / 200</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="drawer-foot">
+    <button class="btn btn-default" onclick="Back.drawer('newDrawer',false)">取消</button>
+    <span class="ml-auto"></span>
+    <button class="btn btn-primary" id="saveH">添加到列表</button>
+  </div>
+</div>
+
+<script src="assets/back-data.js"></script>
+<script src="assets/back-layout.js"></script>
+<script>
+  function renderGrid() {
+    var list = BACK_DATA.hospitals;
+    var cards = list.map(function (h, i) {
+      var ds = BACK_DATA.deptListByHospital(h.id);
+      var staff = BACK_DATA.staff.filter(function (s) {
+        return ds.some(function (d) { return d.id === s.deptId; });
+      }).length;
+      return '<div class="hp-card" data-h="' + h.id + '">'
+        +   '<div class="hp-cover">'
+        +     (h.image
+              ? '<img src="' + h.image + '" alt="">'
+              : '<span>' + (h.short || h.name).charAt(0) + '</span>')
+        +     '<span class="hp-tag">' + (h.level || '未定级') + '</span>'
+        +     '<span class="hp-online ' + (h.status === 'off' ? 'hp-off' : '') + '">'
+        +       (h.status === 'on' ? '运营中' : '已停用') + '</span>'
+        +   '</div>'
+        +   '<div class="hp-body">'
+        +     '<div class="hp-name">' + h.name + '</div>'
+        +     '<div class="hp-meta">'
+
+        +       h.area + ' · 床位 ' + (h.beds || '—')
+        +     '</div>'
+        +   '</div>'
+        +   '<div class="hp-foot">'
+        +     '<span><b>' + ds.length + '</b> 个科室 · <b>' + staff + '</b> 名医护</span>'
+        +     '<span class="btn-text" style="color:var(--brand)">进入 ›</span>'
+        +   '</div>'
+        + '</div>';
+    }).join('');
+
+    var addCard =
+        '<div class="hp-card add" id="addCard">'
+      +   '<div class="hp-plus">+</div>'
+      +   '<div><b style="font-size:14px">添加新医院</b></div>'
+      +   '<div class="fz-12" style="margin-top:6px">上传医院图片、填写基础信息即可。<br>之后可在此页面继续完善。</div>'
+      + '</div>';
+
+    document.getElementById('grid').innerHTML = cards + addCard;
+  }
+
+  function setCurrentAndGo(id) {
+    BACK_DATA.setCurrentHospitalId(id);
+    Back.toast('已切换医院:' + BACK_DATA.hospital(id).name, 'ok');
+    setTimeout(function () { location.href = 'back-dashboard.html'; }, 500);
+  }
+
+  renderGrid();
+
+  /* 卡片点击 */
+  document.getElementById('grid').addEventListener('click', function (e) {
+    if (e.target.closest('#addCard')) { Back.drawer('newDrawer', true); return; }
+    var card = e.target.closest('[data-h]');
+    if (!card) return;
+    setCurrentAndGo(card.getAttribute('data-h'));
+  });
+
+  /* ---------- 添加医院 drawer ---------- */
+  var pickedImage = '';
+  function renderPreview() {
+    document.getElementById('phPrev').innerHTML = pickedImage
+      ? '<img src="' + pickedImage + '" alt="">'
+      : '<div>暂无图<br>上传后将显示在这里</div>';
+  }
+  document.getElementById('imgFile').addEventListener('change', function (e) {
+    var f = e.target.files[0]; if (!f) return;
+    if (f.size > 2 * 1024 * 1024) { Back.toast('图片超过 2 MB,请压缩', 'err'); return; }
+    var r = new FileReader();
+    r.onload = function (ev) { pickedImage = ev.target.result; renderPreview(); };
+    r.readAsDataURL(f);
+  });
+  document.getElementById('imgDemo').addEventListener('click', function () {
+    // 一个简单的演示 SVG,放在 prototype/ 同级目录里
+    pickedImage = 'assets/sample-hospital.svg';
+    renderPreview();
+  });
+  document.getElementById('imgClear').addEventListener('click', function () {
+    pickedImage = ''; document.getElementById('imgFile').value = ''; renderPreview();
+  });
+
+  document.querySelector('[name="hIntro"]').addEventListener('input', function () {
+    document.getElementById('nIntro').textContent = this.value.length;
+  });
+
+  /* 保存 */
+  document.getElementById('saveH').addEventListener('click', function () {
+    var ok = Back.validate(document.body, {
+      hName:  { required: true, minLen: 2, maxLen: 30, msg: '医院名称 2–30 字' },
+      hShort: { required: true, minLen: 2, maxLen: 10, msg: '简称 2–10 字' },
+      hBeds:  { pattern: /^$|^[1-9][0-9]{0,3}$|^10000$/, msg: '床位填 10–10000 的整数' },
+      hIntro: { maxLen: 200, msg: '简介最多 200 字' }
+    });
+    if (!ok) return;
+
+    var id = 'H' + Date.now().toString().slice(-4);
+    var h = {
+      id: id,
+      name: document.querySelector('[name="hName"]').value.trim(),
+      short: document.querySelector('[name="hShort"]').value.trim(),
+      level: document.querySelector('[name="hLevel"]').value,
+      beds: parseInt(document.querySelector('[name="hBeds"]').value) || null,
+      phone: document.querySelector('[name="hPhone"]').value.trim(),
+      area: document.querySelector('[name="hArea"]').value.trim(),
+      intro: document.querySelector('[name="hIntro"]').value.trim(),
+      image: pickedImage,
+      status: 'on',
+      createdAt: new Date().toISOString().slice(0, 10)
+    };
+    BACK_DATA.hospitals.push(h);
+    Back.drawer('newDrawer', false);
+    Back.toast('已添加医院:' + h.name, 'ok');
+    renderGrid();
+
+    /* 新增的医院自动设为当前 */
+    setTimeout(function () { setCurrentAndGo(h.id); }, 500);
+  });
+</script>
+</body>
+</html>

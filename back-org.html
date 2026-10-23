@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>组织架构 · 后台管理</title>
+  <link rel="stylesheet" href="assets/back.css">
+</head>
+<body data-page="org" data-crumb='[{"name":"后台管理"},{"name":"组织与人员"},{"name":"组织架构"}]'>
+
+<main class="back-main">
+
+  <div class="page-head">
+    <h1>科室 · 当前医院</h1>
+    <div class="sub">登录时已选择医院,所以本页只呈现「<b>本院</b>」科室。带责任人(科室主任),每个科室有且只有一个科室主任。</div>
+  </div>
+
+  <div id="scopeStrip"></div>
+
+  <!-- 当前医院档案(随医院切换自动更新) -->
+  <div class="card" style="display:flex;gap:18px;align-items:flex-start;padding:14px 16px;margin-bottom:14px">
+    <div style="width:96px;height:64px;border-radius:8px;overflow:hidden;background:var(--brand);display:grid;place-items:center;color:#fff;font-size:24px;font-weight:600;flex:none" id="hcCover"></div>
+    <div style="flex:1;min-width:0">
+      <div style="display:flex;align-items:center;gap:9px">
+        <b style="font-size:16px" id="hcName">—</b>
+        <span class="badge badge-info" id="hcLevel">—</span>
+        <span class="badge badge-pass">运营中</span>
+      </div>
+      <div class="cell-sub fz-12 mt-8" style="line-height:1.7" id="hcMeta">—</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:7px">
+      <a class="btn btn-default btn-sm" href="back-org-edit.html?type=hospital" id="hcEdit">管理医院档案</a>
+      <a class="btn btn-default btn-sm" href="back-qrcode.html?tab=hospital" id="hcQR">医院邀请码</a>
+      <a class="btn btn-default btn-sm" href="back-hospital-pick.html">切换医院</a>
+      <button class="btn btn-text danger" id="hcToggle" type="button">停用本院</button>
+    </div>
+  </div>
+
+  <!-- ============ 科室(单视图) ============ -->
+  <section data-pane="dept">
+
+    <div class="note note-info">
+      <img src="assets/icons-png/icon-info.png">
+      <div><b>科室责任人</b>:每个科室有且只有一个<b>科室主任</b>(行政职务)。点击科室行的科室主任可更换,系统会强制保证唯一性——同一科室不允许出现两个科室主任。</div>
+    </div>
+
+    <div class="filters">
+      <div class="search-wrap">
+        <img src="assets/icons-png/icon-search.png" alt="">
+        <input class="ipt search-ipt" id="deptKw" placeholder="科室名称">
+      </div>
+      <select class="sel" id="deptStatus"><option value="">状态:全部</option><option value="on">启用</option><option value="off">停用</option></select>
+      <span class="ml-auto"></span>
+      <a class="btn btn-primary" href="back-org-edit.html?type=department"><img src="assets/icons-png/icon-plus.png" alt="">添加科室</a>
+    </div>
+
+    <div class="card flat">
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>科室名称</th>
+              <th style="width:110px">科室类型</th>
+              <th style="width:200px">科室主任(责任人)</th>
+              <th style="width:120px">医护人数</th>
+              <th style="width:80px">状态</th>
+              <th class="col-act" style="width:170px">操作</th>
+            </tr>
+          </thead>
+          <tbody id="deptBody"></tbody>
+          </table>
+        </div>
+        <div class="pager">
+          <span>共 <b id="deptN">0</b> 条</span>
+          <span class="pg-right">每页 20 条</span>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<!-- ========== 更换科室主任 抽屉 ========== -->
+<div class="drawer-mask" id="dirMask"></div>
+<div class="drawer" id="dirDrawer" data-mask="dirMask">
+  <div class="drawer-head"><h3>设置科室主任</h3><button class="d-close">×</button></div>
+  <div class="drawer-body">
+    <div class="note note-warn" id="dirDeptName"></div>
+    <div class="form-sec">
+      <h4>科室主任<span class="req-all">* 必填 · 唯一</span></h4>
+      <div class="fi" id="fi-dir">
+        <label>选择科室主任</label>
+        <select class="sel w-full" id="dirSel"></select>
+        <span class="hint">候选人:本院「科室主任」职位的工作人员。一个科室有且只有一个科室主任。</span>
+        <span class="err-msg">请选择科室主任</span>
+      </div>
+    </div>
+    <div class="note note-gray">
+      <img src="assets/icons-png/icon-info.png">
+      <div><b>唯一性约束</b><br>若该员工已在其他科室担任科室主任,系统会提示并要求先解除原科室的任命,避免一人同时负责两个科室。</div>
+    </div>
+  </div>
+  <div class="drawer-foot">
+    <span class="fz-12 text-3" id="dirCurrent"></span>
+    <div class="df-right">
+      <button class="btn btn-default" onclick="Back.drawer('dirDrawer',false)">取消</button>
+      <button class="btn btn-primary" id="dirSave">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 停用确认 弹窗 ========== -->
+<div class="modal-mask" id="offModal">
+  <div class="modal">
+    <div class="modal-head">
+      <img src="assets/icons-png/icon-warning.png" alt="">
+      <h3 id="offTitle">停用确认</h3>
+    </div>
+    <div class="modal-body" id="offBody"></div>
+    <div class="modal-foot">
+      <button class="btn btn-default" onclick="Back.modal('offModal',false)">取消</button>
+      <button class="btn btn-danger" id="offOk">确认停用</button>
+    </div>
+  </div>
+</div>
+
+<script src="assets/back-data.js"></script>
+<script src="assets/back-layout.js"></script>
+<script>
+  /* ---------- 当前医院档案卡(渲染到 #hc*) ---------- */
+  function paintHospital(h) {
+    if (!h) return;
+    document.getElementById('hcCover').innerHTML = h.image
+      ? '<img src="' + h.image + '" style="width:100%;height:100%;object-fit:cover">'
+      : '<span>' + (h.short || h.name).charAt(0) + '</span>';
+    document.getElementById('hcName').textContent = h.name;
+    document.getElementById('hcLevel').textContent = h.level || '未定级';
+    document.getElementById('hcMeta').innerHTML =
+      (h.area || '—')
+      + ' · 床位 ' + (h.beds || '—') + '<br>'
+      + (h.intro || '尚未填写简介')
+      + (h.createdAt ? '<br>建档 ' + h.createdAt : '');
+    document.getElementById('hcEdit').href = 'back-org-edit.html?type=hospital&id=' + h.id;
+    var tg = document.getElementById('hcToggle');
+    if (tg) {
+      tg.textContent = h.status === 'on' ? '停用本院' : '启用本院';
+      tg.className = 'btn btn-text ' + (h.status === 'on' ? 'danger' : '');
+    }
+  }
+
+  /* ---------- 科室 ---------- */
+  function deptFiltered() {
+    var kw = document.getElementById('deptKw').value.trim();
+    var st = document.getElementById('deptStatus').value;
+    var pool = Back.hospFilter(BACK_DATA.departments, 'depts');
+    return pool.filter(function (d) {
+      if (kw && d.name.indexOf(kw) < 0) return false;
+      if (st && d.status !== st) return false;
+      return true;
+    });
+  }
+  function renderDept() {
+    var rows = deptFiltered(), tb = document.getElementById('deptBody');
+    document.getElementById('deptN').textContent = rows.length;
+    tb.innerHTML = rows.map(function (d) {
+      var dir = d.directorId ? BACK_DATA.member(d.directorId) : null;
+      var nDoc = BACK_DATA.staff.filter(function (s) {
+        return s.deptId === d.id && s.status === 'on'
+          && ['P3','P4','P5'].indexOf(s.posId) >= 0;
+      }).length;
+      var nNur = BACK_DATA.staff.filter(function (s) {
+        return s.deptId === d.id && s.status === 'on'
+          && ['P6','P7'].indexOf(s.posId) >= 0;
+      }).length;
+      return '<tr>'
+        + '<td><div class="cell-main">' + d.name + '</div>'
+        +   (d.intro ? '<div class="cell-sub">' + d.intro + '</div>' : '') + '</td>'
+        + '<td><span class="badge badge-outline">' + (d.type || '—') + '</span></td>'
+        + '<td>' + (dir
+              ? '<div class="cell-user" style="cursor:pointer" data-dir="' + d.id + '" title="点击更换科室主任">'
+                + Back.staffAv(dir) + '<div><div class="cell-main">' + dir.name + '</div>'
+                + '<div class="cell-sub">' + ((BACK_DATA.pos(dir.posId) || {}).name || '') + '</div></div></div>'
+              : '<span class="btn-text" data-dir="' + d.id + '" style="font-size:12px">+ 指定科室主任</span>')
+        + '</td>'
+        + '<td class="fz-12 num-cell">医师 ' + nDoc + ' / 护士 ' + nNur + '</td>'
+        + '<td>' + Back.onOff(d.status) + '</td>'
+        + '<td class="col-act">'
+        +   '<a class="btn-text" href="back-org-edit.html?type=department&amp;id=' + d.id + '">编辑</a>'
+        +   '<a class="btn-text" href="back-staff.html?dept=' + d.id + '">人员</a>'
+        +   (d.status === 'on'
+              ? '<a class="btn-text danger" data-off="department" data-id="' + d.id + '">停用</a>'
+              : '<a class="btn-text" data-enable="department" data-id="' + d.id + '">启用</a>')
+        + '</td></tr>';
+    }).join('') || emptyRow(6, '本院还没有科室', '点右上角「添加科室」开始搭建本院组织架构');
+  }
+
+  function emptyRow(cols, t, d) {
+    return '<tr><td colspan="' + cols + '"><div class="empty">'
+      + '<img src="assets/icons-png/icon-empty-box.png" alt=""><div class="e-t">' + t + '</div>'
+      + '<div class="e-d">' + d + '</div></div></td></tr>';
+  }
+
+  /* ---------- 停用 / 启用 ---------- */
+  document.body.addEventListener('click', function (e) {
+    var off = e.target.getAttribute && e.target.getAttribute('data-off');
+    var en = e.target.getAttribute && e.target.getAttribute('data-enable');
+    if (off) {
+      var id = e.target.getAttribute('data-id');
+      var obj = off === 'hospital' ? BACK_DATA.hospital(id) : BACK_DATA.byId(BACK_DATA.departments, id);
+      var name = obj.name;
+      var blockers = [];
+      if (off === 'hospital') {
+        var n = BACK_DATA.departments.filter(function (d) { return d.hospitalId === id && d.status === 'on'; }).length;
+        if (n) blockers.push('下有 <b>' + n + '</b> 个启用中的科室,请先停用科室');
+      } else {
+        var m = BACK_DATA.staff.filter(function (s) { return s.deptId === id && s.status === 'on'; }).length;
+        if (m) blockers.push('下有 <b>' + m + '</b> 名在岗人员,请先转移人员');
+      }
+      document.getElementById('offTitle').textContent = '停用「' + name + '」';
+      document.getElementById('offBody').innerHTML = blockers.length
+        ? '<div class="note note-block" style="margin:0 0 10px"><img src="assets/icons-png/icon-warning.png">'
+          + '<div><b>无法停用</b><br>' + blockers.join(';') + '。</div></div>'
+        : '<div>停用后该' + (off === 'hospital' ? '医院' : '科室') + '不可再新增人员,'
+          + '历史数据<b>全部保留</b>,可随时恢复。</div>';
+      document.getElementById('offOk').disabled = blockers.length > 0;
+      document.getElementById('offOk').textContent = blockers.length ? '存在阻塞项' : '确认停用';
+      document.getElementById('offOk').onclick = function () {
+        if (blockers.length) return;
+        obj.status = 'off'; Back.modal('offModal', false);
+        renderDept(); paintHospital(Back.currentHospital()); Back.toast('已停用:' + name, 'ok');
+      };
+      Back.modal('offModal', true);
+    }
+    if (en) {
+      var list = en === 'hospital' ? BACK_DATA.hospitals : BACK_DATA.departments;
+      var o2 = BACK_DATA.byId(list, e.target.getAttribute('data-id'));
+      o2.status = 'on'; renderDept(); paintHospital(Back.currentHospital()); Back.toast('已启用:' + o2.name, 'ok');
+    }
+  });
+
+  /* ---------- 设置科室主任 ---------- */
+  var curDept = null;
+  document.body.addEventListener('click', function (e) {
+    var el = e.target.closest && e.target.closest('[data-dir]');
+    if (!el) return;
+    curDept = BACK_DATA.byId(BACK_DATA.departments, el.getAttribute('data-dir'));
+    var old = curDept.directorId ? BACK_DATA.member(curDept.directorId) : null;
+    document.getElementById('dirDeptName').innerHTML =
+      '<b>科室</b>:' + curDept.name + '(' + (BACK_DATA.hospital(curDept.hospitalId) || {}).name + ')';
+    document.getElementById('dirCurrent').textContent = old ? '当前:' + old.name : '当前:未指定';
+
+    var sel = document.getElementById('dirSel');
+    sel.innerHTML = '<option value="">请选择…</option>';
+    BACK_DATA.staff.forEach(function (s) {
+      if (s.status !== 'on') return;
+      var p = BACK_DATA.pos(s.posId);
+      if (!p || p.name !== '科室主任') return;
+      var otherDept = BACK_DATA.departments.filter(function (d) {
+        return d.directorId === s.id && d.id !== curDept.id;
+      })[0];
+      var tag = otherDept ? '(已任 ' + otherDept.name + ' 主任)' : '';
+      sel.insertAdjacentHTML('beforeend',
+        '<option value="' + s.id + '"' + (otherDept ? ' disabled' : '') + '>' + s.name + tag + '</option>');
+    });
+    if (curDept.directorId) sel.value = curDept.directorId;
+    sel.value = sel.value || '';
+    document.getElementById('fi-dir').classList.remove('has-err');
+    Back.drawer('dirDrawer', true);
+  });
+  document.getElementById('dirSave').addEventListener('click', function () {
+    var sel = document.getElementById('dirSel');
+    if (!sel.value) { document.getElementById('fi-dir').classList.add('has-err'); return; }
+    curDept.directorId = sel.value;
+    Back.drawer('dirDrawer', false);
+    renderDept();
+    Back.toast('已设置科室主任:' + BACK_DATA.member(sel.value).name, 'ok');
+  });
+
+  /* ---------- 停用 / 启用 当前医院 ---------- */
+  document.getElementById('hcToggle').addEventListener('click', function () {
+    var h = Back.currentHospital(); if (!h) return;
+    if (h.status === 'on') {
+      var depts = Back.hospFilter(BACK_DATA.departments, 'depts').filter(function (d) { return d.status === 'on'; });
+      document.getElementById('offTitle').textContent = '停用「' + h.name + '」';
+      document.getElementById('offBody').innerHTML = depts.length
+        ? '<div class="note note-block" style="margin:0 0 10px"><img src="assets/icons-png/icon-warning.png">'
+          + '<div><b>无法停用</b><br>本院还有 <b>' + depts.length + '</b> 个启用中的科室('
+          + depts.map(function (d) { return d.name; }).join('、')
+          + ')。请先停用这些科室,再停用医院。</div></div>'
+        : '<div>停用后该医院不可再新增人员、组件和药品,历史数据<b>全部保留</b>,可随时恢复。</div>';
+      document.getElementById('offOk').disabled = depts.length > 0;
+      document.getElementById('offOk').textContent = depts.length ? '存在阻塞项' : '确认停用';
+      document.getElementById('offOk').onclick = function () {
+        if (depts.length) return;
+        h.status = 'off'; Back.modal('offModal', false);
+        paintHospital(h); renderDept();
+        Back.toast('已停用医院:' + h.name, 'warn');
+      };
+      Back.modal('offModal', true);
+    } else {
+      h.status = 'on'; paintHospital(h); renderDept();
+      Back.toast('已启用医院:' + h.name, 'ok');
+    }
+  });
+
+  ['deptKw','deptStatus']
+    .forEach(function (id) {
+      var el = document.getElementById(id);
+      el.addEventListener('input', function () { renderDept(); });
+      el.addEventListener('change', function () { renderDept(); });
+    });
+
+  if (!Back.requireHospitalAndApply()) { document.querySelector('.back-main').innerHTML = ''; }
+  else {
+    paintHospital(Back.currentHospital());
+    document.getElementById('scopeStrip').innerHTML = Back.scopeStrip('科室列表只显示本院,不再需要「所属医院」筛选');
+  }
+
+  renderDept();
+</script>
+</body>
+</html>

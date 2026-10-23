@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="sky" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0%" stop-color="#5BBFC5"/>
+      <stop offset="60%" stop-color="#2E7DD7"/>
+      <stop offset="100%" stop-color="#1A4C7A"/>
+    </linearGradient>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="400" fill="url(#sky)"/>
+  <rect width="600" height="400" fill="url(#bg)"/>
+  <g opacity="0.85" fill="#FFFFFF">
+    <rect x="100" y="180" width="160" height="160" rx="6" fill-opacity="0.18"/>
+    <rect x="270" y="140" width="160" height="200" rx="6" fill-opacity="0.22"/>
+    <rect x="440" y="200" width="120" height="140" rx="6" fill-opacity="0.18"/>
+  </g>
+  <g fill="#FFFFFF">
+    <rect x="118" y="200" width="14" height="14" rx="2"/>
+    <rect x="138" y="200" width="14" height="14" rx="2"/>
+    <rect x="158" y="200" width="14" height="14" rx="2"/>
+    <rect x="178" y="200" width="14" height="14" rx="2"/>
+    <rect x="118" y="220" width="14" height="14" rx="2"/>
+    <rect x="138" y="220" width="14" height="14" rx="2"/>
+    <rect x="158" y="220" width="14" height="14" rx="2"/>
+    <rect x="178" y="220" width="14" height="14" rx="2"/>
+    <rect x="118" y="240" width="14" height="14" rx="2"/>
+    <rect x="138" y="240" width="14" height="14" rx="2"/>
+    <rect x="158" y="240" width="14" height="14" rx="2"/>
+    <rect x="178" y="240" width="14" height="14" rx="2"/>
+    <rect x="288" y="160" width="14" height="14" rx="2"/>
+    <rect x="308" y="160" width="14" height="14" rx="2"/>
+    <rect x="328" y="160" width="14" height="14" rx="2"/>
+    <rect x="348" y="160" width="14" height="14" rx="2"/>
+    <rect x="368" y="160" width="14" height="14" rx="2"/>
+    <rect x="388" y="160" width="14" height="14" rx="2"/>
+    <rect x="288" y="180" width="14" height="14" rx="2"/>
+    <rect x="308" y="180" width="14" height="14" rx="2"/>
+    <rect x="328" y="180" width="14" height="14" rx="2"/>
+    <rect x="348" y="180" width="14" height="14" rx="2"/>
+    <rect x="368" y="180" width="14" height="14" rx="2"/>
+    <rect x="388" y="180" width="14" height="14" rx="2"/>
+    <rect x="288" y="200" width="14" height="14" rx="2"/>
+    <rect x="308" y="200" width="14" height="14" rx="2"/>
+    <rect x="328" y="200" width="14" height="14" rx="2"/>
+    <rect x="348" y="200" width="14" height="14" rx="2"/>
+    <rect x="368" y="200" width="14" height="14" rx="2"/>
+    <rect x="388" y="200" width="14" height="14" rx="2"/>
+    <rect x="288" y="220" width="14" height="14" rx="2"/>
+    <rect x="308" y="220" width="14" height="14" rx="2"/>
+    <rect x="328" y="220" width="14" height="14" rx="2"/>
+    <rect x="348" y="220" width="14" height="14" rx="2"/>
+    <rect x="368" y="220" width="14" height="14" rx="2"/>
+    <rect x="388" y="220" width="14" height="14" rx="2"/>
+    <rect x="288" y="240" width="14" height="14" rx="2"/>
+    <rect x="308" y="240" width="14" height="14" rx="2"/>
+    <rect x="328" y="240" width="14" height="14" rx="2"/>
+    <rect x="348" y="240" width="14" height="14" rx="2"/>
+    <rect x="368" y="240" width="14" height="14" rx="2"/>
+    <rect x="388" y="240" width="14" height="14" rx="2"/>
+    <rect x="288" y="260" width="14" height="14" rx="2"/>
+    <rect x="308" y="260" width="14" height="14" rx="2"/>
+    <rect x="328" y="260" width="14" height="14" rx="2"/>
+    <rect x="348" y="260" width="14" height="14" rx="2"/>
+    <rect x="368" y="260" width="14" height="14" rx="2"/>
+    <rect x="388" y="260" width="14" height="14" rx="2"/>
+    <rect x="458" y="220" width="14" height="14" rx="2"/>
+    <rect x="478" y="220" width="14" height="14" rx="2"/>
+    <rect x="498" y="220" width="14" height="14" rx="2"/>
+    <rect x="518" y="220" width="14" height="14" rx="2"/>
+    <rect x="458" y="240" width="14" height="14" rx="2"/>
+    <rect x="478" y="240" width="14" height="14" rx="2"/>
+    <rect x="498" y="240" width="14" height="14" rx="2"/>
+    <rect x="518" y="240" width="14" height="14" rx="2"/>
+    <rect x="458" y="260" width="14" height="14" rx="2"/>
+    <rect x="478" y="260" width="14" height="14" rx="2"/>
+    <rect x="498" y="260" width="14" height="14" rx="2"/>
+    <rect x="518" y="260" width="14" height="14" rx="2"/>
+    <rect x="458" y="280" width="14" height="14" rx="2"/>
+    <rect x="478" y="280" width="14" height="14" rx="2"/>
+    <rect x="498" y="280" width="14" height="14" rx="2"/>
+    <rect x="518" y="280" width="14" height="14" rx="2"/>
+  </g>
+  <g fill="#FFFFFF" opacity="0.95">
+    <rect x="328" y="290" width="40" height="50" rx="2" fill-opacity="0.35"/>
+    <path d="M348 280 L348 305 L362 305 L362 280 Z" fill="#C62828"/>
+    <rect x="344" y="298" width="22" height="2" fill="#FFFFFF"/>
+    <rect x="354" y="288" width="2" height="22" fill="#FFFFFF"/>
+  </g>
+  <text x="30" y="50" fill="#FFFFFF" font-family="-apple-system,system-ui,sans-serif" font-size="20" font-weight="600" opacity="0.92">智病历 AIS</text>
+  <text x="30" y="70" fill="#FFFFFF" font-family="-apple-system,system-ui,sans-serif" font-size="11" opacity="0.7">演示图 · 医院档案封面</text>
+</svg>

@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>药品库 · 后台管理</title>
+  <link rel="stylesheet" href="assets/back.css">
+</head>
+<body data-page="drugs" data-crumb='[{"name":"后台管理"},{"name":"主数据"},{"name":"药品库"}]'>
+
+<main class="back-main">
+
+  <div class="page-head">
+    <h1>药品库</h1>
+    <div class="sub">仅供医生录入时检索和参考。<b>不构成处方依据</b>(C1)。后端不会以本表作为给药依据。</div>
+  </div>
+
+  <div id="scopeStrip"></div>
+
+  <div class="note note-info">
+    <img src="assets/icons-png/icon-info.png">
+    <div>
+      <b>药品库与处方的边界</b><br>
+      · 药品库 = 字典,提供标准化名称 / 规格 / 类别 / 常用剂量 / 常见不良反应;<br>
+      · 处方 = 由医院 HIS 系统对接,EMRS <b>不录入处方</b>,也不干预医生开方。
+    </div>
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi blue"><div class="kpi-n" id="kAll">0</div><div class="kpi-t">总药品</div></div>
+    <div class="kpi green"><div class="kpi-n" id="kOn">0</div><div class="kpi-t">启用</div></div>
+    <div class="kpi gray"><div class="kpi-n" id="kOff">0</div><div class="kpi-t">已停用</div></div>
+    <div class="kpi orange"><div class="kpi-n" id="kNoPhoto">0</div><div class="kpi-t">无照片</div></div>
+  </div>
+
+  <div class="tabs" data-tab-group="d" data-scope="dScope">
+    <button data-tab="all" class="active">全部 <span class="cnt grey" id="cntAll">0</span></button>
+    <button data-tab="on">启用 <span class="cnt grey" id="cntOn">0</span></button>
+    <button data-tab="off">已停用 <span class="cnt grey" id="cntOff">0</span></button>
+    <button data-tab="nophoto">无照片 <span class="cnt grey" id="cntNP">0</span></button>
+  </div>
+
+  <div class="filters">
+    <div class="search-wrap">
+      <img src="assets/icons-png/icon-search.png" alt="">
+      <input class="ipt search-ipt" id="kw" placeholder="通用名 / 商品名">
+    </div>
+    <select class="sel" id="fCat"><option value="">类别:全部</option></select>
+    <select class="sel" id="fForm"><option value="">剂型:全部</option></select>
+    <span class="ml-auto"></span>
+    <a class="btn btn-primary" href="back-drug-edit.html"><img src="assets/icons-png/icon-plus.png" alt="">新建药品</a>
+  </div>
+
+  <div class="card flat">
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th style="width:230px">药品(通用名)</th>
+            <th style="width:130px">规格</th>
+            <th style="width:110px">类别</th>
+            <th style="width:110px">剂型</th>
+            <th style="width:170px">常用剂量</th>
+            <th style="width:170px">主要适应症</th>
+            <th style="width:80px">照片</th>
+            <th style="width:80px">状态</th>
+            <th class="col-act" style="width:120px">操作</th>
+          </tr>
+        </thead>
+        <tbody id="body"></tbody>
+      </table>
+    </div>
+    <div class="pager">
+      <span>共 <b id="n">0</b> 种药品</span>
+      <span class="pg-right"><b>不展示</b>处方剂量上限 — 医院 HIS 负责</span>
+    </div>
+  </div>
+</main>
+
+<div class="modal-mask" id="stopModal">
+  <div class="modal">
+    <div class="modal-head">
+      <img src="assets/icons-png/icon-warning.png" alt="">
+      <h3>停用药品</h3>
+    </div>
+    <div class="modal-body" id="stopBody"></div>
+    <div class="modal-foot">
+      <button class="btn btn-default" onclick="Back.modal('stopModal',false)">取消</button>
+      <button class="btn btn-danger" id="stopOk">确认停用</button>
+    </div>
+  </div>
+</div>
+
+<script src="assets/back-data.js"></script>
+<script src="assets/back-layout.js"></script>
+<script>
+  Back.bindTabs('[data-tab-group="d"]');
+  var tab = '';
+
+  var FORMS = ['片剂', '胶囊', '注射液', '缓释片', '分散片'];
+  /* 类别/剂型下拉 */
+  (function () {
+    var cats = {};
+    BACK_DATA.drugs.forEach(function (d) { if (d.cat) cats[d.cat] = true; });
+    var cs = document.getElementById('fCat');
+    Object.keys(cats).forEach(function (k) {
+      cs.insertAdjacentHTML('beforeend', '<option>' + k + '</option>');
+    });
+    var fs = document.getElementById('fForm');
+    FORMS.forEach(function (f) { fs.insertAdjacentHTML('beforeend', '<option>' + f + '</option>'); });
+  })();
+
+  function filtered() {
+    var kw = document.getElementById('kw').value.trim();
+    var cat = document.getElementById('fCat').value;
+    var form = document.getElementById('fForm').value;
+    return Back.hospFilter(BACK_DATA.drugs, 'drugs').filter(function (d) {
+      if (kw && (d.gn + (d.bn || '')).indexOf(kw) < 0) return false;
+      if (cat && d.cat !== cat) return false;
+      if (form && d.form !== form) return false;
+      if (tab === 'on' && d.status !== 'on') return false;
+      if (tab === 'off' && d.status !== 'off') return false;
+      if (tab === 'nophoto' && d.photoUrl) return false;
+      if (tab === 'all' && d.status === 'off') return false;
+      if ((tab === '' || tab === 'all') && d.status === 'off') return false;
+      return true;
+    });
+  }
+
+  function render() {
+    var rows = filtered();
+    var pool = Back.hospFilter(BACK_DATA.drugs, 'drugs');
+    document.getElementById('n').textContent = rows.length;
+    document.getElementById('kAll').textContent = pool.length;
+    document.getElementById('kOn').textContent = pool.filter(function (x) { return x.status === 'on'; }).length;
+    document.getElementById('kOff').textContent = pool.filter(function (x) { return x.status === 'off'; }).length;
+    document.getElementById('kNoPhoto').textContent = pool.filter(function (x) { return !x.photoUrl; }).length;
+    document.getElementById('cntAll').textContent = pool.filter(function (x) { return x.status === 'on'; }).length;
+    document.getElementById('cntOn').textContent = pool.filter(function (x) { return x.status === 'on'; }).length;
+    document.getElementById('cntOff').textContent = pool.filter(function (x) { return x.status === 'off'; }).length;
+    document.getElementById('cntNP').textContent = pool.filter(function (x) { return !x.photoUrl; }).length;
+
+    document.getElementById('body').innerHTML = rows.length ? rows.map(function (d) {
+      var bg = d.status === 'off' ? 'row-muted' : '';
+      return '<tr class="' + bg + '">'
+        + '<td><div class="cell-user">'
+        +   (d.photoUrl
+              ? '<span class="av-xs" style="background:var(--bg-3)"><img src="' + d.photoUrl + '" alt="" style="width:100%;height:100%;border-radius:4px;object-fit:cover"></span>'
+              : '<span class="av-xs" style="background:var(--bg-3);color:var(--text-3)"><img src="assets/icons-png/icon-drug-package.png" alt="" style="width:60%;height:60%"></span>')
+        +   '<div><div class="cell-main">' + d.gn + '</div>'
+        +   (d.bn ? '<div class="cell-sub">' + d.bn + '</div>' : '') + '</div></div></td>'
+        + '<td class="fz-12 mono">' + d.spec + '</td>'
+        + '<td><span class="badge badge-info">' + (d.cat || '—') + '</span></td>'
+        + '<td class="fz-12">' + d.form + '</td>'
+        + '<td class="fz-12">' + d.dose + '</td>'
+        + '<td class="fz-12">' + d.ind + '</td>'
+        + '<td>' + (d.photoUrl
+            ? '<span class="badge badge-pass">有</span>'
+            : '<span class="badge badge-warn">缺</span>') + '</td>'
+        + '<td>' + Back.onOff(d.status) + '</td>'
+        + '<td class="col-act">'
+        +   '<a class="btn-text" href="back-drug-edit.html?id=' + d.id + '">编辑</a>'
+        +   (d.status === 'on'
+            ? '<a class="btn-text danger" data-stop="' + d.id + '">停用</a>'
+            : '<a class="btn-text" data-en="' + d.id + '">启用</a>')
+        + '</td></tr>';
+    }).join('')
+    : '<tr><td colspan="9"><div class="empty"><img src="assets/icons-png/icon-empty-box.png" alt="">'
+      + '<div class="e-t">没有符合条件的药品</div>'
+      + '<div class="e-d">试试调整筛选条件,或新建药品</div></div></td></tr>';
+  }
+
+  document.querySelector('[data-tab-group="d"]').addEventListener('click', function () {
+    var b = this.querySelector('button.active');
+    if (b) { tab = b.getAttribute('data-tab'); render(); }
+  });
+
+  document.body.addEventListener('click', function (e) {
+    var t = e.target, g = function (a) { return t.getAttribute && t.getAttribute(a); };
+    if (g('data-en')) {
+      BACK_DATA.byId(BACK_DATA.drugs, g('data-en')).status = 'on';
+      render(); return Back.toast('已启用药品', 'ok');
+    }
+    if (g('data-stop')) {
+      var d = BACK_DATA.byId(BACK_DATA.drugs, g('data-stop'));
+      document.getElementById('stopBody').innerHTML =
+        '<div>停用「' + d.gn + '」后:</div>'
+        + '<ul><li>医生录入时<b>检索不到</b>该药品(药品库入口被隐藏)</li>'
+        + '<li>已开处方和已记录服药反馈<b>保留</b>,历史数据只读</li>'
+        + '<li>该药仍在被 <b>' + (d.id === 'M1' ? 8 : 2) + '</b> 个现役处方引用 —— 该处方已固化无法切换,直到处方终止</li></ul>'
+        + '<div class="note note-warn" style="margin-top:10px"><img src="assets/icons-png/icon-warning.png">'
+        + '<div><b>建议先</b>在 HIS 侧发停药通知,再在 EMRS 停用字典。</div></div>';
+      document.getElementById('stopOk').onclick = function () {
+        d.status = 'off'; Back.modal('stopModal', false); render();
+        Back.toast('已停用药品:' + d.gn, 'warn');
+      };
+      Back.modal('stopModal', true);
+    }
+  });
+
+  ['kw', 'fCat', 'fForm'].forEach(function (id) {
+    var el = document.getElementById(id);
+    el.addEventListener('input', render);
+    el.addEventListener('change', render);
+  });
+
+  if (!Back.requireHospitalAndApply()) { document.querySelector('.back-main').innerHTML = ''; }
+  else { document.getElementById('scopeStrip').innerHTML = Back.scopeStrip('药品库按本院过滤'); }
+  render();
+</script>
+</body>
+</html>

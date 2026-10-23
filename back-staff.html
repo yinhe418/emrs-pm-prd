@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>工作人员 · 后台管理</title>
+  <link rel="stylesheet" href="assets/back.css">
+</head>
+<body data-page="staff" data-crumb='[{"name":"后台管理"},{"name":"组织与人员"},{"name":"工作人员"}]'>
+
+<main class="back-main">
+
+  <div class="page-head">
+    <h1>工作人员</h1>
+    <div class="sub">Tab 1「已设置」= 已有科室 + 职称,正常工作;Tab 2「待分配科室」= 已扫码但尚未设置科室与职称,无法使用小程序。</div>
+  </div>
+
+  <div id="scopeStrip"></div>
+
+  <div class="tabs" data-tab-group="staff" data-scope="staffScope">
+    <button data-tab="set" class="active">已设置 <span class="cnt grey" id="cntSet">0</span></button>
+    <button data-tab="pending">待分配科室 <span class="cnt" id="cntPend">0</span></button>
+    <button data-tab="archived">已归档 <span class="cnt grey" id="cntArch">0</span></button>
+  </div>
+
+  <div id="staffScope">
+
+    <!-- ================= 已设置 ================= -->
+    <section data-pane="set">
+      <div class="filters">
+        <div class="search-wrap">
+          <img src="assets/icons-png/icon-search.png" alt="">
+          <input class="ipt search-ipt" id="kw" placeholder="姓名">
+        </div>
+        <select class="sel" id="fDept"><option value="">科室:全部</option></select>
+        <select class="sel" id="fPos"><option value="">职位:全部</option></select>
+        <select class="sel" id="fBio"><option value="">简介:全部</option><option value="todo">待完善</option><option value="done">已完整</option></select>
+        <div class="seg" id="fStatus">
+          <button data-v="" class="active">全部</button>
+          <button data-v="on">在职</button>
+          <button data-v="off">已停用</button>
+        </div>
+        <span class="ml-auto"></span>
+        <a class="btn btn-primary" href="back-staff-edit.html"><img src="assets/icons-png/icon-plus.png" alt="">新增人员</a>
+      </div>
+
+      <div class="card flat">
+        <div class="tbl-wrap">
+          <table class="tbl">
+            <thead>
+              <tr>
+                <th style="width:150px">姓名</th>
+                <th style="width:150px">科室</th>
+                <th style="width:118px">职位</th>
+                <th style="width:118px">手机号</th>
+                <th style="width:118px">简介完整度</th>
+                <th style="width:130px">下属病患</th>
+                <th style="width:78px">状态</th>
+                <th class="col-act" style="width:168px">操作</th>
+              </tr>
+            </thead>
+            <tbody id="setBody"></tbody>
+          </table>
+        </div>
+        <div class="pager">
+          <span>共 <b id="setN">0</b> 条</span>
+          <span class="pg-right">每页 20 条</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= 待分配科室 ================= -->
+    <section data-pane="pending" class="hidden">
+      <div class="note note-warn">
+        <img src="assets/icons-png/icon-warning.png">
+        <div><b>这些人还不能用小程序。</b>他们已用医院的<b>工作人员邀请码</b>扫码进入,但还没有科室和职称。
+          设置完成后立即生效,无需重新扫码。</div>
+      </div>
+
+      <div class="kpi-row">
+        <div class="kpi red">
+          <a href="?tab=pending" class="text-3">停留排序</a>
+          <div class="k-lab">待认领</div>
+          <div class="k-val" id="kNoClaim">0</div>
+          <div class="k-sub">管理员尚未认领</div>
+        </div>
+        <div class="kpi orange">
+          <div class="k-lab">已认领未完成</div>
+          <div class="k-val" id="kClaimed">0</div>
+          <div class="k-sub">认领后 24h 内需完成设置</div>
+        </div>
+        <div class="kpi blue">
+          <div class="k-lab">停留 &gt; 3 天</div>
+          <div class="k-val" id="kLong">0</div>
+          <div class="k-sub">超过 7 天将自动归档</div>
+        </div>
+        <div class="kpi green">
+          <div class="k-lab">今日新扫码</div>
+          <div class="k-val">1</div>
+          <div class="k-sub">近 7 日累计 6 人</div>
+        </div>
+      </div>
+
+      <div class="filters">
+        <div class="search-wrap">
+          <img src="assets/icons-png/icon-search.png" alt="">
+          <input class="ipt search-ipt" id="pkw" placeholder="微信昵称">
+        </div>
+        <div class="seg" id="pState">
+          <button data-v="" class="active">全部</button>
+          <button data-v="pending">待认领</button>
+          <button data-v="claimed">已认领未完成</button>
+        </div>
+        <span class="ml-auto"></span>
+        <span class="fz-12 text-3">默认按停留时长倒序 · 超时 7 天自动归档</span>
+      </div>
+
+      <div class="card flat">
+        <div class="tbl-wrap">
+          <table class="tbl">
+            <thead>
+              <tr>
+                <th style="width:150px">微信昵称</th>
+                <th style="width:118px">扫码时间</th>
+                <th style="width:96px">停留时长</th>
+                <th style="width:150px">科室</th>
+                <th style="width:118px">职称</th>
+                <th style="width:130px">认领人</th>
+                <th class="col-act" style="width:150px">操作</th>
+              </tr>
+            </thead>
+            <tbody id="pendBody"></tbody>
+          </table>
+        </div>
+        <div class="pager">
+          <span>共 <b id="pendN">0</b> 条</span>
+          <span class="pg-right">每页 20 条</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= 已归档 ================= -->
+    <section data-pane="archived" class="hidden">
+      <div class="note note-gray">
+        <img src="assets/icons-png/icon-info.png">
+        <div><b>归档 ≠ 删除。</b>扫码超过 7 天未认领、或管理员手动归档(误扫 / 非本院人员 / 重复)都会进入这里。
+          数据保留 180 天,管理员可手动恢复。<br>
+          <b>兜底:</b>若本院职工被误归档,本人可在小程序端提交工牌照片 + 本人自证,管理员在此处恢复并设置。</div>
+      </div>
+      <div class="card flat">
+        <div class="tbl-wrap">
+          <table class="tbl">
+            <thead>
+              <tr>
+                <th style="width:150px">微信昵称</th>
+                <th style="width:150px">扫码时间</th>
+                <th style="width:90px">停留</th>
+                <th style="width:220px">归档原因</th>
+                <th class="col-act" style="width:150px">操作</th>
+              </tr>
+            </thead>
+            <tbody id="archBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<!-- ========== 停用人员 弹窗 ========== -->
+<div class="modal-mask" id="offModal">
+  <div class="modal">
+    <div class="modal-head">
+      <img src="assets/icons-png/icon-warning.png" alt="">
+      <h3 id="offTitle">停用人员</h3>
+    </div>
+    <div class="modal-body" id="offBody"></div>
+    <div class="modal-foot">
+      <button class="btn btn-default" onclick="Back.modal('offModal',false)">取消</button>
+      <button class="btn btn-danger" id="offOk">确认停用</button>
+    </div>
+  </div>
+</div>
+
+<script src="assets/back-data.js"></script>
+<script src="assets/back-layout.js"></script>
+<script>
+  var fStatus = '', pState = '';
+
+  /* 下拉数据 */
+  (function () {
+    var d = document.getElementById('fDept');
+    BACK_DATA.hospitals.forEach(function (h) {
+      BACK_DATA.departments.filter(function (x) { return x.hospitalId === h.id; })
+        .forEach(function (x) {
+          d.insertAdjacentHTML('beforeend', '<option value="' + x.id + '">' + h.short + ' · ' + x.name + '</option>');
+        });
+    });
+    var p = document.getElementById('fPos');
+    ['admin', 'title', 'other'].forEach(function (c) {
+      BACK_DATA.positions.filter(function (x) { return x.cat === c && x.status === 'on'; })
+        .forEach(function (x) {
+          p.insertAdjacentHTML('beforeend', '<option value="' + x.id + '">' + x.name + '</option>');
+        });
+    });
+  })();
+
+  function deptName(id) {
+    var d = BACK_DATA.dept(id);
+    if (!d) return '';
+    var h = BACK_DATA.hospital(d.hospitalId);
+    return (h ? h.short + ' · ' : '') + d.name;
+  }
+  function posName(id) {
+    var p = BACK_DATA.pos(id);
+    if (!p) return '';
+    return p.cat === 'admin' ? '<span class="badge badge-brand">' + p.name + '</span>'
+         : p.cat === 'title' ? '<span class="badge badge-info">' + p.name + '</span>'
+         : '<span class="badge badge-gray">' + p.name + '</span>';
+  }
+  function patCount(id) {
+    var d = BACK_DATA.patients.filter(function (p) { return p.docId === id || p.nurId === id; }).length;
+    return d;
+  }
+  function emptyRow(cols, t, d) {
+    return '<tr><td colspan="' + cols + '"><div class="empty"><img src="assets/icons-png/icon-empty-box.png" alt="">'
+      + '<div class="e-t">' + t + '</div><div class="e-d">' + d + '</div></div></td></tr>';
+  }
+
+  /* ---------- 已设置 ---------- */
+  function renderSet() {
+    var kw = document.getElementById('kw').value.trim();
+    var fd = document.getElementById('fDept').value;
+    var fp = document.getElementById('fPos').value;
+    var fb = document.getElementById('fBio').value;
+    var rows = Back.hospFilter(BACK_DATA.staff, 'staff').filter(function (s) {
+      if (kw && s.name.indexOf(kw) < 0) return false;
+      if (fd && s.deptId !== fd) return false;
+      if (fp && s.posId !== fp) return false;
+      if (fStatus && s.status !== fStatus) return false;
+      var sc = BACK_DATA.bioScore(s);
+      if (fb === 'todo' && sc >= 100) return false;
+      if (fb === 'done' && sc < 100) return false;
+      return true;
+    });
+    document.getElementById('setN').textContent = rows.length;
+    document.getElementById('cntSet').textContent =
+      Back.hospFilter(BACK_DATA.staff, 'staff').filter(function (s) { return s.status === 'on'; }).length;
+
+    document.getElementById('setBody').innerHTML = rows.length ? rows.map(function (s) {
+      var sc = BACK_DATA.bioScore(s);
+      return '<tr' + (s.status === 'off' ? ' class="row-muted"' : '') + '>'
+        + '<td><div class="cell-user">' + Back.staffAv(s)
+        +   '<div><div class="cell-main">' + s.name + '</div>'
+        +   '<div class="cell-sub">' + (s.posId === 'P1' ? '科室责任人' : (BACK_DATA.pos(s.posId) || {}).name || '—') + '</div></div></div></td>'
+        + '<td class="fz-12">' + deptName(s.deptId) + '</td>'
+        + '<td>' + posName(s.posId) + '</td>'
+        + '<td class="fz-12 mono">' + BACK_DATA.maskPhone(s.phone) + '</td>'
+        + '<td><div class="prog-wrap"><span class="prog' + (sc === 100 ? ' full' : '') + '">'
+        +   '<i style="width:' + sc + '%"></i></span><span>' + sc + '%</span></div></td>'
+        + '<td class="num-cell">' + patCount(s.id) + ' 例</td>'
+        + '<td>' + Back.onOff(s.status) + '</td>'
+        + '<td class="col-act">'
+        +   '<a class="btn-text" href="back-staff-detail.html?id=' + s.id + '">详情</a>'
+        +   '<a class="btn-text" href="back-staff-edit.html?id=' + s.id + '">编辑</a>'
+        +   (s.status === 'on'
+              ? '<a class="btn-text danger" data-off="' + s.id + '">停用</a>'
+              : '<a class="btn-text" data-en="' + s.id + '">恢复</a>')
+        + '</td></tr>';
+    }).join('') : emptyRow(9,
+        (kw || fd || fp || fb || fStatus) ? '没有符合条件的工作人员' : '还没有工作人员',
+        (kw || fd || fp || fb || fStatus) ? '试试调整筛选条件,或清空筛选' : '点右上角「新增人员」,或让同事扫描邀请码登记');
+  }
+
+  /* ---------- 待分配科室 ---------- */
+  function renderPend() {
+    var kw = document.getElementById('pkw').value.trim();
+    var rows = BACK_DATA.pending.filter(function (p) {
+      if (p.state === 'archived') return false;
+      if (kw && p.nick.indexOf(kw) < 0) return false;
+      if (pState && p.state !== pState) return false;
+      return true;
+    }).sort(function (a, b) { return b.days - a.days; });
+
+    document.getElementById('pendN').textContent = rows.length;
+    document.getElementById('cntPend').textContent =
+      BACK_DATA.pending.filter(function (p) { return p.state !== 'archived'; }).length;
+    document.getElementById('kNoClaim').textContent =
+      BACK_DATA.pending.filter(function (p) { return p.state === 'pending'; }).length;
+    document.getElementById('kClaimed').textContent =
+      BACK_DATA.pending.filter(function (p) { return p.state === 'claimed'; }).length;
+    document.getElementById('kLong').textContent = rows.filter(function (p) { return p.days > 3; }).length;
+
+    document.getElementById('pendBody').innerHTML = rows.length ? rows.map(function (p) {
+      var durCls = p.days > 3 ? 'text-red fw-5' : p.days > 1 ? 'text-orange' : 'text-green';
+      var dur = p.days + ' 天';
+      return '<tr class="' + (p.days > 7 ? 'row-danger' : p.days > 3 ? 'row-warn' : '') + '">'
+        + '<td><div class="cell-user"><span class="av-sm" style="background:#8A94A6">' + p.avatarText + '</span>'
+        +   '<div><div class="cell-main">' + p.nick + '</div>'
+        +   '<div class="cell-sub">微信昵称 · 来源 ' + p.source + '</div></div></div></td>'
+        + '<td class="mono fz-12">' + p.scanAt + '</td>'
+        + '<td class="' + durCls + '">' + dur + '</td>'
+        + '<td><span class="text-4 fz-12">— 未设置 —</span></td>'
+        + '<td><span class="text-4 fz-12">— 未设置 —</span></td>'
+        + '<td class="fz-12">' + (p.claimedBy
+              ? '<span class="badge badge-info">' + p.claimedBy + '</span><div class="cell-sub">' + p.claimAt.slice(11) + ' 认领</div>'
+              : '<span class="badge badge-block">未认领</span>') + '</td>'
+        + '<td class="col-act">'
+        +   (p.state === 'claimed'
+              ? '<span class="fz-12 text-orange fw-5">' + p.claimedBy + ' 处理中</span>'
+              : '<a class="btn-text" href="back-staff-pending-detail.html?id=' + p.id + '">认领并设置</a>')
+        +   '<a class="btn-text muted" data-claim="' + p.id + '">认领</a>'
+        +   '<a class="btn-text danger" data-arch="' + p.id + '">归档</a>'
+        + '</td></tr>';
+    }).join('') : emptyRow(7, '待分配队列已清空', '所有扫码人员都已设置科室与职称');
+  }
+
+  /* ---------- 已归档 ---------- */
+  function renderArch() {
+    var rows = BACK_DATA.pending.filter(function (p) { return p.state === 'archived'; });
+    document.getElementById('cntArch').textContent = rows.length;
+    document.getElementById('archBody').innerHTML = rows.length ? rows.map(function (p) {
+      return '<tr class="row-muted">'
+        + '<td><div class="cell-user"><span class="av-sm" style="background:#B0B7C3">' + p.avatarText + '</span>'
+        +   '<span class="cell-main">' + p.nick + '</span></div></td>'
+        + '<td class="mono fz-12">' + p.scanAt + '</td>'
+        + '<td>' + p.days + ' 天</td>'
+        + '<td class="fz-12 text-3">' + p.archivedReason + '</td>'
+        + '<td class="col-act"><a class="btn-text" data-restore="' + p.id + '">恢复并设置</a></td>'
+        + '</tr>';
+    }).join('') : emptyRow(5, '没有归档记录', '扫码超 7 天未认领或手动归档的记录会出现在这里');
+  }
+
+  /* ---------- 分段筛选 ---------- */
+  document.getElementById('fStatus').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-v]'); if (!b) return;
+    fStatus = b.getAttribute('data-v');
+    this.querySelectorAll('button').forEach(function (x) { x.classList.toggle('active', x === b); });
+    renderSet();
+  });
+  document.getElementById('pState').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-v]'); if (!b) return;
+    pState = b.getAttribute('data-v');
+    this.querySelectorAll('button').forEach(function (x) { x.classList.toggle('active', x === b); });
+    renderPend();
+  });
+
+  /* ---------- 操作 ---------- */
+  document.body.addEventListener('click', function (e) {
+    var t = e.target, g = function (a) { return t.getAttribute && t.getAttribute(a); };
+
+    if (g('data-en')) {
+      var s = BACK_DATA.member(g('data-en'));
+      s.status = 'on'; renderSet(); return Back.toast('已恢复:' + s.name, 'ok');
+    }
+
+    if (g('data-claim')) {
+      var w = BACK_DATA.byId(BACK_DATA.pending, g('data-claim'));
+      w.state = 'claimed'; w.claimedBy = '后台管理员'; w.claimAt = '2026-10-21 09:20';
+      renderPend(); Back.toast('已认领 ' + w.nick + ',请在 24 小时内完成设置', 'ok');
+      return;
+    }
+
+    if (g('data-restore')) {
+      var w2 = BACK_DATA.byId(BACK_DATA.pending, g('data-restore'));
+      w2.state = 'pending'; w2.archivedReason = '';
+      renderPend(); renderArch();
+      Back.toast('已恢复 ' + w2.nick + ' 到待分配队列', 'ok');
+      return;
+    }
+
+    if (g('data-arch')) {
+      var w3 = BACK_DATA.byId(BACK_DATA.pending, g('data-arch'));
+      w3.state = 'archived'; w3.archivedReason = '管理员手动归档(演示)';
+      renderPend(); renderArch(); Back.toast('已归档 ' + w3.nick + '(数据保留 180 天)', 'ok');
+      return;
+    }
+
+    if (g('data-off')) {
+      var st = BACK_DATA.member(g('data-off'));
+      var n = patCount(st.id);
+      document.getElementById('offTitle').textContent = '停用「' + st.name + '」';
+      document.getElementById('offBody').innerHTML =
+        '<div>停用后该人员<b>无法再登录小程序</b>,历史数据保留。停用必须填原因。</div>'
+        + (n ? '<div class="note note-warn" style="margin-top:10px"><img src="assets/icons-png/icon-warning.png">'
+              + '<div>该人员名下有 <b>' + n + '</b> 例病患,停用后需重新指派归属医生 / 护士,'
+              + '否则患者端将失去对接人。</div></div>' : '');
+      document.getElementById('offOk').onclick = function () {
+        st.status = 'off';
+        st.offReason = '离职 / 停用(演示)';
+        Back.modal('offModal', false); renderSet();
+        Back.toast('已停用:' + st.name + (n ? ',名下 ' + n + ' 例病患待移交' : ''), n ? 'warn' : 'ok');
+      };
+      Back.modal('offModal', true);
+    }
+  });
+
+  ['kw', 'fDept', 'fPos', 'fBio', 'pkw'].forEach(function (id) {
+    var el = document.getElementById(id);
+    el.addEventListener('input', function () { renderSet(); renderPend(); });
+    el.addEventListener('change', function () { renderSet(); renderPend(); });
+  });
+
+  /* URL 参数 */
+  var t = Back.qs('tab');
+  if (t === 'pending') document.querySelector('[data-tab="pending"]').click();
+  if (t === 'archived') document.querySelector('[data-tab="archived"]').click();
+  if (Back.qs('dept')) {
+    document.getElementById('fDept').value = Back.qs('dept');
+    renderSet();
+  }
+
+  if (!Back.requireHospitalAndApply()) { document.querySelector('.back-main').innerHTML = ''; }
+  else {
+    document.getElementById('scopeStrip').innerHTML = Back.scopeStrip('工作人员列表已按本院过滤');
+  }
+  renderSet(); renderPend(); renderArch();
+</script>
+</body>
+</html>

@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, 1.0">
+  <title>字段配置 · 后台管理</title>
+  <link rel="stylesheet" href="assets/back.css">
+</head>
+<body data-page="component" data-crumb='[{"name":"后台管理"},{"href":"back-component-lib.html","name":"任务组件库"},{"href":"back-component-edit.html","name":"编辑组件"},{"name":"字段配置"}]'>
+
+<main class="back-main">
+
+  <div class="page-head">
+    <h1 id="ttl">字段配置</h1>
+    <div class="sub" id="sub">—</div>
+  </div>
+
+  <div class="card flat" id="headCard">
+    <div class="form-grid">
+      <div>
+        <div class="text-3 fz-12">组件</div>
+        <div class="cell-main" id="cName">—</div>
+      </div>
+      <div>
+        <div class="text-3 fz-12">字段</div>
+        <div class="cell-main" id="fName">—</div>
+        <div class="cell-sub mono fz-12" id="fCode">—</div>
+      </div>
+      <div>
+        <div class="text-3 fz-12">类型</div>
+        <div id="fType" class="fz-12">—</div>
+      </div>
+      <div>
+        <div class="text-3 fz-12">是否必填</div>
+        <div id="fReq" class="fz-12">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 录入区间(只读,锁权威) ============ -->
+  <div class="card">
+    <div class="card-head">
+      <h3>
+        <span class="lock-tag" style="background:var(--brand);color:#fff;margin-right:8px">权威</span>
+        录入有效区间
+      </h3>
+      <span class="ch-desc">
+        取自
+        <code class="k">docs/clinical/field-constraints.md</code>,<b>不可编辑</b>。<br>
+        任何超出该区间的录入值<b>硬阻断禁止提交</b>。
+      </span>
+    </div>
+    <div class="form-grid">
+      <div class="fi">
+        <label>下限</label>
+        <input class="ipt read" id="vLo" readonly>
+        <span class="hint">例如 SBP 50 mmHg</span>
+      </div>
+      <div class="fi">
+        <label>上限</label>
+        <input class="ipt read" id="vHi" readonly>
+        <span class="hint">例如 SBP 280 mmHg</span>
+      </div>
+      <div class="fi">
+        <label>单位(权威)</label>
+        <input class="ipt read" id="vUnit" readonly>
+        <span class="hint">不可改;若与临床实际不符,反查
+          <code class="k">field-constraints.md</code></span>
+      </div>
+      <div class="fi">
+        <label>精度</label>
+        <input class="ipt read" id="vStep" readonly>
+        <span class="hint">小数位</span>
+      </div>
+    </div>
+
+    <div id="enumBox" style="display:none;padding:0 16px 14px">
+      <div class="text-3 fz-12 mb-8">枚举值</div>
+      <div class="flex flex-wrap" id="enumList" style="gap:8px"></div>
+    </div>
+
+    <div class="note note-gray" style="margin:0 16px 16px">
+      <img src="assets/icons-png/icon-info.png">
+      <div>
+        <b>录入区间 vs 报警线(本质不同):</b><br>
+        · <b>录入区间</b> = 物理意义上下限(L1),超出<b>硬阻断</b>(HARD);<br>
+        · <b>报警线</b> = 临床意义上下限(L2),超出<b>软告警</b>(SOFT)。
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 报警线(可编辑) ============ -->
+  <div class="card">
+    <div class="card-head">
+      <h3>报警线 <span class="ch-desc">(可编辑,必须落在录入区间内)</span></h3>
+    </div>
+    <div class="form-grid" id="numArea">
+      <div class="fi">
+        <label>报警下限</label>
+        <input class="ipt" id="aLo" placeholder="留空 = 不设下限">
+        <span class="hint">例:收缩压 90 mmHg</span>
+        <span class="err-msg"></span>
+      </div>
+      <div class="fi">
+        <label>报警上限</label>
+        <input class="ipt" id="aHi" placeholder="留空 = 不设上限">
+        <span class="hint">例:收缩压 140 mmHg</span>
+        <span class="err-msg"></span>
+      </div>
+      <div class="fi full">
+        <div class="range-row">
+          <div class="text-3 fz-12" id="rngLabel">—</div>
+          <div class="rng-bar"><div class="rng-fill" id="rngFill"></div></div>
+          <div class="text-4 fz-12"><span id="rngLft">—</span> ↔ <span id="rngRgt">—</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="note note-warn" id="noAlert" style="display:none;margin:0 16px 14px">
+      <img src="assets/icons-png/icon-warning.png">
+      <div>
+        <b>该字段属于临床规则,由科室在使用前确定(C8)。</b><br>
+        系统<b>不预填任何默认报警线</b>。请在下方填写后保存。<br>
+        若决定不留报警线,请保持<b>关闭监控</b>。
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 监控 + C8 说明 ============ -->
+  <div class="card">
+    <div class="card-head">
+      <h3>监控</h3>
+    </div>
+    <div class="form-grid">
+      <div class="fi full">
+        <label class="switch">
+          <input type="checkbox" id="monOn">
+          <span class="sw-track"></span>
+          <span class="sw-text">开启监控(产生告警,推送给医生和护士)</span>
+        </label>
+        <span class="err-msg"></span>
+      </div>
+ \</div>
+
+    <div class="note note-info">
+      <img src="assets/icons-png/icon-info.png">
+      <div>
+        <b>报警线、监控开关都是临床规则(C8)</b><br>
+        · 不由系统预设,不由默认开启;<br>
+        · 由<b>科室主任</b>或受权人在组件上下发<b>新的任务</b>之前确定;<br>
+        · 改报警线会让所有进行中的任务<b>按新阈值</b>生效,会触发既有目标的变更提示。
+      </div>
+    </div>
+  </div>
+
+  <div style="position:sticky;bottom:0;background:var(--bg);padding:12px 0;border-top:1px solid var(--line);display:flex;gap:9px;z-index:5">
+    <a class="btn btn-default" id="backBtn">取消</a>
+    <span class="ml-auto"></span>
+    <button class="btn btn-primary" id="saveBtn">保存字段配置</button>
+  </div>
+</main>
+
+<script src="assets/back-data.js"></script>
+<script src="assets/back-layout.js"></script>
+<script>
+  var cid = Back.qs('c'), fid = Back.qs('f');
+  var c = BACK_DATA.byId(BACK_DATA.components, cid);
+  var f = c ? c.fields.filter(function (x) { return x.id === fid; })[0] : null;
+  var editUrl = 'back-component-edit.html?id=' + cid;
+  document.getElementById('backBtn').href = editUrl;
+
+  if (!c || !f) {
+    document.querySelector('.back-main').innerHTML =
+      '<div class="empty"><img src="assets/icons-png/icon-empty-box.png" alt="">'
+      + '<div class="e-t">字段不存在</div>'
+      + '<div class="e-d">该字段可能已被删除或被替换,请返回组件列表检查。</div></div>';
+  } else {
+    document.getElementById('ttl').textContent = '字段配置 · ' + f.name;
+    document.getElementById('sub').textContent = c.name + ' · ' + f.name;
+    document.getElementById('cName').textContent = c.name;
+    document.getElementById('fName').textContent = f.name;
+    document.getElementById('fCode').textContent = f.id;
+    document.getElementById('fType').innerHTML = ({
+      num: '数值型', enum: '枚举型', datetime: '日期时间', date: '日期', text: '文本', file: '文件'
+    })[f.type];
+    document.getElementById('fReq').innerHTML =
+      f.req === 'required' ? '<span class="badge badge-block">必填</span>'
+      : f.req === 'auto' ? '<span class="badge badge-info">自动</span>'
+      : '<span class="badge badge-gray">选填</span>';
+
+    document.getElementById('vLo').value = f.validMin;
+    document.getElementById('vHi').value = f.validMax;
+    document.getElementById('vUnit').value = f.unit || '—';
+    document.getElementById('vStep').value = f.step != null ? f.step : '1';
+
+    if (f.enumVals) {
+      document.getElementById('enumBox').style.display = '';
+      document.getElementById('enumList').innerHTML = f.enumVals.map(function (v) {
+        return '<span class="badge badge-outline">' + v + '</span>';
+      }).join('');
+    }
+
+    /* 报警线 */
+    document.getElementById('aLo').value = f.alertMin == null ? '' : f.alertMin;
+    document.getElementById('aHi').value = f.alertMax == null ? '' : f.alertMax;
+
+    /* 监控开关 */
+    document.getElementById('monOn').checked = !!f.monitor;
+    toggleMon();
+
+    function updateRange() {
+      var lo = parseFloat(document.getElementById('aLo').value);
+      var hi = parseFloat(document.getElementById('aHi').value);
+      if (isNaN(lo)) lo = f.validMin;
+      if (isNaN(hi)) hi = f.validMax;
+
+      document.getElementById('rngLabel').innerHTML = '当前报警线:<b>'
+        + (isNaN(parseFloat(document.getElementById('aLo').value)) ? '不设下限' : lo + ' ' + (f.unit || ''))
+        + ' → ' + (isNaN(parseFloat(document.getElementById('aHi').value)) ? '不设上限' : hi + ' ' + (f.unit || ''))
+        + '</b>';
+      document.getElementById('rngLft').textContent = lo + ' ' + (f.unit || '');
+      document.getElementById('rngRgt').textContent = hi + ' ' + (f.unit || '');
+
+      var fullSpan = f.validMax - f.validMin;
+      var l = ((lo - f.validMin) / fullSpan * 100).toFixed(1);
+      var r = ((hi - f.validMin) / fullSpan * 100).toFixed(1);
+      document.getElementById('rngFill').style.left = l + '%';
+      document.getElementById('rngFill').style.right = (100 - r) + '%';
+
+      var warn = false;
+      if (!isNaN(parseFloat(document.getElementById('aLo').value)) && lo < f.validMin) warn = true;
+      if (!isNaN(parseFloat(document.getElementById('aHi').value)) && hi > f.validMax) warn = true;
+      if (!isNaN(lo) && !isNaN(hi) && lo >= hi) warn = true;
+      var box = document.getElementById('noAlert');
+      box.style.display = (f.type === 'num'
+        && ((!isNaN(parseFloat(document.getElementById('aLo').value)) || !isNaN(parseFloat(document.getElementById('aHi').value))) ? false : true)
+        && false || !document.getElementById('monOn').checked) ? 'none' : 'none';
+      // 简化:仅在开启监控且没填报警线时显示
+      var hasA = !isNaN(parseFloat(document.getElementById('aLo').value)) || !isNaN(parseFloat(document.getElementById('aHi').value));
+      box.style.display = (document.getElementById('monOn').checked && !hasA) ? '' : 'none';
+    }
+
+    function toggleMon() {
+      var on = document.getElementById('monOn').checked;
+      document.getElementById('aLo').disabled = !on;
+      document.getElementById('aHi').disabled = !on;
+      updateRange();
+    }
+
+    ['aLo', 'aHi'].forEach(function (id) {
+      document.getElementById(id).addEventListener('input', function () {
+        var fi = this.closest('.fi');
+        fi.classList.remove('has-err');
+        fi.querySelector('.err-msg').textContent = '';
+        updateRange();
+      });
+    });
+    document.getElementById('monOn').addEventListener('change', toggleMon);
+
+    /* 保存 */
+    document.getElementById('saveBtn').addEventListener('click', function () {
+      var lo = document.getElementById('aLo').value;
+      var hi = document.getElementById('aHi').value;
+      var loN = lo === '' ? null : parseFloat(lo);
+      var hiN = hi === '' ? null : parseFloat(hi);
+      var mon = document.getElementById('monOn').checked;
+
+      /* 校验 */
+      var ok = true;
+      if (loN !== null && loN < f.validMin) {
+        var b1 = document.getElementById('aLo').closest('.fi');
+        b1.classList.add('has-err');
+        b1.querySelector('.err-msg').textContent = '不能低于录入下限 ' + f.validMin + ' ' + (f.unit || '');
+        ok = false;
+      }
+      if (hiN !== null && hiN > f.validMax) {
+        var b2 = document.getElementById('aHi').closest('.fi');
+        b2.classList.add('has-err');
+        b2.querySelector('.err-msg').textContent = '不能高于录入上限 ' + f.validMax + ' ' + (f.unit || '');
+        ok = false;
+      }
+      if (loN !== null && hiN !== null && loN >= hiN) {
+        Back.toast('下限必须小于上限', 'err');
+        ok = false;
+      }
+      if (mon && loN === null && hiN === null) {
+        Back.toast('开启监控前必须填写至少一个报警线(C8)', 'err');
+        ok = false;
+      }
+      if (!ok) return;
+
+      f.alertMin = loN; f.alertMax = hiN; f.monitor = mon;
+      Back.toast('已保存字段配置:' + f.name, 'ok');
+      setTimeout(function () { location.href = editUrl; }, 700);
+    });
+
+    updateRange();
+  }
+</script>
+</body>
+</html>

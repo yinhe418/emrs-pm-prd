@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, 1.0">
+  <title>没有内容 · 后台管理</title>
+  <link rel="stylesheet" href="assets/back.css">
+</head>
+<body data-page="dashboard" data-crumb='[{"name":"后台管理"},{"name":"没有内容"}]'>
+
+<main class="back-main">
+  <div style="margin:80px auto;max-width:520px;text-align:center">
+    <img src="assets/icons-png/icon-empty-box.png" alt="" style="width:120px;height:120px;opacity:.6">
+    <h1 style="margin:14px 0 8px">暂无内容</h1>
+    <div class="text-3 fz-13" style="margin:0 auto 22px;line-height:1.7">
+      这里还没有任何可显示的数据。<br>
+      可以去 <a href="back-dashboard.html" style="color:var(--brand)">工作台</a> 看看
+      <b>快捷入口</b> 该从哪里开始,
+      或者直接 <a href="javascript:history.back()" style="color:var(--brand)">返回上一页</a>。
+    </div>
+    <div class="flex" style="gap:9px;justify-content:center">
+      <a class="btn btn-default" href="back-dashboard.html">返回工作台</a>
+      <a class="btn btn-primary" href="back-staff.html"><img src="assets/icons-png/icon-plus.png" alt="">去添加工作人员</a>
+    </div>
+
+    <div class="note note-gray" style="text-align:left;margin-top:26px">
+      <img src="assets/icons-png/icon-info.png">
+      <div>
+        <b>常见原因:</b>
+        <ul style="padding-left:18px;margin:6px 0">
+          <li>筛选条件过严:可点任意列表的「清空筛选」</li>
+          <li>尚未新建:「待分配科室」没人是因为还没人扫码;「任务组件」没字段是因为还没新建</li>
+          <li>数据被人停用了:停用字段 / 停用组件 都会从「启用」视图消失,可在「已停用」标签查看</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script src="assets/back-data.js"></script>
+<script src="assets/back-layout.js"></script>
+</body>
+</html>

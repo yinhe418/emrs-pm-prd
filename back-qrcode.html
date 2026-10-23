@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>二维码中心 · 后台管理</title>
+  <link rel="stylesheet" href="assets/back.css">
+</head>
+<body data-page="qrcode" data-crumb='[{"name":"后台管理"},{"name":"组织与人员"},{"name":"二维码中心"}]'>
+
+<main class="back-main">
+
+  <div class="page-head">
+    <h1>二维码中心</h1>
+    <div class="sub">两类二维码,用途完全不同,不要混用。</div>
+  </div>
+
+  <div class="tabs" data-tab-group="q" data-scope="qScope">
+    <button data-tab="hospital" class="active">工作人员邀请码 <span class="cnt grey">医院级</span></button>
+    <button data-tab="patient">医生患者码 <span class="cnt grey">个人级</span></button>
+  </div>
+
+  <div id="qScope">
+
+    <!-- ============ Tab 1 · 医院级邀请码 ============ -->
+    <section data-pane="hospital">
+      <div class="note note-info">
+        <img src="assets/icons-png/icon-info.png">
+        <div>
+          <b>一个医院 = 一个邀请码</b>(不是科室级)。本页只显示<b>顶栏当前所选医院</b>的码,其他医院的码需先切换医院。
+          本院医护人员用<b>微信扫描</b>此码进入小程序,
+          扫码后进入「<a href="back-staff.html?tab=pending" style="color:var(--brand);text-decoration:underline">待分配科室</a>」队列,
+          <b>需管理员设置科室与职位后才能使用</b>。<br>
+          建议张贴位置:科室门口白板 / 护士站。
+        </div>
+      </div>
+
+      <div class="card flat">
+        <div class="tbl-wrap">
+          <table class="tbl">
+            <thead>
+              <tr>
+                <th style="width:150px">码主(医院)</th>
+                <th style="width:80px">二维码</th>
+                <th style="width:96px">科室数</th>
+                <th style="width:110px">扫码次数</th>
+                <th style="width:150px">最近扫码</th>
+                <th style="width:140px">待分配</th>
+                <th style="width:80px">状态</th>
+                <th class="col-act" style="width:200px">操作</th>
+              </tr>
+            </thead>
+            <tbody id="hBody"></tbody>
+          </table>
+        </div>
+        <div class="pager">
+          <span>共 <b id="hN">0</b> 个医院</span>
+          <span class="pg-right">一个医院一个码,扫码长期有效</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ Tab 2 · 医生患者码 ============ -->
+    <section data-pane="patient" class="hidden">
+      <div class="note note-info">
+        <img src="assets/icons-png/icon-info.png">
+        <div>
+          <b>一名医生 = 一个患者码</b>。患者 / 家属用<b>微信扫描</b>此码进入小程序,
+          扫码后<b>自动绑定该医生为归属医生</b>,无需管理员操作。护士归属仍需另行指派。
+        </div>
+      </div>
+
+      <div class="note note-gray">
+        <img src="assets/icons-png/icon-info.png">
+        <div>只有<b>医师类职位</b>的工作人员才有患者码。护理岗通过归属医生指定归属,不生成患者码。</div>
+      </div>
+
+      <div class="filters">
+        <div class="search-wrap">
+          <img src="assets/icons-png/icon-search.png" alt="">
+          <input class="ipt search-ipt" id="dKw" placeholder="医生姓名">
+        </div>
+        <select class="sel" id="dDept"><option value="">科室:全部</option></select>
+        <span class="ml-auto"></span>
+        <span class="fz-12 text-3">只显示本医生自己的绑定患者,互相不可见</span>
+      </div>
+
+      <div class="card flat">
+        <div class="tbl-wrap">
+          <table class="tbl">
+            <thead>
+              <tr>
+                <th style="width:150px">医生</th>
+                <th style="width:150px">科室</th>
+                <th style="width:118px">职称</th>
+                <th style="width:80px">二维码</th>
+                <th style="width:110px">已绑定患者</th>
+                <th style="width:150px">最近绑定</th>
+                <th style="width:80px">状态</th>
+                <th class="col-act" style="width:190px">操作</th>
+              </tr>
+            </thead>
+            <tbody id="dBody"></tbody>
+          </table>
+        </div>
+        <div class="pager">
+          <span>共 <b id="dN">0</b> 位医生</span>
+          <span class="pg-right">扫码长期有效</span>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<!-- ========== 预览 / 打印 抽屉 ========== -->
+<div class="drawer-mask" id="qMask"></div>
+<div class="drawer" id="qDrawer" data-mask="qMask">
+  <div class="drawer-head"><h3 id="qTitle">二维码</h3><button class="d-close">×</button></div>
+  <div class="drawer-body">
+    <div class="card" style="text-align:center">
+      <div class="qr-box" style="margin:0 auto 14px;width:210px;height:210px"><div class="qr-fake" style="width:168px;height:168px"></div></div>
+      <div style="font-size:17px;font-weight:600" id="qName">—</div>
+      <div class="fz-12 text-3 mt-8" id="qDesc">—</div>
+      <div class="divider"></div>
+      <div class="fz-12 text-2" id="qTip" style="line-height:1.9"></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h3>扫码记录</h3><span class="ch-desc" id="qRecDesc"></span></div>
+      <div id="qRec"></div>
+    </div>
+  </div>
+  <div class="drawer-foot">
+    <button class="btn btn-text danger" id="qReset">立即重置二维码</button>
+    <div class="df-right">
+      <button class="btn btn-default" onclick="Back.drawer('qDrawer',false)">关闭</button>
+      <button class="btn btn-default" id="qPrint">打印 A4</button>
+      <button class="btn btn-primary" id="qDl">下载 PNG</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 重置确认 ========== -->
+<div class="modal-mask" id="resetModal">
+  <div class="modal">
+    <div class="modal-head">
+      <img src="assets/icons-png/icon-warning.png" alt="">
+      <h3>重置二维码</h3>
+    </div>
+    <div class="modal-body">
+      <p>重置后<b>旧码立即失效</b>,已张贴 / 已印发的纸质码将无法使用,需要重新打印张贴。</p>
+      <div class="note note-warn" style="margin-top:10px"><img src="assets/icons-png/icon-warning.png">
+        <div>确认重置后,旧码扫码会提示「此码已失效,请重新扫码」。</div></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-default" onclick="Back.modal('resetModal',false)">取消</button>
+      <button class="btn btn-danger" id="resetOk">确认重置</button>
+    </div>
+  </div>
+</div>
+
+<script src="assets/back-data.js"></script>
+<script src="assets/back-layout.js"></script>
+<script>
+  Back.bindTabs('[data-tab-group="q"]');
+  var cur = null;
+
+  /* 科室下拉 */
+  (function () {
+    var s = document.getElementById('dDept');
+    Back.hospFilter(BACK_DATA.departments, 'depts').forEach(function (d) {
+      s.insertAdjacentHTML('beforeend', '<option value="' + d.id + '">' + d.name + '</option>');
+    });
+  })();
+
+  /* ---------- Tab 1 · 医院(只显示当前所选医院)---------- */
+  function renderH() {
+    var h = Back.currentHospital();
+    var tb = document.getElementById('hBody');
+    if (!h) { tb.innerHTML = ''; document.getElementById('hN').textContent = 0; return; }
+    var ds = Back.hospFilter(BACK_DATA.departments, 'depts');
+    var scans = h.id === 'H1' ? 14 : 2;
+    var pend = BACK_DATA.pending.filter(function (p) { return p.state !== 'archived'; }).length;
+    document.getElementById('hN').textContent = 1;
+    tb.innerHTML = '<tr>'
+      + '<td><div class="cell-user">'
+      +   (h.image
+            ? '<span class="av-xs" style="background:var(--bg-3)"><img src="' + h.image + '" alt="" style="width:100%;height:100%;border-radius:4px;object-fit:cover"></span>'
+            : '<span class="av-xs" style="background:var(--brand);color:#fff">' + (h.short || h.name).charAt(0) + '</span>')
+      +   '<div><div class="cell-main">' + h.name + '</div>'
+      +   '<div class="cell-sub">' + (h.short || '') + ' · ' + (h.level || '') + '</div></div></div></td>'
+      + '<td><div class="qr-box sm"><div class="qr-fake"></div></div></td>'
+      + '<td class="num-cell">' + ds.length + '</td>'
+      + '<td class="num-cell">' + scans + '</td>'
+      + '<td class="fz-12 mono">' + (h.id === 'H1' ? '2026-10-21 08:40' : '2026-10-19 14:10') + '</td>'
+      + '<td>' + (pend
+          ? '<a class="badge badge-block" href="back-staff.html?tab=pending">' + pend + ' 人待分配</a>'
+          : '<span class="text-4 fz-12">0</span>') + '</td>'
+      + '<td>' + (h.status === 'on'
+          ? '<span class="badge badge-pass">生效中</span>'
+          : '<span class="badge badge-gray">已停用</span>') + '</td>'
+      + '<td class="col-act">'
+      +   '<a class="btn-text" data-view="h|' + h.id + '">预览</a>'
+      +   '<button class="btn-text" data-dl="h|' + h.id + '">下载</button>'
+      +   '<button class="btn-text" data-pr="h|' + h.id + '">打印</button>'
+      +   '<a class="btn-text danger" data-reset="h|' + h.id + '">重置</a>'
+      + '</td></tr>';
+  }
+
+  /* ---------- Tab 2 · 医生 ---------- */
+  function isDoctor(s) {
+    var p = BACK_DATA.pos(s.posId);
+    return s.status === 'on' && p && p.cat === 'title';
+  }
+  function renderD() {
+    var kw = document.getElementById('dKw').value.trim();
+    var dp = document.getElementById('dDept').value;
+    var rows = Back.hospFilter(BACK_DATA.staff, 'staff').filter(function (s) {
+      if (!isDoctor(s)) return false;
+      if (kw && s.name.indexOf(kw) < 0) return false;
+      if (dp && s.deptId !== dp) return false;
+      return true;
+    });
+    document.getElementById('dN').textContent = rows.length;
+    document.getElementById('dBody').innerHTML = rows.length ? rows.map(function (s) {
+      var d = BACK_DATA.dept(s.deptId), p = BACK_DATA.pos(s.posId);
+      var pts = BACK_DATA.patients.filter(function (x) { return x.docId === s.id; });
+      return '<tr>'
+        + '<td><div class="cell-user">' + Back.staffAv(s) + '<div><div class="cell-main">' + s.name
+        +   '</div><div class="cell-sub">' + (BACK_DATA.pos(s.posId) || {}).name + '</div></div></div></td>'
+        + '<td class="fz-12">' + (d ? d.name : '—') + '</td>'
+        + '<td><span class="badge badge-info">' + p.name + '</span></td>'
+        + '<td><div class="qr-box sm"><div class="qr-fake"></div></div></td>'
+        + '<td class="num-cell">' + pts.length + ' 人</td>'
+        + '<td class="fz-12 mono">' + (pts.length ? pts[0].enrole : '—') + '</td>'
+        + '<td><span class="badge badge-pass">生效中</span></td>'
+        + '<td class="col-act">'
+        +   '<a class="btn-text" href="back-staff-detail.html?id=' + s.id + '">详情</a>'
+        +   '<button class="btn-text" data-view="d|' + s.id + '">预览</button>'
+        +   '<button class="btn-text" data-dl="d|' + s.id + '">下载</button>'
+        +   '<button class="btn-text" data-pr="d|' + s.id + '">打印</button>'
+        + '</td></tr>';
+    }).join('')
+    : '<tr><td colspan="8"><div class="empty"><img src="assets/icons-png/icon-empty-box.png" alt="">'
+      + '<div class="e-t">没有符合条件的医生</div><div class="e-d">试试调整筛选条件</div></div></td></tr>';
+  }
+
+  /* ---------- 预览 ---------- */
+  function openView(kind, id) {
+    var recs = [];
+    if (kind === 'h') {
+      var o = BACK_DATA.hospital(id);
+      cur = { kind: kind, id: id, name: o.name };
+      document.getElementById('qTitle').textContent = '工作人员邀请码 · ' + o.short;
+      document.getElementById('qName').textContent = o.name;
+      document.getElementById('qDesc').textContent = '工作人员邀请码(医院级)· 扫码长期有效';
+      document.getElementById('qTip').innerHTML =
+        '请使用<b>微信扫描</b>此码进入小程序<br>'
+        + '扫码后进入「待分配科室」队列,需管理员设置科室与职位后方可使用<br>'
+        + '建议张贴:<b>科室门口白板 / 护士站</b>';
+      document.getElementById('qRecDesc').textContent = '扫码后进入待分配队列的人员';
+      var pend = BACK_DATA.pending.filter(function (p) { return p.state !== 'archived'; });
+      recs = pend.map(function (p) {
+        return { t: p.scanAt, who: p.nick, st: p.state, reason: p.claimedBy };
+      });
+      recs.push({ t: '2026-10-11 08:40', who: '赵**', st: 'archived', reason: '超时未认领(7 天)' });
+    } else {
+      var s = BACK_DATA.member(id), d = BACK_DATA.dept(s.deptId);
+      cur = { kind: kind, id: id, name: s.name };
+      document.getElementById('qTitle').textContent = '医生患者码 · ' + s.name;
+      document.getElementById('qName').textContent = s.name + ' · ' + (d ? d.name : '');
+      document.getElementById('qDesc').textContent = '医生患者码(个人级)· 扫码长期有效';
+      document.getElementById('qTip').innerHTML =
+        '请患者 / 家属使用<b>微信扫描</b>此码进入小程序<br>'
+        + '扫码后<b>自动绑定该医生为归属医生</b><br>'
+        + '患者不会看到该医生的其他患者信息';
+      document.getElementById('qRecDesc').textContent = '已绑定患者(仅本人可见)';
+      recs = BACK_DATA.patients.filter(function (x) { return x.docId === id; }).map(function (x) {
+        return { t: x.enrole, who: x.name, st: x.status, reason: '' };
+      });
+    }
+    document.getElementById('qRec').innerHTML = recs.length ? recs.map(function (r) {
+      var badge = r.st === 'archived' ? '<span class="badge badge-gray">已归档</span>'
+        : r.st === 'pending' ? '<span class="badge badge-block">待认领</span>'
+        : r.st === 'claimed' ? '<span class="badge badge-warn">已认领未完成</span>'
+        : '<span class="badge badge-pass">已完成</span>';
+      return '<div class="flex" style="padding:9px 0;border-bottom:1px solid var(--line-2)">'
+        + '<span class="cell-main">' + r.who + '</span>' + badge
+        + '<span class="ml-auto fz-12 text-3 mono">' + r.t + '</span>'
+        + (r.reason ? '<span class="fz-11 text-3" style="width:100%">' + r.reason + '</span>' : '')
+        + '</div>';
+    }).join('') : '<div class="empty" style="padding:26px 0"><img src="assets/icons-png/icon-empty-box.png" alt="">'
+        + '<div class="e-d">暂无扫码记录</div></div>';
+
+    document.getElementById('qReset').style.display = cur.kind === 'h' ? '' : 'none';
+    Back.drawer('qDrawer', true);
+  }
+
+  /* ---------- 事件 ---------- */
+  document.body.addEventListener('click', function (e) {
+    var t = e.target, g = function (a) { return t.getAttribute && t.getAttribute(a); };
+    if (g('data-view')) { var a = g('data-view').split('|'); return openView(a[0], a[1]); }
+    if (g('data-dl')) {
+      var b = g('data-dl').split('|');
+      Back.toast('已下载二维码 PNG(' + (b[0] === 'h' ? BACK_DATA.hospital(b[1]).short : BACK_DATA.member(b[1]).name) + ')', 'ok');
+      return;
+    }
+    if (g('data-pr')) {
+      var c = g('data-pr').split('|');
+      Back.toast('已打开 A4 打印版:' + (c[0] === 'h' ? BACK_DATA.hospital(c[1]).short : BACK_DATA.member(c[1]).name), 'ok');
+      return;
+    }
+    if (g('data-reset')) {
+      var r = g('data-reset').split('|');
+      cur = { kind: 'h', id: r[1] };
+      Back.modal('resetModal', true);
+    }
+  });
+
+  document.getElementById('qDl').addEventListener('click', function () {
+    Back.toast('已下载二维码 PNG(≥600×600)', 'ok');
+  });
+  document.getElementById('qPrint').addEventListener('click', function () {
+    Back.toast('已打开 A4 打印版:二维码 + 大标题 + 一句话说明', 'ok');
+  });
+  document.getElementById('qReset').addEventListener('click', function () {
+    Back.drawer('qDrawer', false);
+    Back.modal('resetModal', true);
+  });
+  document.getElementById('resetOk').addEventListener('click', function () {
+    Back.modal('resetModal', false);
+    Back.toast('二维码已重置,旧码立即失效,需重新打印张贴', 'warn');
+  });
+
+  ['dKw', 'dDept'].forEach(function (id) {
+    var el = document.getElementById(id);
+    el.addEventListener('input', renderD);
+    el.addEventListener('change', renderD);
+  });
+
+  var tab = Back.qs('tab');
+  if (tab === 'patient' || tab === 'd') document.querySelector('[data-tab="patient"]').click();
+  if (Back.qs('id')) {
+    var t2 = Back.qs('tab');
+    /* 医院邀请码只认当前医院,忽略 URL 里的其他医院 id */
+    if (t2 === 'hospital' || t2 === 'h') {
+      var ch = Back.currentHospital();
+      if (ch) openView('h', ch.id);
+    } else {
+      openView('d', Back.qs('id'));
+    }
+  }
+
+  if (!Back.requireHospitalAndApply()) { document.querySelector('.back-main').innerHTML = ''; }
+  renderH(); renderD();
+</script>
+</body>
+</html>

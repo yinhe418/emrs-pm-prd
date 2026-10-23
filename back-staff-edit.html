@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>新增/编辑人员 · 后台管理</title>
+  <link rel="stylesheet" href="assets/back.css">
+</head>
+<body data-page="staff" data-crumb='[{"name":"后台管理"},{"name":"组织与人员"},{"href":"back-staff.html","name":"工作人员"},{"name":"编辑"}]'>
+
+<main class="back-main">
+  <div class="split">
+    <div class="grow">
+      <div class="page-head">
+        <h1 id="ttl">新增工作人员</h1>
+        <div class="sub" id="sub">科室与职称都是必填项。简介字段决定患者端「医生主页」能看到什么。</div>
+      </div>
+
+      <div class="card">
+        <form id="f">
+
+          <!-- 基本信息 -->
+          <div class="form-sec">
+            <h4>基本信息<span class="req-all">* 为必填</span></h4>
+            <div class="form-grid">
+              <div class="fi">
+                <label><span class="req">*</span>姓名</label>
+                <input class="ipt" name="sName" placeholder="2–20 字,勿填真实全名到对外场景">
+                <span class="err-msg"></span>
+              </div>
+              <div class="fi">
+                <label>手机号</label>
+                <input class="ipt" name="sPhone" placeholder="选填,11 位;列表页脱敏显示">
+                <span class="err-msg"></span>
+              </div>
+              <div class="fi">
+                <label><span class="req">*</span>状态</label>
+                <select class="sel" name="sStatus"><option value="on">在职</option><option value="off">停用(离职)</option></select>
+              </div>
+              <div class="fi full" id="offReasonFi" style="display:none">
+                <label><span class="req">*</span>停用原因</label>
+                <input class="ipt" name="sOffReason" placeholder="10–100 字,停用时必填">
+                <span class="err-msg"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 头像 -->
+          <div class="form-sec">
+            <h4>头像</h4>
+            <div class="flex" style="gap:14px">
+              <span class="av-sm" id="avPrev" style="width:62px;height:62px;font-size:22px;background:#2E7DD7">医</span>
+              <div>
+                <div class="flex mb-8">
+                  <button type="button" class="btn btn-default" id="upBtn">上传新头像</button>
+                  <button type="button" class="btn btn-text" id="rstBtn">恢复微信头像</button>
+                </div>
+                <div class="hint" id="avHint"></div>
+              </div>
+            </div>
+            <div class="note note-info mt-12" style="margin-bottom:0">
+              <img src="assets/icons-png/icon-info.png">
+              <div><b>头像优先级</b>:后台替换头像 &gt; 用户授权的微信头像 &gt; 系统默认(姓名首字)。
+                后台替换后,<b>小程序端优先使用替换后的头像</b>。</div>
+            </div>
+          </div>
+
+          <!-- 科室与职位 -->
+          <div class="form-sec">
+            <h4>科室与职位<span class="req-all">* 科室与技术职称为必填</span></h4>
+            <div class="form-grid">
+              <div class="fi">
+                <label><span class="req">*</span>所属医院</label>
+                <select class="sel" name="sHosp"></select>
+                <span class="err-msg"></span>
+              </div>
+              <div class="fi">
+                <label><span class="req">*</span>所属科室</label>
+                <select class="sel" name="sDept"></select>
+                <span class="err-msg"></span>
+              </div>
+              <div class="fi full">
+                <label><span class="req">*</span>技术职称(必填)</label>
+                <select class="sel" name="sPos"></select>
+                <span class="hint">技术职称是每个工作人员的必填项,可在「职位字典」中扩充</span>
+                <span class="err-msg"></span>
+              </div>
+              <div class="fi full">
+                <label>行政职务(选填)</label>
+                <select class="sel" name="sAdmin"><option value="">无</option></select>
+                <span class="hint">行政职务与科室负责人任命是两件事:选中「科室主任」后,还需在「组织架构」中把该科室的责任人指定为 TA</span>
+                <span class="err-msg"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 医生简介 -->
+          <div class="form-sec">
+            <h4>简介 · 患者端展示<span class="req-all">* 6 项为必填</span></h4>
+
+            <div class="form-grid c1">
+              <div class="fi">
+                <label><span class="req">*</span>出师院校 + 专业</label>
+                <input class="ipt" name="sGrad" placeholder="如:H 市医科大学 · 临床医学">
+                <span class="err-msg"></span>
+              </div>
+              <div class="form-grid" style="margin:0">
+                <div class="fi">
+                  <label>首次执业日期</label>
+                  <input class="ipt" type="date" name="sFirst">
+                  <span class="hint">用于自动推算从业年限</span>
+                </div>
+                <div class="fi">
+                  <label>从业年限</label>
+                  <input class="ipt" name="sYears" placeholder="0–60">
+                  <span class="hint">留空则按首次执业日期自动算</span>
+                  <span class="err-msg"></span>
+                </div>
+              </div>
+              <div class="fi">
+                <label><span class="req">*</span>专业擅长</label>
+                <textarea class="ta" name="sPro" placeholder="≤200 字。用患者听得懂的话,不要写「擅长急性缺血性卒中脑血管介入治疗术」这类术语堆砌。"></textarea>
+                <div class="counter"><span id="nPro">0</span> / 200</div>
+                <span class="err-msg"></span>
+              </div>
+              <div class="fi">
+                <label><span class="req">*</span>擅长病种(结构化多选)</label>
+                <div class="flex flex-wrap" id="disBox" style="gap:7px"></div>
+                <span class="hint">枚举值由<b>科室自定义</b>,后台不预填</span>
+                <span class="err-msg"></span>
+              </div>
+              <div class="fi">
+                <label>学术任职</label>
+                <input class="ipt" name="sAca" placeholder="如:中国卒中学会会员 · H 市医学会神经学分会青年委员">
+                <span class="err-msg"></span>
+              </div>
+              <div class="form-grid" style="margin:0">
+                <div class="fi">
+                  <label>门诊时间</label>
+                  <input class="ipt" name="sClinicT" placeholder="如:周一上午 / 周三下午">
+                </div>
+                <div class="fi">
+                  <label>出诊地点</label>
+                  <input class="ipt" name="sClinicP" placeholder="如:门诊楼 3F · 305 诊室">
+                </div>
+              </div>
+              <div class="fi">
+                <label>个人简介 / 宣教文案</label>
+                <textarea class="ta" name="sIntro" placeholder="≤500 字。可写「我的患者常问的问题」,是医患沟通的缓冲带。"></textarea>
+                <div class="counter"><span id="nIntro">0</span> / 500</div>
+                <span class="err-msg"></span>
+              </div>
+              <div class="fi">
+                <label>照片墙</label>
+                <div class="flex" style="gap:9px">
+                  <div class="qr-box sm" style="width:56px;height:56px;border-style:dashed;cursor:pointer">
+                    <span class="text-3 fz-11">+ 上传</span>
+                  </div>
+                  <div class="fz-12 text-3" style="line-height:1.7">
+                    最多 6 张(团队照 / 诊室照 / 查房照)。<br>
+                    <span class="text-orange">需医院审核后方可对患者展示,本轮仅存草稿。</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 内部字段 -->
+          <div class="form-sec">
+            <h4>内部信息<span class="badge badge-gray" style="margin-left:6px">不进患者端</span></h4>
+            <div class="form-grid">
+              <div class="fi">
+                <label>执业证号</label>
+                <input class="ipt" name="sLic" placeholder="合规留档,患者不可见">
+                <span class="err-msg"></span>
+              </div>
+              <div class="fi">
+                <label>工作手机</label>
+                <input class="ipt" name="sPhoneW" placeholder="患者不可见">
+                <span class="err-msg"></span>
+              </div>
+              <div class="fi">
+                <label>工作邮箱</label>
+                <input class="ipt" name="sEmail" placeholder="患者不可见">
+                <span class="err-msg"></span>
+              </div>
+              <div class="fi">
+                <label>是否可接新患者</label>
+                <select class="sel" name="sAcc"><option value="yes">可接</option><option value="no">暂不接</option></select>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- 右侧:简介完整度 + 患者端预览 -->
+    <div style="width:330px;flex:none">
+      <div class="card">
+        <div class="card-head"><h3>简介完整度</h3></div>
+        <div class="flex" style="gap:12px;margin-bottom:10px">
+          <span class="prog" style="flex:1;height:8px"><i id="bar" style="width:0%"></i></span>
+          <b id="pct" style="font-size:18px">0%</b>
+        </div>
+        <ul id="missList" class="fz-12" style="line-height:2;color:var(--ink-3)"></ul>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>患者端预览</h3>
+          <span class="ch-desc">实时</span>
+        </div>
+        <div class="phone-prev">
+          <div class="pp-bar">患者端 · 医生主页</div>
+          <div class="pp-body" id="prev"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>快捷返回</h3></div>
+        <a class="btn btn-default w-full mb-8" href="back-staff.html">← 工作人员列表</a>
+        <a class="btn btn-default w-full" href="back-positions.html">职位字典</a>
+      </div>
+    </div>
+  </div>
+
+  <div style="position:sticky;bottom:0;background:var(--bg);padding:12px 0;border-top:1px solid var(--line);display:flex;gap:9px;z-index:5">
+    <a class="btn btn-default" href="back-staff.html">取消</a>
+    <span class="ml-auto"></span>
+    <button class="btn btn-primary" id="saveBtn">保存</button>
+  </div>
+</main>
+
+<script src="assets/back-data.js"></script>
+<script src="assets/back-layout.js"></script>
+<script>
+  var id = Back.qs('id');
+  var isEdit = !!id;
+  var s = isEdit ? BACK_DATA.member(id) : null;
+  var avatarMode = s ? s.avatar : 'wechat';
+  var dis = s && s.diseases ? s.diseases.slice() : [];
+  var DIS_POOL = ['脑梗死', '脑出血', '蛛网膜下腔出血', 'TIA', '颈动脉狭窄', '房颤卒中',
+                  '卒中后康复', '卒中后抑郁', '血管性痴呆', '帕金森病'];
+
+  document.getElementById('ttl').textContent = isEdit ? '编辑 · ' + s.name : '新增工作人员';
+  document.getElementById('avPrev').textContent = (s ? s.name : '新').charAt(0);
+
+  /* 下拉 —— 医院固定为当前医院(登录时已选定) */
+  var hSel = document.querySelector('[name="sHosp"]');
+  var curH = Back.currentHospital();
+  if (curH) {
+    hSel.innerHTML = '<option value="' + curH.id + '">' + curH.name + '</option>';
+    hSel.value = curH.id;
+  }
+  hSel.disabled = true;
+  var pSel = document.querySelector('[name="sPos"]');
+  var aSel = document.querySelector('[name="sAdmin"]');
+  BACK_DATA.positions.filter(function (x) { return x.status === 'on'; }).forEach(function (x) {
+    var o = '<option value="' + x.id + '">' + x.name + '</option>';
+    if (x.cat === 'title') pSel.insertAdjacentHTML('beforeend', o);
+    if (x.cat === 'admin') aSel.insertAdjacentHTML('beforeend', o);
+  });
+
+  function fillDept() {
+    var dSel = document.querySelector('[name="sDept"]');
+    dSel.innerHTML = '<option value="">请选择科室</option>';
+    Back.hospFilter(BACK_DATA.departments, 'depts')
+      .filter(function (x) { return x.status === 'on'; })
+      .forEach(function (x) {
+        dSel.insertAdjacentHTML('beforeend', '<option value="' + x.id + '">' + x.name + '</option>');
+      });
+  }
+  hSel.addEventListener('change', fillDept);
+
+  /* 编辑回填 */
+  if (s) {
+    var set = function (n, v) { var e = document.querySelector('[name="' + n + '"]'); if (e) e.value = v == null ? '' : v; };
+    set('sName', s.name); set('sPhone', s.phone); set('sStatus', s.status);
+    set('sGrad', s.gradSchool); set('sFirst', s.firstPractice); set('sYears', s.years);
+    set('sPro', s.pro); set('sAca', s.academic); set('sClinicT', s.clinicTime); set('sClinicP', s.clinicPlace);
+    set('sIntro', s.intro); set('sLic', s.license); set('sPhoneW', s.phoneWork);
+    set('sEmail', s.email); set('sAcc', s.accepting);
+    set('sOffReason', s.offReason || '');
+    hSel.value = (s.deptId ? BACK_DATA.dept(s.deptId).hospitalId : 'H1');
+    fillDept();
+    document.querySelector('[name="sDept"]').value = s.deptId || '';
+    var p = BACK_DATA.pos(s.posId);
+    pSel.value = p && p.cat === 'title' ? s.posId : (pSel.options.length > 1 ? pSel.options[1].value : '');
+    aSel.value = p && p.cat === 'admin' ? s.posId : '';
+    document.getElementById('offReasonFi').style.display = s.status === 'off' ? 'flex' : 'none';
+  } else {
+    fillDept();
+  }
+
+  /* 擅长病种多选 */
+  function renderDis() {
+    var box = document.getElementById('disBox');
+    box.innerHTML = '';
+    DIS_POOL.forEach(function (d) {
+      var on = dis.indexOf(d) >= 0;
+      box.insertAdjacentHTML('beforeend',
+        '<label class="chk" style="border:1px solid ' + (on ? 'var(--brand)' : 'var(--line)') + ';padding:4px 9px;'
+        + 'border-radius:14px;background:' + (on ? 'var(--brand-light)' : '#fff') + '">'
+        + '<input type="checkbox" value="' + d + '"' + (on ? ' checked' : '') + '>' + d + '</label>');
+    });
+    box.querySelectorAll('input').forEach(function (c) {
+      c.addEventListener('change', function () {
+        var v = c.value;
+        if (c.checked) { if (dis.indexOf(v) < 0) dis.push(v); }
+        else dis = dis.filter(function (x) { return x !== v; });
+        renderDis(); refresh();
+      });
+    });
+  }
+  renderDis();
+
+  /* 字数 */
+  ['sPro|nPro|200', 'sIntro|nIntro|500'].forEach(function (x) {
+    var p = x.split('|');
+    var e = document.querySelector('[name="' + p[0] + '"]');
+    e.addEventListener('input', function () {
+      document.getElementById(p[1]).textContent = e.value.length;
+      refresh();
+    });
+  });
+
+  /* 状态切换 */
+  document.querySelector('[name="sStatus"]').addEventListener('change', function () {
+    document.getElementById('offReasonFi').style.display = this.value === 'off' ? 'flex' : 'none';
+  });
+
+  /* 头像 */
+  function refreshAv() {
+    var el = document.getElementById('avPrev');
+    var nm = document.querySelector('[name="sName"]').value.trim() || '新';
+    el.textContent = nm.charAt(0);
+    el.style.background = avatarMode === 'override' ? '#2E7DD7' : BACK_DATA.avatarColor(nm);
+    document.getElementById('avHint').innerHTML = avatarMode === 'override'
+      ? '<span class="text-green fw-5">当前生效:后台替换头像</span> —— 小程序端将优先使用它'
+      : '当前生效:<span class="fw-5">用户授权的微信头像</span>(未替换)';
+    document.getElementById('rstBtn').style.display = avatarMode === 'override' ? '' : 'none';
+    document.getElementById('upBtn').textContent = avatarMode === 'override' ? '重新上传' : '上传新头像';
+  }
+  document.getElementById('upBtn').addEventListener('click', function () {
+    avatarMode = 'override'; refreshAv(); refresh(); Back.toast('头像已替换,小程序端优先使用', 'ok');
+  });
+  document.getElementById('rstBtn').addEventListener('click', function () {
+    avatarMode = 'wechat'; refreshAv(); refresh(); Back.toast('已恢复使用微信头像', 'warn');
+  });
+  document.querySelector('[name="sName"]').addEventListener('input', function () { refreshAv(); refresh(); });
+
+  /* 完整度 + 预览 */
+  function val(n) { return (document.querySelector('[name="' + n + '"]').value || '').trim(); }
+  function refresh() {
+    var items = [
+      ['姓名', val('sName')],
+      ['头像', 'ok'],
+      ['科室', document.querySelector('[name="sDept"]').value ? 'ok' : ''],
+      ['技术职称', document.querySelector('[name="sPos"]').value ? 'ok' : ''],
+      ['专业擅长', val('sPro')],
+      ['擅长病种', dis.length ? 'ok' : '']
+    ];
+    var done = items.filter(function (x) { return x[1]; }).length;
+    var pct = Math.round(done / items.length * 100);
+    document.getElementById('bar').style.width = pct + '%';
+    document.getElementById('bar').parentNode.classList.toggle('full', pct === 100);
+    document.getElementById('pct').textContent = pct + '%';
+    document.getElementById('missList').innerHTML = items.map(function (x) {
+      return x[1]
+        ? '<li class="text-green">✓ ' + x[0] + '</li>'
+        : '<li class="text-3">○ ' + x[0] + ' <span class="text-4">未填</span></li>';
+    }).join('');
+
+    /* 患者端预览 */
+    var d = BACK_DATA.dept(document.querySelector('[name="sDept"]').value);
+    var p = BACK_DATA.pos(document.querySelector('[name="sPos"]').value);
+    var g = val('sPro') || val('sAca') || val('sIntro') || val('sGrad') || val('sClinicT') || dis.length;
+    document.getElementById('prev').innerHTML =
+      '<div class="pp-doc">'
+      + '<div class="pp-av">' + (val('sName').charAt(0) || '新') + '</div>'
+      + '<div class="pp-name">' + (val('sName') || '未填写姓名') + '</div>'
+      + '<div class="pp-title">' + ((d ? d.name : '未设科室') + ' · ' + (p ? p.name : '未设职称')) + '</div>'
+      + '<div class="pp-stars">★ 暂无评价</div>'
+      + '</div>'
+      + (dis.length ? '<div class="pp-sec"><div class="pp-lab">擅长病种</div><div class="pp-tags">'
+          + dis.map(function (x) { return '<span class="pp-tag">' + x + '</span>'; }).join('') + '</div></div>' : '')
+      + '<div class="pp-sec"><div class="pp-lab">专业擅长</div><div class="pp-val' + (val('sPro') ? '' : ' gray') + '">'
+          + (val('sPro') || '暂无') + '</div></div>'
+      + (val('sGrad') || val('sYears') ? '<div class="pp-sec"><div class="pp-lab">学术背景</div><div class="pp-val'
+          + (val('sGrad') ? '' : ' gray') + '">'
+          + [val('sGrad'), val('sYears') ? '从业 ' + val('sYears') + ' 年' : ''].filter(Boolean).join(' · ')
+          + '</div></div>' : '')
+      + (val('sAca') ? '<div class="pp-sec"><div class="pp-lab">学术任职</div><div class="pp-val">' + val('sAca') + '</div></div>' : '')
+      + (val('sClinicT') || val('sClinicP') ? '<div class="pp-sec"><div class="pp-lab">门诊时间</div><div class="pp-val'
+          + (val('sClinicT') ? '' : ' gray') + '">'
+          + [val('sClinicT'), val('sClinicP')].filter(Boolean).join('<br>') + '</div></div>' : '')
+      + (val('sIntro') ? '<div class="pp-sec"><div class="pp-lab">医生说</div><div class="pp-val">' + val('sIntro') + '</div></div>' : '')
+      + (g ? '' : '<div class="empty" style="padding:26px 6px"><img src="assets/icons-png/icon-empty-box.png" alt="">'
+          + '<div class="e-d">简介未填写,患者将看到半张卡片</div></div>');
+  }
+
+  /* 保存 */
+  document.getElementById('saveBtn').addEventListener('click', function () {
+    var f = document.getElementById('f');
+    var stt = document.querySelector('[name="sStatus"]').value;
+    var rules = {
+      sName:  { required: true, minLen: 2, maxLen: 20, msg: '姓名 2–20 字' },
+      sPhone: { pattern: /^1[3-9]\d{9}$/, msg: '手机号格式不正确(11 位)' },
+      sDept:  { required: true, msg: '请选择所属科室' },
+      sPos:   { required: true, msg: '请选择技术职称(必填)' },
+      sGrad:  { required: true, maxLen: 40, msg: '请填写出师院校与专业' },
+      sPro:   { required: true, minLen: 5, maxLen: 200, msg: '专业擅长 5–200 字' },
+      sYears: { pattern: /^\d{1,2}$/, msg: '从业年限 0–60' },
+      sEmail: { pattern: /^[^@\s]+@[^@\s]+\.[^@\s]+$/, msg: '邮箱格式不正确' }
+    };
+    if (stt === 'off') rules.sOffReason = { required: true, minLen: 10, maxLen: 100, msg: '停用原因 10–100 字' };
+    if (!Back.validate(f, rules)) return;
+
+    if (!dis.length) { Back.toast('请至少选择 1 个擅长病种(必填)', 'err'); return; }
+
+    Back.toast(isEdit ? '已保存' : '已新增人员', 'ok');
+    setTimeout(function () { location.href = isEdit ? 'back-staff-detail.html?id=' + id : 'back-staff.html'; }, 800);
+  });
+
+  refreshAv(); refresh();
+</script>
+</body>
+</html>
