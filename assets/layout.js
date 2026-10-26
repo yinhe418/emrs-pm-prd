@@ -154,6 +154,11 @@
     html += '<span class="preview-nav-icon">' + svgIcon('icon-tab-home') + '</span>';
     html += '<span>演示入口</span>';
     html += '</a>';
+    /* PC 后台管理入口(独立于小程序端的 PC Web 系统) */
+    html += '<a href="back-login.html" class="preview-nav-item">';
+    html += '<span class="preview-nav-icon">' + svgIcon('icon-tab-chart') + '</span>';
+    html += '<span>PC 后台管理</span>';
+    html += '</a>';
     html += '</div>';
     return html;
   }
