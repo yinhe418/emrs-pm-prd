@@ -38,7 +38,7 @@
       min-height: 320px; border: 1px solid var(--line); border-radius: 0 0 8px 8px; padding: 14px 16px;
       background: #fff; font-size: 14px; line-height: 1.8; color: var(--ink-2); outline: none;
     }
-    .rich-ed:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(46,125,215,.10); }
+    .rich-ed:focus { border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-ring); }
     .rich-ed h3 { font-size: 16px; font-weight: 600; color: var(--ink); margin: 16px 0 8px; }
     .rich-ed p { margin: 0 0 10px; }
     .rich-ed ul { margin: 0 0 10px; padding-left: 20px; }
@@ -66,7 +66,7 @@
       height: 42px; display: grid; place-items: center;
     }
     .icon-pick img { width: 55%; height: 55%; object-fit: contain; }
-    .icon-pick.on { border-color: var(--brand); background: var(--brand-soft); box-shadow: 0 0 0 2px rgba(46,125,215,.18); }
+    .icon-pick.on { border-color: var(--brand); background: var(--brand-soft); box-shadow: 0 0 0 2px var(--brand-ring); }
 
     /* ============ 手机预览框 ============ */
     .phone {
@@ -79,16 +79,12 @@
     .phone-sub { font-size: 13px; color: var(--ink-3); margin-top: 4px; }
     .phone-empty { font-size: 13px; color: var(--ink-4); padding: 26px 0; text-align: center; }
 
-    /* ============ 底部操作条 ============ */
-    .edu-actions {
-      position: sticky; bottom: 0; background: var(--bg); padding: 12px 0; margin-top: 6px;
-      border-top: 1px solid var(--line); display: flex; gap: 9px; z-index: 5;
-    }
+    /* 底部操作条统一用 back.css 的 .sticky-actions(本页不再重复定义) */
   </style>
 </head>
 <body data-page="edu" data-crumb='[{"name":"后台管理"},{"href":"back-edu.html","name":"健康教育"},{"name":"编辑文章"}]'>
 
-<main class="back-main">
+<main class="back-main has-sticky">
 
   <div class="page-head">
     <h1 id="ttl">新建文章</h1>
@@ -168,7 +164,7 @@
     </div>
   </div>
 
-  <div class="edu-actions">
+  <div class="sticky-actions">
     <a class="btn btn-default" href="back-edu.html">取消</a>
     <span class="ml-auto"></span>
     <button class="btn btn-default" type="button" id="saveBtn">保存</button>

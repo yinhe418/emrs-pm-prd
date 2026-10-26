@@ -8,7 +8,7 @@
 </head>
 <body data-page="org" data-crumb='[{"name":"后台管理"},{"name":"组织与人员"},{"href":"back-org.html","name":"组织架构"},{"name":"编辑"}]'>
 
-<main class="back-main">
+<main class="back-main has-sticky">
   <div class="split">
     <div class="grow">
       <div class="page-head">
@@ -146,8 +146,7 @@
   </div>
 
   <!-- 底部操作条 -->
-  <div style="position:sticky;bottom:0;background:var(--bg);padding:12px 0;margin-top:-4px;
-              border-top:1px solid var(--line);display:flex;gap:9px;z-index:5">
+  <div class="sticky-actions" style="margin-top:-4px">
     <a class="btn btn-default" href="back-org.html">取消</a>
     <span class="ml-auto"></span>
     <button class="btn btn-primary" id="saveBtn">保存</button>

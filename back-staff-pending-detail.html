@@ -8,7 +8,7 @@
 </head>
 <body data-page="staff" data-crumb='[{"name":"后台管理"},{"name":"组织与人员"},{"href":"back-staff.html","name":"工作人员"},{"name":"认领设置"}]'>
 
-<main class="back-main">
+<main class="back-main has-sticky">
 
   <div class="note note-warn" id="countdownBar">
     <img src="assets/icons-png/icon-warning.png">
@@ -124,7 +124,7 @@
     </div>
   </div>
 
-  <div style="position:sticky;bottom:0;background:var(--bg);padding:12px 0;border-top:1px solid var(--line);display:flex;gap:9px;z-index:5">
+  <div class="sticky-actions">
     <a class="btn btn-default" href="back-staff.html?tab=pending">← 返回队列</a>
     <button type="button" class="btn btn-text danger" id="archBtn" style="margin-left:6px">归档此人</button>
     <span class="ml-auto"></span>
