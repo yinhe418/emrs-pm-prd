@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>健康教育 · 正文</title>
+  <link rel="stylesheet" href="assets/styles.css">
+  <style>
+    /* ============ 正文排版(与后台编辑页 back-edu-edit.html 预览区同一套规则) ============ */
+    .edu-body h3 { font-size: 16px; font-weight: 600; color: var(--ink); margin: 18px 0 8px; line-height: 1.5; }
+    .edu-body h3:first-child { margin-top: 0; }
+    .edu-body p { font-size: 15px; line-height: 1.8; color: var(--ink-2); margin: 0 0 12px; }
+    .edu-body ul { margin: 0 0 12px; padding-left: 20px; }
+    .edu-body li { font-size: 15px; line-height: 1.8; color: var(--ink-2); margin-bottom: 4px; }
+    .edu-body figure.edu-fig { margin: 14px 0; }
+    .edu-body figure.edu-fig img { display: block; width: 100%; max-height: 220px; object-fit: contain; border-radius: 8px; }
+    .edu-body figure.edu-fig figcaption { font-size: 12px; color: var(--ink-3); text-align: center; margin-top: 6px; }
+    .edu-body strong { font-weight: 600; color: var(--ink); }
+    .edu-body em { font-style: italic; }
+    .edu-body u { text-decoration: underline; }
+
+    /* ============ 详情页 ============ */
+    .edu-page { padding-bottom: 200px; }
+    .edu-title { font-size: 19px; font-weight: 600; color: var(--ink); line-height: 1.45; }
+    .edu-sub { font-size: 13.5px; color: var(--ink-3); margin-top: 6px; }
+    .edu-meta {
+      font-size: 12px; color: var(--ink-4); margin-top: 10px;
+      padding-bottom: 12px; border-bottom: 1px solid var(--line-2); margin-bottom: 14px;
+    }
+    .edu-tip { font-size: 11.5px; color: var(--ink-4); text-align: center; margin-top: 14px; }
+    /* 后台预览态提示 */
+    .edu-preview-tag {
+      font-size: 12px; color: var(--warn); background: var(--warn-bg);
+      border: 1px solid var(--warn); border-radius: 8px;
+      padding: 8px 12px; margin-bottom: 10px; line-height: 1.6;
+    }
+    /* 底部固定操作条:抬到「重置演示状态」浮钮(assets/layout.js 注入,bottom:76px)之上,避免相互遮挡 */
+    .edu-foot {
+      position: fixed; left: 50%; transform: translateX(-50%);
+      width: 100%; max-width: 414px;
+      bottom: calc(118px + env(safe-area-inset-bottom, 0px));
+      padding: 10px 16px; background: rgba(255,255,255,.95);
+      border-top: 1px solid var(--line); z-index: 99;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="navbar">
+      <button class="back" onclick="location.href='patient-edu.html'"><span style="font-size:22px; font-weight:700; line-height:1;">‹</span></button>
+      <div class="title">健康教育</div>
+      <div class="actions">
+        <div class="font-toggle" id="fontToggle" aria-label="字号切换">
+          <button data-size="normal" onclick="setFontSize('normal', this)">小</button>
+          <button data-size="large" onclick="setFontSize('large', this)">中</button>
+          <button data-size="xl" onclick="setFontSize('xl', this)">大</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="page edu-page" id="eduPage"></div>
+
+    <div class="tabbar">
+      <a href="patient-home.html" class="tab"><span <img src="assets/icons-png/icon-tab-home.png" alt="首" />首页</a>
+      <a href="patient-tasks.html" class="tab"><span <img src="assets/icons-png/icon-tab-tasks.png" alt="任" />任务</a>
+      <a href="patient-im.html" class="tab"><span <img src="assets/icons-png/icon-im.png" alt="信" />联系</a>
+      <a href="patient-emergency.html" class="tab" style="color:var(--block);"><span <img src="assets/icons-png/icon-sos.png" alt="急" />紧急</a>
+    </div>
+  </div>
+  <script src="assets/edu-data.js"></script>
+  <script src="assets/layout.js"></script>
+  <script src="assets/font-size.js"></script>
+  <script>
+    (function () {
+      function qs(k) {
+        try { return new URLSearchParams(location.search).get(k) || ''; }
+        catch (e) { return ''; }
+      }
+      function esc(s) {
+        return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      }
+
+      var id = qs('id');
+      /* 后台「预览」带 preview=1:未发布的文章也能看,但要标明是预览 */
+      var isPreview = qs('preview') === '1';
+      var a = id ? EDU_DATA.byId(id) : null;
+      var page = document.getElementById('eduPage');
+
+      /* 找不到 / 已停止发布(后台预览态除外) */
+      if (!a || (a.status !== 'published' && !isPreview)) {
+        page.innerHTML = '<div class="card" style="text-align:center; padding:40px 20px;">'
+          + '<img src="assets/icons-png/icon-empty-box.png" alt="" style="width:52px;height:52px;opacity:.38;">'
+          + '<div style="font-size:14px;font-weight:500;color:var(--ink-2);margin-top:12px;">内容不存在或已停止发布</div>'
+          + '<div style="font-size:12px;color:var(--ink-3);margin-top:6px;">该内容可能已被医院后台停止发布</div>'
+          + '<a class="btn btn-outline btn-sm" href="patient-edu.html" style="margin-top:16px;">返回健康教育</a>'
+          + '</div>';
+        return;
+      }
+
+      page.innerHTML = (isPreview && a.status !== 'published'
+        ? '<div class="edu-preview-tag">后台预览 · 该内容当前'
+          + (a.status === 'published' ? '已发布' : '未发布') + ',患者端看不到</div>'
+        : '')
+        + '<div class="card">'
+        + '<div class="edu-title">' + esc(a.title) + '</div>'
+        + (a.subtitle ? '<div class="edu-sub">' + esc(a.subtitle) + '</div>' : '')
+        + '<div class="edu-meta">更新时间:' + esc(a.updatedAt || '—') + '</div>'
+        + '<div class="edu-body">' + (a.content || '') + '</div>'
+        + '</div>'
+        + '<div class="edu-tip">本内容为演示文案,正式科普内容待临床确认。</div>'
+        + '<div class="edu-foot"><a class="btn btn-primary btn-block" href="patient-im.html">咨询主管医生</a></div>';
+    })();
+  </script>
+</body>
+</html>

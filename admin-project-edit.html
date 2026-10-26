@@ -106,6 +106,13 @@
       font-weight: 500;
     }
     .dim-check:hover { border-color: var(--brand); }
+    /* 「目标人 = 角色位」说明(每个任务的目标人多选框旁一行) */
+    .dim-checks .dim-hint {
+      flex: 0 0 100%;
+      font-size: 11px;
+      color: var(--ink-3);
+      line-height: 1.5;
+    }
 
     /* 日期三选项(每天 / 出院前 / D N 天) */
     .date-pills {
@@ -223,7 +230,8 @@
       <div style="background:var(--info-bg); border:1px solid rgba(2, 119, 189, 0.15); padding:10px 14px; border-radius:10px; margin-bottom:12px; font-size:12px; color:var(--info); line-height:1.6;">
         <b>配置两个维度:</b><br>
         📅 <b>日期</b>:<b>每天</b> / <b>出院前</b>(预设 2 项) / <b>D N 天</b>(N 由管理员输入,可任意)<br>
-        👥 <b>目标人</b>:主管医生 / 护士 / 患者 — <b>可多选</b>(如上传检查报告可同时分配给患者和主管医生)
+        👥 <b>目标人</b>:主管医生 / 护士 / 患者 — <b>可多选</b>(如上传检查报告可同时分配给患者和主管医生)<br>
+        <b>目标人 = 角色位,不是具体人。</b>派到某患者名下时自动解析:主管医生 = 该患者的主管医生;护士 = 该患者的主要联系护士;患者 = 患者本人。
       </div>
 
       <div class="group">
@@ -246,6 +254,7 @@
                 <label class="dim-check checked"><input type="checkbox" checked>主管医生</label>
                 <label class="dim-check"><input type="checkbox">护士</label>
                 <label class="dim-check"><input type="checkbox">患者</label>
+                <span class="dim-hint">目标人 = 角色位,不是具体人。派到某患者名下时自动解析:主管医生 = 该患者的主管医生;护士 = 该患者的主要联系护士;患者 = 患者本人。</span>
               </div>
             </div>
           </div>
@@ -269,6 +278,7 @@
                 <label class="dim-check checked"><input type="checkbox" checked>主管医生</label>
                 <label class="dim-check"><input type="checkbox">护士</label>
                 <label class="dim-check"><input type="checkbox">患者</label>
+                <span class="dim-hint">目标人 = 角色位,不是具体人。派到某患者名下时自动解析:主管医生 = 该患者的主管医生;护士 = 该患者的主要联系护士;患者 = 患者本人。</span>
               </div>
             </div>
           </div>
@@ -292,6 +302,7 @@
                 <label class="dim-check checked"><input type="checkbox" checked>主管医生</label>
                 <label class="dim-check"><input type="checkbox">护士</label>
                 <label class="dim-check"><input type="checkbox">患者</label>
+                <span class="dim-hint">目标人 = 角色位,不是具体人。派到某患者名下时自动解析:主管医生 = 该患者的主管医生;护士 = 该患者的主要联系护士;患者 = 患者本人。</span>
               </div>
             </div>
           </div>
@@ -315,6 +326,7 @@
                 <label class="dim-check"><input type="checkbox">主管医生</label>
                 <label class="dim-check"><input type="checkbox">护士</label>
                 <label class="dim-check checked"><input type="checkbox" checked>患者</label>
+                <span class="dim-hint">目标人 = 角色位,不是具体人。派到某患者名下时自动解析:主管医生 = 该患者的主管医生;护士 = 该患者的主要联系护士;患者 = 患者本人。</span>
               </div>
             </div>
           </div>
@@ -338,6 +350,7 @@
                 <label class="dim-check"><input type="checkbox">主管医生</label>
                 <label class="dim-check checked"><input type="checkbox" checked>护士</label>
                 <label class="dim-check"><input type="checkbox">患者</label>
+                <span class="dim-hint">目标人 = 角色位,不是具体人。派到某患者名下时自动解析:主管医生 = 该患者的主管医生;护士 = 该患者的主要联系护士;患者 = 患者本人。</span>
               </div>
             </div>
           </div>
@@ -361,6 +374,7 @@
                 <label class="dim-check checked"><input type="checkbox" checked>主管医生</label>
                 <label class="dim-check"><input type="checkbox">护士</label>
                 <label class="dim-check checked"><input type="checkbox" checked>患者</label>
+                <span class="dim-hint">目标人 = 角色位,不是具体人。派到某患者名下时自动解析:主管医生 = 该患者的主管医生;护士 = 该患者的主要联系护士;患者 = 患者本人。</span>
               </div>
             </div>
             <div style="font-size:11px; color:var(--brand); padding-left:64px;">↑ 多选示例:上传报告由患者上传 + 主管医生复核</div>
@@ -385,6 +399,7 @@
                 <label class="dim-check"><input type="checkbox">主管医生</label>
                 <label class="dim-check checked"><input type="checkbox" checked>护士</label>
                 <label class="dim-check"><input type="checkbox">患者</label>
+                <span class="dim-hint">目标人 = 角色位,不是具体人。派到某患者名下时自动解析:主管医生 = 该患者的主管医生;护士 = 该患者的主要联系护士;患者 = 患者本人。</span>
               </div>
             </div>
           </div>
@@ -408,6 +423,7 @@
                 <label class="dim-check"><input type="checkbox">主管医生</label>
                 <label class="dim-check"><input type="checkbox">护士</label>
                 <label class="dim-check checked"><input type="checkbox" checked>患者</label>
+                <span class="dim-hint">目标人 = 角色位,不是具体人。派到某患者名下时自动解析:主管医生 = 该患者的主管医生;护士 = 该患者的主要联系护士;患者 = 患者本人。</span>
               </div>
             </div>
           </div>
@@ -431,6 +447,7 @@
                 <label class="dim-check checked"><input type="checkbox" checked>主管医生</label>
                 <label class="dim-check"><input type="checkbox">护士</label>
                 <label class="dim-check"><input type="checkbox">患者</label>
+                <span class="dim-hint">目标人 = 角色位,不是具体人。派到某患者名下时自动解析:主管医生 = 该患者的主管医生;护士 = 该患者的主要联系护士;患者 = 患者本人。</span>
               </div>
             </div>
           </div>
@@ -454,6 +471,7 @@
                 <label class="dim-check"><input type="checkbox">主管医生</label>
                 <label class="dim-check checked"><input type="checkbox" checked>护士</label>
                 <label class="dim-check"><input type="checkbox">患者</label>
+                <span class="dim-hint">目标人 = 角色位,不是具体人。派到某患者名下时自动解析:主管医生 = 该患者的主管医生;护士 = 该患者的主要联系护士;患者 = 患者本人。</span>
               </div>
             </div>
           </div>

@@ -12,7 +12,7 @@
 
   <div class="page-head">
     <h1>病患</h1>
-    <div class="sub">患者扫描医生二维码后自动绑定归属医生。护士归属需另行指派。</div>
+    <div class="sub">患者扫描医生二维码后自动绑定主管医生。护士归属需另行指派。</div>
   </div>
 
   <div id="scopeStrip"></div>
@@ -21,13 +21,13 @@
     <div class="kpi blue">
       <div class="k-lab">在管病患</div>
       <div class="k-val" id="kActive">0</div>
-      <div class="k-sub">绑定医生 + 护士</div>
+      <div class="k-sub">主管医生 + 护士</div>
     </div>
     <div class="kpi red">
-      <a href="#" id="toNonurse">查看 ›</a>
+      <a href="back-patients.html?filter=nonurse" id="toNonurse">查看 ›</a>
       <div class="k-lab">待分配护士</div>
       <div class="k-val" id="kNoNurse">0</div>
-      <div class="k-sub">已绑定医生,护士未定</div>
+      <div class="k-sub">已绑定主管医生,护士未定</div>
     </div>
     <div class="kpi orange">
       <div class="k-lab">医生个体设定基线</div>
@@ -46,7 +46,7 @@
       <img src="assets/icons-png/icon-search.png" alt="">
       <input class="ipt search-ipt" id="kw" placeholder="姓名 / 住院号">
     </div>
-    <select class="sel" id="fDoc"><option value="">归属医生:全部</option></select>
+    <select class="sel" id="fDoc"><option value="">主管医生:全部</option></select>
     <select class="sel" id="fNur"><option value="">归属护士:全部</option></select>
     <select class="sel" id="fNurState">
       <option value="">护士分配:全部</option>
@@ -70,7 +70,7 @@
           <tr>
             <th style="width:150px">患者</th>
             <th style="width:120px">住院号</th>
-            <th style="width:150px">归属医生</th>
+            <th style="width:150px">主管医生</th>
             <th style="width:150px">归属护士</th>
             <th style="width:200px">当前预警基线</th>
             <th style="width:112px">入组时间</th>
@@ -115,14 +115,16 @@
     <div class="form-sec" style="margin-top:18px">
       <h4>归属调整</h4>
       <div class="fi">
-        <label><span class="req">*</span>归属医生</label>
+        <label><span class="req">*</span>主管医生</label>
         <select class="sel w-full" id="pDocSel"></select>
-        <span class="hint">病患必须有归属医生(硬约束),不可清空</span>
+        <span class="hint">病患必须有主管医生(硬约束),不可清空</span>
+        <span class="err-msg"></span>
       </div>
       <div class="fi mt-12">
         <label>归属护士</label>
         <select class="sel w-full" id="pNurSel"></select>
         <span class="hint">可为「未分配」;共负责护士规则本期不做</span>
+        <span class="err-msg"></span>
       </div>
       <div class="fi mt-12">
         <label><span class="req">*</span>变更原因</label>
@@ -171,22 +173,14 @@
 <script>
   var cur = null;
 
-  /* 下拉 */
+  /* 下拉:按「可承担角色位」筛(主管医生 = roles 含 doctor;护士 = roles 含 nurse) */
   (function () {
-    var docs = BACK_DATA.staff.filter(function (s) {
-      return s.status === 'on' && BACK_DATA.pos(s.posId)
-        && BACK_DATA.pos(s.posId).cat === 'title';
-    });
     var dn = document.getElementById('fDoc');
-    docs.forEach(function (s) {
+    BACK_DATA.staffWithRole('doctor').forEach(function (s) {
       dn.insertAdjacentHTML('beforeend', '<option value="' + s.id + '">' + s.name + '</option>');
     });
-    var nurs = BACK_DATA.staff.filter(function (s) {
-      return s.status === 'on' && BACK_DATA.pos(s.posId)
-        && ['P6', 'P7'].indexOf(s.posId) >= 0;
-    });
     var nn = document.getElementById('fNur');
-    nurs.forEach(function (s) {
+    BACK_DATA.staffWithRole('nurse').forEach(function (s) {
       nn.insertAdjacentHTML('beforeend', '<option value="' + s.id + '">' + s.name + '</option>');
     });
     nn.insertAdjacentHTML('afterbegin', '<option value="__none">— 未分配 —</option>');
@@ -285,25 +279,38 @@
       + '<tr><td class="text-3" style="border:none">状态</td><td style="border:none">'
       + (p.status === 'active' ? '<span class="badge badge-pass">在管</span>' : '<span class="badge badge-gray">已结管</span>') + '</td></tr>';
 
-    /* 归属下拉 */
+    /* 归属下拉:按「可承担角色位」筛 */
     var dSel = document.getElementById('pDocSel');
     dSel.innerHTML = '';
-    BACK_DATA.staff.filter(function (s) {
-      return s.status === 'on' && BACK_DATA.pos(s.posId) && BACK_DATA.pos(s.posId).cat === 'title';
-    }).forEach(function (s) {
+    var docOpts = BACK_DATA.staffWithRole('doctor');
+    var curDoc = BACK_DATA.member(p.docId);
+    var curDocOk = docOpts.some(function (s) { return s.id === p.docId; });
+    if (curDoc && !curDocOk) {
+      /* 现主管医生已不具备 doctor 角色位(如职位角色位被改过)——保留原值并标注,保存时拦截 */
+      dSel.insertAdjacentHTML('beforeend',
+        '<option value="' + curDoc.id + '" selected>' + curDoc.name + '(不具备主管医生角色位)</option>');
+    }
+    docOpts.forEach(function (s) {
       dSel.insertAdjacentHTML('beforeend',
         '<option value="' + s.id + '"' + (s.id === p.docId ? ' selected' : '') + '>' + s.name + '</option>');
     });
     var nSel = document.getElementById('pNurSel');
     nSel.innerHTML = '<option value="">— 未分配 —</option>';
-    BACK_DATA.staff.filter(function (s) {
-      return s.status === 'on' && ['P6', 'P7'].indexOf(s.posId) >= 0;
-    }).forEach(function (s) {
+    var nurOpts = BACK_DATA.staffWithRole('nurse');
+    var curNur = p.nurId ? BACK_DATA.member(p.nurId) : null;
+    var curNurOk = !curNur || nurOpts.some(function (s) { return s.id === p.nurId; });
+    if (curNur && !curNurOk) {
+      nSel.insertAdjacentHTML('beforeend',
+        '<option value="' + curNur.id + '" selected>' + curNur.name + '(不具备护士角色位)</option>');
+    }
+    nurOpts.forEach(function (s) {
       nSel.insertAdjacentHTML('beforeend',
         '<option value="' + s.id + '"' + (s.id === p.nurId ? ' selected' : '') + '>' + s.name + '</option>');
     });
     document.getElementById('pReason').value = '';
     document.querySelector('#pReason').closest('.fi').classList.remove('has-err');
+    document.getElementById('pDocSel').closest('.fi').classList.remove('has-err');
+    document.getElementById('pNurSel').closest('.fi').classList.remove('has-err');
     updateImpact();
 
     /* 预警基线 —— 只读一行 */
@@ -343,7 +350,7 @@
     var newNur = BACK_DATA.member(document.getElementById('pNurSel').value);
     var items = [];
     if (oldDoc && newDoc && oldDoc.id !== newDoc.id) {
-      items.push('归属医生 <b>' + oldDoc.name + '</b> → <b>' + newDoc.name + '</b>,患者小程序端即时生效');
+      items.push('主管医生 <b>' + oldDoc.name + '</b> → <b>' + newDoc.name + '</b>,患者小程序端即时生效');
       items.push('<b>' + newDoc.name + '</b> 工作台新增该患者,<b>' + oldDoc.name + '</b> 侧移除');
       items.push('该患者名下 <b>' + p.fields.length + '</b> 项指标的预警基线来源需新医生确认是否继承(C5)');
     }
@@ -362,6 +369,32 @@
 
   /* 保存 */
   document.getElementById('pSave').addEventListener('click', function () {
+    /* 角色位校验:主管医生须具备 doctor 角色位,主管护士须具备 nurse 角色位 */
+    var docFi = document.getElementById('pDocSel').closest('.fi');
+    var nurFi = document.getElementById('pNurSel').closest('.fi');
+    docFi.classList.remove('has-err');
+    nurFi.classList.remove('has-err');
+    var newDocId = document.getElementById('pDocSel').value;
+    var newNurId = document.getElementById('pNurSel').value;
+    if (!newDocId) {
+      docFi.classList.add('has-err');
+      docFi.querySelector('.err-msg').textContent = '主管医生为必填项,不可清空';
+      Back.toast('主管医生为必填项,不可清空', 'err');
+      return;
+    }
+    if (!BACK_DATA.rolesOf(newDocId, 'doctor')) {
+      docFi.classList.add('has-err');
+      docFi.querySelector('.err-msg').textContent = '所选人员不具备「主管医生」角色位,不可作为主管医生';
+      Back.toast('所选人员不具备「主管医生」角色位', 'err');
+      return;
+    }
+    if (newNurId && !BACK_DATA.rolesOf(newNurId, 'nurse')) {
+      nurFi.classList.add('has-err');
+      nurFi.querySelector('.err-msg').textContent = '所选人员不具备「护士」角色位,不可作为主管护士';
+      Back.toast('所选人员不具备「护士」角色位', 'err');
+      return;
+    }
+
     var reason = document.getElementById('pReason').value.trim();
     var fi = document.getElementById('pReason').closest('.fi');
     if (reason.length < 10) {
@@ -369,9 +402,10 @@
       fi.querySelector('.err-msg').textContent = '变更原因 10–200 字(当前 ' + reason.length + '),必填并留痕';
       return;
     }
+
     var oldDoc = cur.docId, oldNur = cur.nurId;
-    cur.docId = document.getElementById('pDocSel').value;
-    cur.nurId = document.getElementById('pNurSel').value;
+    cur.docId = newDocId;
+    cur.nurId = newNurId;
 
     // 换医生 → 个体基线挂起,需新医生确认
     if (oldDoc !== cur.docId && cur.base.src === 'doctor') cur.base.pendingConfirm = true;
@@ -383,7 +417,7 @@
     document.getElementById('okBody').innerHTML =
       '<div>已记录留痕:</div>'
       + '<ul><li>操作人:后台管理员</li>'
-      + '<li>归属医生:' + BACK_DATA.member(oldDoc).name + ' → ' + BACK_DATA.member(cur.docId).name + '</li>'
+      + '<li>主管医生:' + BACK_DATA.member(oldDoc).name + ' → ' + BACK_DATA.member(cur.docId).name + '</li>'
       + '<li>归属护士:' + (oldNur ? BACK_DATA.member(oldNur).name : '未分配') + ' → '
       + (cur.nurId ? BACK_DATA.member(cur.nurId).name : '未分配') + '</li>'
       + '<li>原因:' + reason + '</li></ul>'

@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>编辑文章 · 后台管理</title>
+  <link rel="stylesheet" href="assets/back.css">
+  <style>
+    /* ============ 正文排版(与患者端 patient-edu-detail.html 同一套规则) ============ */
+    .edu-body h3 { font-size: 16px; font-weight: 600; color: var(--ink); margin: 18px 0 8px; line-height: 1.5; }
+    .edu-body h3:first-child { margin-top: 0; }
+    .edu-body p { font-size: 15px; line-height: 1.8; color: var(--ink-2); margin: 0 0 12px; }
+    .edu-body ul { margin: 0 0 12px; padding-left: 20px; }
+    .edu-body li { font-size: 15px; line-height: 1.8; color: var(--ink-2); margin-bottom: 4px; }
+    .edu-body figure.edu-fig { margin: 14px 0; }
+    .edu-body figure.edu-fig img { display: block; width: 100%; max-height: 220px; object-fit: contain; border-radius: 8px; }
+    .edu-body figure.edu-fig figcaption { font-size: 12px; color: var(--ink-3); text-align: center; margin-top: 6px; }
+    .edu-body strong { font-weight: 600; color: var(--ink); }
+    .edu-body em { font-style: italic; }
+    .edu-body u { text-decoration: underline; }
+
+    /* ============ 两栏布局 ============ */
+    .edu-cols { display: grid; grid-template-columns: 62fr 38fr; gap: 14px; align-items: start; }
+    .edu-right { position: sticky; top: 0; }
+
+    /* ============ 模拟富文本编辑器 ============ */
+    .ed-toolbar {
+      display: flex; gap: 6px; padding: 8px; position: relative;
+      border: 1px solid var(--line); border-bottom: 0; border-radius: 8px 8px 0 0; background: var(--bg-3);
+    }
+    .tb-btn {
+      width: 30px; height: 28px; border: 1px solid var(--line); background: #fff; border-radius: 6px;
+      cursor: pointer; font-size: 13px; color: var(--ink-2);
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+    .tb-btn:hover { border-color: var(--brand); color: var(--brand); }
+    .rich-ed {
+      min-height: 320px; border: 1px solid var(--line); border-radius: 0 0 8px 8px; padding: 14px 16px;
+      background: #fff; font-size: 14px; line-height: 1.8; color: var(--ink-2); outline: none;
+    }
+    .rich-ed:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(46,125,215,.10); }
+    .rich-ed h3 { font-size: 16px; font-weight: 600; color: var(--ink); margin: 16px 0 8px; }
+    .rich-ed p { margin: 0 0 10px; }
+    .rich-ed ul { margin: 0 0 10px; padding-left: 20px; }
+    .rich-ed figure.edu-fig { margin: 12px 0; }
+    .rich-ed figure.edu-fig img { display: block; width: 100%; max-width: 200px; max-height: 200px; object-fit: contain; border-radius: 8px; }
+    .rich-ed figure.edu-fig figcaption { font-size: 12px; color: var(--ink-3); text-align: center; margin-top: 6px; }
+    .fig-picker {
+      position: absolute; top: 42px; z-index: 30; display: none; gap: 8px; padding: 10px;
+      background: #fff; border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow-md);
+      flex-wrap: wrap; width: 232px;
+    }
+    .fig-picker.on { display: flex; }
+    .fig-pick {
+      width: 40px; height: 40px; border: 1px solid var(--line); border-radius: 8px; background: #fff;
+      display: grid; place-items: center; cursor: pointer;
+    }
+    .fig-pick:hover { border-color: var(--brand); background: var(--brand-soft); }
+    .fig-pick img { width: 60%; height: 60%; object-fit: contain; }
+    .ed-note { font-size: 11.5px; color: var(--ink-3); margin-top: 6px; }
+
+    /* ============ 图标选择器 ============ */
+    .icon-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 8px; }
+    .icon-pick {
+      border: 1px solid var(--line); border-radius: 8px; background: #fff; cursor: pointer;
+      height: 42px; display: grid; place-items: center;
+    }
+    .icon-pick img { width: 55%; height: 55%; object-fit: contain; }
+    .icon-pick.on { border-color: var(--brand); background: var(--brand-soft); box-shadow: 0 0 0 2px rgba(46,125,215,.18); }
+
+    /* ============ 手机预览框 ============ */
+    .phone {
+      width: 360px; max-width: 100%; margin: 0 auto; border: 1px solid var(--line);
+      border-radius: 16px; background: #fff; overflow: hidden; box-shadow: var(--shadow-sm);
+    }
+    .phone-bar { padding: 10px 14px; border-bottom: 1px solid var(--line-2); text-align: center; font-size: 13px; font-weight: 600; color: var(--ink); }
+    .phone-body { padding: 14px; max-height: 520px; overflow: auto; }
+    .phone-h { font-size: 17px; font-weight: 600; color: var(--ink); line-height: 1.4; }
+    .phone-sub { font-size: 13px; color: var(--ink-3); margin-top: 4px; }
+    .phone-empty { font-size: 13px; color: var(--ink-4); padding: 26px 0; text-align: center; }
+
+    /* ============ 底部操作条 ============ */
+    .edu-actions {
+      position: sticky; bottom: 0; background: var(--bg); padding: 12px 0; margin-top: 6px;
+      border-top: 1px solid var(--line); display: flex; gap: 9px; z-index: 5;
+    }
+  </style>
+</head>
+<body data-page="edu" data-crumb='[{"name":"后台管理"},{"href":"back-edu.html","name":"健康教育"},{"name":"编辑文章"}]'>
+
+<main class="back-main">
+
+  <div class="page-head">
+    <h1 id="ttl">新建文章</h1>
+    <div class="sub">图文混排正文;发布后患者端小程序可见,<b>停止发布后患者端立即不再展示</b>。</div>
+  </div>
+
+  <div class="edu-cols">
+
+    <!-- ============ 左:编辑 ============ -->
+    <div>
+      <div class="card">
+        <div class="card-head"><h3>基本信息</h3></div>
+        <div class="form-grid">
+          <div class="fi full">
+            <label><span class="req">*</span>主标题</label>
+            <input class="ipt" name="title" placeholder="2–40 字">
+            <span class="hint">患者端列表首行展示,2–40 字</span>
+            <span class="err-msg"></span>
+          </div>
+          <div class="fi full">
+            <label>副标题</label>
+            <input class="ipt" name="subtitle" placeholder="选填,≤60 字">
+            <span class="hint">患者端列表第二行展示</span>
+            <span class="err-msg"></span>
+          </div>
+          <div class="fi full">
+            <label>封面图标</label>
+            <div class="icon-grid" id="iconGrid"></div>
+            <span class="hint">患者端列表左侧图标</span>
+          </div>
+          <div class="fi full">
+            <label>所属医院</label>
+            <div class="ipt" id="hospName" style="background:var(--bg-3); color:var(--ink-3); cursor:not-allowed;">—</div>
+            <span class="hint">跟随后台当前所选医院</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>正文内容</h3>
+          <span class="ch-desc">图文混排,患者端按同一套排版渲染</span>
+        </div>
+        <div class="fi full" style="margin:0">
+          <div class="ed-toolbar" id="toolbar">
+            <button type="button" class="tb-btn" data-tb="bold" title="加粗"><b>B</b></button>
+            <button type="button" class="tb-btn" data-tb="italic" title="斜体"><i>I</i></button>
+            <button type="button" class="tb-btn" data-tb="underline" title="下划线"><u>U</u></button>
+            <button type="button" class="tb-btn" data-tb="figure" title="插图">📷</button>
+            <button type="button" class="tb-btn" data-tb="h3" title="小标题">H2</button>
+            <button type="button" class="tb-btn" data-tb="ul" title="无序列表">•</button>
+            <div class="fig-picker" id="figPicker"></div>
+          </div>
+          <div id="ed" class="rich-ed" contenteditable="true"></div>
+          <span class="err-msg"></span>
+          <div class="ed-note">正文至少需要一段文字;保存后可在右侧预览患者端效果。</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ 右:预览 ============ -->
+    <div class="edu-right">
+      <div class="card">
+        <div class="card-head">
+          <h3>患者端效果预览</h3>
+          <span class="ch-desc">实时同步</span>
+        </div>
+        <div class="phone">
+          <div class="phone-bar">健康教育</div>
+          <div class="phone-body">
+            <div class="phone-h" id="pvTitle">主标题</div>
+            <div class="phone-sub" id="pvSub">副标题</div>
+            <div class="edu-body" id="pvBody" style="margin-top:14px"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="edu-actions">
+    <a class="btn btn-default" href="back-edu.html">取消</a>
+    <span class="ml-auto"></span>
+    <button class="btn btn-default" type="button" id="saveBtn">保存</button>
+    <button class="btn btn-primary" type="button" id="pubBtn">保存并发布</button>
+  </div>
+</main>
+
+<script src="assets/back-data.js"></script>
+<script src="assets/edu-data.js"></script>
+<script src="assets/back-layout.js"></script>
+<script>
+  /* ---------------- 当前文章 ---------------- */
+  var id = Back.qs('id');
+  var art = id ? EDU_DATA.byId(id) : null;
+  var isEdit = !!art;
+  var hosp = Back.currentHospital();
+
+  var cur = {
+    id: art ? art.id : '',
+    hospitalId: art ? art.hospitalId : (hosp ? hosp.id : 'H1'),
+    title: art ? art.title : '',
+    subtitle: art ? art.subtitle : '',
+    icon: art ? art.icon : 'icon-document.png',
+    cover: art ? (art.cover || '') : '',
+    content: art ? (art.content || '') : '',
+    status: art ? art.status : 'unpublished',
+    order: art ? art.order : 0,
+    publishedAt: art ? (art.publishedAt || '') : ''
+  };
+
+  document.getElementById('ttl').textContent = isEdit ? ('编辑文章 · ' + cur.title) : '新建文章';
+  document.getElementById('hospName').textContent = hosp ? hosp.name : (cur.hospitalId === 'H1' ? 'H 市第一医院' : cur.hospitalId);
+  document.querySelector('[name="title"]').value = cur.title;
+  document.querySelector('[name="subtitle"]').value = cur.subtitle;
+
+  /* ---------------- 封面图标选择器 ---------------- */
+  var ICON_LIST = [
+    'icon-alert.png', 'icon-tab-drugs.png', 'icon-info.png', 'icon-no-smoke.png', 'icon-utensils.png',
+    'icon-transfer.png', 'icon-book.png', 'icon-family.png', 'icon-bp.png', 'icon-run.png',
+    'icon-document.png'
+  ];
+  (function () {
+    var g = document.getElementById('iconGrid');
+    g.innerHTML = ICON_LIST.map(function (ic) {
+      return '<button type="button" class="icon-pick' + (ic === cur.icon ? ' on' : '')
+        + '" data-icon="' + ic + '" title="' + ic + '">'
+        + '<img src="assets/icons-png/' + ic + '" alt=""></button>';
+    }).join('');
+    g.addEventListener('click', function (e) {
+      var b = e.target.closest ? e.target.closest('[data-icon]') : null;
+      if (!b) return;
+      cur.icon = b.getAttribute('data-icon');
+      g.querySelectorAll('.icon-pick').forEach(function (x) {
+        x.classList.toggle('on', x === b);
+      });
+    });
+  })();
+
+  /* ---------------- 富文本编辑器 ---------------- */
+  var ed = document.getElementById('ed');
+  var toolbar = document.getElementById('toolbar');
+  var picker = document.getElementById('figPicker');
+  var FIG_ICONS = ['icon-utensils.png', 'icon-bp.png', 'icon-run.png', 'icon-no-smoke.png', 'icon-family.png', 'icon-alert.png'];
+
+  ed.innerHTML = cur.content;
+
+  picker.innerHTML = FIG_ICONS.map(function (ic) {
+    return '<button type="button" class="fig-pick" data-fig="' + ic + '" title="' + ic + '">'
+      + '<img src="assets/icons-png/' + ic + '" alt=""></button>';
+  }).join('');
+
+  /* 记录编辑区内的选区(点工具栏 / 选图时焦点会离开编辑区) */
+  var savedRange = null;
+  function saveRange() {
+    var sel = window.getSelection();
+    if (!sel || !sel.rangeCount) return;
+    var r = sel.getRangeAt(0);
+    if (ed.contains(r.commonAncestorContainer)) savedRange = r.cloneRange();
+  }
+  function restoreRange() {
+    if (!savedRange) return false;
+    var sel = window.getSelection();
+    if (!sel) return false;
+    sel.removeAllRanges();
+    sel.addRange(savedRange);
+    return true;
+  }
+  document.addEventListener('selectionchange', saveRange);
+
+  /* 工具栏 / 选图按钮:按住鼠标时不抢焦点,保证编辑区选区不丢 */
+  document.querySelector('.back-main').addEventListener('mousedown', function (e) {
+    var t = e.target;
+    if (t.closest && (t.closest('[data-tb]') || t.closest('[data-fig]'))) e.preventDefault();
+  });
+
+  /* 编辑完成后:同步预览 + 清掉正文报错标记(焦点在各操作里单独处理) */
+  function afterEdit() {
+    refreshPreview();
+    var fi = ed.closest('.fi');
+    if (fi) fi.classList.remove('has-err');
+  }
+
+  /* 选区包标签:非空选区 extractContents 后 insertNode;空选区插入带占位文字的标签 */
+  function applyInline(tag, placeholder) {
+    restoreRange();
+    var sel = window.getSelection();
+    var range = sel && sel.rangeCount ? sel.getRangeAt(0) : null;
+    if (!range || !ed.contains(range.commonAncestorContainer)) {
+      var tail = document.createElement(tag);
+      tail.textContent = placeholder;
+      ed.appendChild(tail);
+      ed.focus();
+      var rt = document.createRange();
+      rt.selectNodeContents(tail);
+      sel.removeAllRanges();
+      sel.addRange(rt);
+      afterEdit();
+      return;
+    }
+    var node = document.createElement(tag);
+    if (range.collapsed) {
+      node.textContent = placeholder;
+      range.insertNode(node);
+    } else {
+      var frag = range.extractContents();
+      node.appendChild(frag);
+      range.insertNode(node);
+    }
+    ed.focus();
+    var r2 = document.createRange();
+    r2.selectNodeContents(node);
+    sel.removeAllRanges();
+    sel.addRange(r2);
+    afterEdit();
+  }
+
+  /* 插入块级结构(H2 / 无序列表 / 插图)
+     光标落在段落中间时,先把段落拆开,避免产生 <p><h3>…</h3></p> 这种非法嵌套 */
+  function insertBlock(html) {
+    restoreRange();
+    var sel = window.getSelection();
+    var range = sel && sel.rangeCount ? sel.getRangeAt(0) : null;
+    var box = document.createElement('div');
+    box.innerHTML = html;
+    var node = box.firstChild;
+    if (!node) return;
+    var caretHost = null;
+    if (range && ed.contains(range.commonAncestorContainer)) {
+      range.deleteContents();
+      range.insertNode(node);
+      var host = node.parentNode;
+      if (host && host.tagName === 'P') {
+        var sib = node.nextSibling, newP = null;
+        if (sib) {
+          newP = document.createElement('p');
+          while (sib) { var nx = sib.nextSibling; newP.appendChild(sib); sib = nx; }
+        }
+        host.parentNode.insertBefore(node, host.nextSibling);
+        if (newP) { host.parentNode.insertBefore(newP, node.nextSibling); caretHost = newP; }
+        if (!host.textContent && !host.children.length) host.parentNode.removeChild(host);
+      }
+    } else {
+      ed.appendChild(node);
+    }
+    ed.focus();
+    var r = document.createRange();
+    if (caretHost) r.setStart(caretHost, 0);
+    else r.setStartAfter(node);
+    r.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(r);
+    afterEdit();
+  }
+
+  function insertFigure(icon) {
+    insertBlock('<figure class="edu-fig"><img src="assets/icons-png/' + icon + '" alt="">'
+      + '<figcaption>图说文字</figcaption></figure>');
+  }
+
+  toolbar.addEventListener('click', function (e) {
+    var b = e.target.closest ? e.target.closest('[data-tb]') : null;
+    if (!b) return;
+    var cmd = b.getAttribute('data-tb');
+    if (cmd === 'bold') applyInline('strong', '加粗文字');
+    else if (cmd === 'italic') applyInline('em', '斜体文字');
+    else if (cmd === 'underline') applyInline('u', '下划线文字');
+    else if (cmd === 'h3') insertBlock('<h3>小标题</h3>');
+    else if (cmd === 'ul') insertBlock('<ul><li>要点</li></ul>');
+    else if (cmd === 'figure') {
+      saveRange();
+      var r = b.getBoundingClientRect();
+      var w = toolbar.getBoundingClientRect();
+      picker.style.left = Math.max(0, r.left - w.left) + 'px';
+      picker.classList.add('on');
+    }
+  });
+
+  picker.addEventListener('click', function (e) {
+    var b = e.target.closest ? e.target.closest('[data-fig]') : null;
+    if (!b) return;
+    var ic = b.getAttribute('data-fig');
+    picker.classList.remove('on');
+    insertFigure(ic);
+  });
+
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest || !e.target.closest('#figPicker')) {
+      if (picker.classList.contains('on') && !(e.target.closest && e.target.closest('[data-tb="figure"]'))) {
+        picker.classList.remove('on');
+      }
+    }
+  });
+
+  /* ---------------- 右侧实时预览 ---------------- */
+  function refreshPreview() {
+    var html = ed.innerHTML;
+    document.getElementById('pvBody').innerHTML = html
+      ? html
+      : '<div class="phone-empty">正文为空,患者端将显示空白内容</div>';
+    document.getElementById('pvTitle').textContent = document.querySelector('[name="title"]').value.trim() || '主标题';
+    document.getElementById('pvSub').textContent = document.querySelector('[name="subtitle"]').value.trim() || '';
+  }
+  ed.addEventListener('input', refreshPreview);
+  document.querySelector('[name="title"]').addEventListener('input', refreshPreview);
+  document.querySelector('[name="subtitle"]').addEventListener('input', refreshPreview);
+  refreshPreview();
+
+  /* ---------------- 保存 ---------------- */
+  function collect() {
+    return {
+      id: cur.id,
+      hospitalId: cur.hospitalId,
+      title: document.querySelector('[name="title"]').value.trim(),
+      subtitle: document.querySelector('[name="subtitle"]').value.trim(),
+      icon: cur.icon,
+      cover: cur.cover,
+      content: ed.innerHTML,
+      status: cur.status,
+      order: cur.order,
+      publishedAt: cur.publishedAt
+    };
+  }
+
+  function validateAll() {
+    var ok = Back.validate(document.body, {
+      title: { required: true, minLen: 2, maxLen: 40, msg: '主标题 2–40 字' },
+      subtitle: { maxLen: 60, msg: '副标题最多 60 字' }
+    });
+    var txt = (ed.textContent || '').replace(/\s+/g, '');
+    if (!txt.length) {
+      var fi = ed.closest('.fi');
+      if (fi) {
+        fi.classList.add('has-err');
+        var em = fi.querySelector('.err-msg');
+        if (em) em.textContent = '请填写正文内容';
+      }
+      Back.toast('请填写正文内容', 'err');
+      ed.focus();
+      return false;
+    }
+    return ok;
+  }
+
+  function doSave(nextStatus, msg) {
+    if (!validateAll()) return;
+    var a = collect();
+    a.status = nextStatus;
+    var saved = EDU_DATA.upsert(a);
+    cur.id = saved.id;
+    cur.status = saved.status;
+    cur.publishedAt = saved.publishedAt;
+    Back.toast(msg, 'ok');
+    setTimeout(function () { location.href = 'back-edu.html'; }, 700);
+  }
+
+  document.getElementById('saveBtn').addEventListener('click', function () {
+    doSave(cur.status, isEdit ? '已保存' : '已新建文章(未发布)');
+  });
+
+  var pubBtn = document.getElementById('pubBtn');
+  if (cur.status === 'published') {
+    pubBtn.textContent = '停止发布';
+    pubBtn.className = 'btn btn-danger';
+    pubBtn.addEventListener('click', function () {
+      doSave('unpublished', '已停止发布,患者端不再展示');
+    });
+  } else {
+    pubBtn.textContent = '保存并发布';
+    pubBtn.className = 'btn btn-primary';
+    pubBtn.addEventListener('click', function () {
+      doSave('published', '已发布,患者端可见');
+    });
+  }
+</script>
+</body>
+</html>

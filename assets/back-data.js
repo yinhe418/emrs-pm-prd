@@ -34,23 +34,34 @@ var BACK_DATA = (function () {
     { id: 'D5', name: '神经内科', type: '神经内科', hospitalId: 'H2', directorId: '',   parent: '', intro: '', status: 'on' }
   ];
 
-  /* ---- 职位字典:三类(初装 6 个只是种子数据,可增删改)---- */
+  /* ---- 职位字典:三类(初装 6 个只是种子数据,可增删改)----
+   * ⚠️ roles = 「可承担角色位」,与 cat(职位类别)是两个维度,互不替代:
+   *    cat  回答「这是什么职位」(行政职务 / 技术职称 / 其他)
+   *    roles 回答「担任这个职位的人能否被选为某患者的主管医生 / 护士」
+   *    例:科室主任(cat=admin)可承担 doctor;护士长(cat=admin)可承担 nurse;
+   *        护士(cat=title)只承担 nurse —— 所以「技术职称」不再等于「医生」。
+   */
   var positions = [
-    { id: 'P1', name: '科室主任', cat: 'admin',   order: 1, status: 'on', seeded: true },
-    { id: 'P2', name: '护士长',   cat: 'admin',   order: 2, status: 'on', seeded: true },
-    { id: 'P3', name: '医师',     cat: 'title',   order: 3, status: 'on', seeded: true },
-    { id: 'P4', name: '主治医师', cat: 'title',   order: 4, status: 'on', seeded: true },
-    { id: 'P5', name: '副主任医师', cat: 'title', order: 5, status: 'on', seeded: true },
-    { id: 'P6', name: '护士',     cat: 'title',   order: 6, status: 'on', seeded: true },
-    { id: 'P7', name: '护师',     cat: 'title',   order: 7, status: 'on', seeded: true },
-    { id: 'P8', name: '科研助理', cat: 'other',   order: 8, status: 'on', seeded: false },
-    { id: 'P9', name: '进修医师', cat: 'other',   order: 9, status: 'on', seeded: false }
+    { id: 'P1', name: '科室主任', cat: 'admin',   roles: ['doctor'], order: 1, status: 'on', seeded: true },
+    { id: 'P2', name: '护士长',   cat: 'admin',   roles: ['nurse'],  order: 2, status: 'on', seeded: true },
+    { id: 'P3', name: '医师',     cat: 'title',   roles: ['doctor'], order: 3, status: 'on', seeded: true },
+    { id: 'P4', name: '主治医师', cat: 'title',   roles: ['doctor'], order: 4, status: 'on', seeded: true },
+    { id: 'P5', name: '副主任医师', cat: 'title', roles: ['doctor'], order: 5, status: 'on', seeded: true },
+    { id: 'P6', name: '护士',     cat: 'title',   roles: ['nurse'],  order: 6, status: 'on', seeded: true },
+    { id: 'P7', name: '护师',     cat: 'title',   roles: ['nurse'],  order: 7, status: 'on', seeded: true },
+    { id: 'P8', name: '科研助理', cat: 'other',   roles: [],         order: 8, status: 'on', seeded: false },
+    { id: 'P9', name: '进修医师', cat: 'other',   roles: [],         order: 9, status: 'on', seeded: false }
   ];
   var POS_CATS = {
     admin: { label: '行政职务', hint: '如科室主任、护士长。一个科室有且只有一个科室主任。' },
     title: { label: '技术职称', hint: '如医师、主治医师、副主任医师、护士、护师。每个工作人员必填。' },
     other: { label: '其他',     hint: '后台自定义,如科研助理、进修医师。' }
   };
+  /* 角色位字典:一个职位可同时承担多个角色位,也可一个都不承担 */
+  var ROLE_SLOTS = [
+    { key: 'doctor', label: '主管医生' },
+    { key: 'nurse',  label: '护士' }
+  ];
 
   /* ---- 工作人员 ---- */
   var staff = [
@@ -237,30 +248,91 @@ var BACK_DATA = (function () {
 
   /* ---- 药品库(照搬既有 admin-drugs.html 的 11 个)---- */
   var drugs = [
-    { id: 'M1', name: '阿司匹林肠溶片', spec: '100mg', cat: '抗血小板', form: '片', generic: 'Aspirin Enteric-coated Tablets',
+    { id: 'M1', name: '阿司匹林肠溶片', spec: '100mg', cat: '抗血小板', form: '片剂', generic: 'Aspirin Enteric-coated Tablets',
       usage: '每日 1 次,餐后服用。抗血小板治疗基础用药。', adr: '胃肠道不适、皮疹。', contra: '活动性消化道溃疡、阿司匹林哮喘。', inter: '与布洛芬合用增加消化道出血风险。', status: 'on' },
-    { id: 'M2', name: '硫酸氢氯吡格雷', spec: '75mg', cat: '抗血小板', form: '片', generic: 'Clopidogrel Bisulfate Tablets',
+    { id: 'M2', name: '硫酸氢氯吡格雷', spec: '75mg', cat: '抗血小板', form: '片剂', generic: 'Clopidogrel Bisulfate Tablets',
       usage: '每日 1 次。', adr: '出血倾向、白细胞减少。', contra: '中性粒细胞减少症、活动性出血。', inter: '避免与奥美拉唑长期合用降低疗效。', status: 'on' },
     { id: 'M3', name: '达比加群酯', spec: '110mg / 150mg', cat: '抗凝', form: '胶囊', generic: 'Dabigatran Etexilate Capsules',
       usage: '每日 2 次,固定时间。', adr: '出血、皮肤瘙痒。', contra: '严重肾功能不全、出血性疾病。', inter: '与抗血小板药合用增加出血风险。', status: 'on' },
-    { id: 'M4', name: '利伐沙班', spec: '10mg / 15mg / 20mg', cat: '抗凝', form: '片', generic: 'Rivaroxaban Tablets',
+    { id: 'M4', name: '利伐沙班', spec: '10mg / 15mg / 20mg', cat: '抗凝', form: '片剂', generic: 'Rivaroxaban Tablets',
       usage: '每日 1 次,晚餐时。', adr: '出血、贫血。', contra: '中重度肾功能不全、活动性出血。', inter: '与 CYP3A4 强抑制剂合用需减量。', status: 'on' },
-    { id: 'M5', name: '华法林', spec: '2.5mg / 3mg', cat: '抗凝', form: '片', generic: 'Warfarin Sodium Tablets',
+    { id: 'M5', name: '华法林', spec: '2.5mg / 3mg', cat: '抗凝', form: '片剂', generic: 'Warfarin Sodium Tablets',
       usage: '每日固定时间,定期监测 INR。', adr: '出血、皮肤坏死。', contra: '妊娠、哺乳期、活动性出血。', inter: '与多种抗生素、抗真菌药有显著相互作用。', status: 'on' },
-    { id: 'M6', name: '阿托伐他汀钙', spec: '10mg / 20mg', cat: '他汀', form: '片', generic: 'Atorvastatin Calcium Tablets',
+    { id: 'M6', name: '阿托伐他汀钙', spec: '10mg / 20mg', cat: '他汀', form: '片剂', generic: 'Atorvastatin Calcium Tablets',
       usage: '每晚 1 次,睡前服用。强化降脂目标 LDL-C < 1.8 mmol/L。', adr: '肌肉酸痛、转氨酶升高。严重者需停药就医。', contra: '活动性肝病、孕妇、哺乳期妇女。', inter: '避免与 CYP3A4 强抑制剂(如克拉霉素、伊曲康唑)合用。', status: 'on' },
-    { id: 'M7', name: '瑞舒伐他汀钙', spec: '5mg / 10mg', cat: '他汀', form: '片', generic: 'Rosuvastatin Calcium Tablets',
+    { id: 'M7', name: '瑞舒伐他汀钙', spec: '5mg / 10mg', cat: '他汀', form: '片剂', generic: 'Rosuvastatin Calcium Tablets',
       usage: '每晚 1 次。', adr: '肌肉酸痛、转氨酶升高。', contra: '活动性肝病、妊娠。', inter: '避免与环孢素合用。', status: 'on' },
-    { id: 'M8', name: '辛伐他汀', spec: '20mg / 40mg', cat: '他汀', form: '片', generic: 'Simvastatin Tablets',
+    { id: 'M8', name: '辛伐他汀', spec: '20mg / 40mg', cat: '他汀', form: '片剂', generic: 'Simvastatin Tablets',
       usage: '每晚 1 次。', adr: '肌肉酸痛、横纹肌溶解。', contra: '活动性肝病、妊娠。', inter: '与大剂量氨苄西林合用增加肌病风险。', status: 'on' },
-    { id: 'M9', name: '依折麦布', spec: '10mg', cat: '他汀', form: '片', generic: 'Ezetimibe Tablets',
+    { id: 'M9', name: '依折麦布', spec: '10mg', cat: '他汀', form: '片剂', generic: 'Ezetimibe Tablets',
       usage: '每日 1 次。', adr: '腹泻、腹痛。', contra: '活动性肝病。', inter: '与他汀合用可加强降脂。', status: 'on' },
-    { id: 'M10', name: '缬沙坦', spec: '80mg', cat: '降压', form: '片', generic: 'Valsartan Tablets',
+    { id: 'M10', name: '缬沙坦', spec: '80mg', cat: '降压', form: '片剂', generic: 'Valsartan Tablets',
       usage: '每日 1 次,固定时间。降压 + 靶器官保护。', adr: '头晕、低血压、高钾血症。', contra: '妊娠、双侧肾动脉狭窄。', inter: '与保钾利尿剂合用警惕高钾。', status: 'on' },
-    { id: 'M11', name: '尼莫地平', spec: '30mg', cat: '降压', form: '片', generic: 'Nimodipine Tablets',
+    { id: 'M11', name: '尼莫地平', spec: '30mg', cat: '降压', form: '片剂', generic: 'Nimodipine Tablets',
       usage: '每 4 小时 1 次,蛛网膜下腔出血后连用 21 天。', adr: '面部潮红、心悸、低血压。', contra: '严重肝功能不全。', inter: '与西地兰非合用影响疗效。', status: 'off' }
   ];
   var DRUG_CATS = ['抗血小板', '抗凝', '他汀', '降压'];
+
+  /* ---- 药品字段归一(全站唯一口径)----
+   * ⚠️ 后台药品库页面读的是「页面契约」字段名,而 back-data.js 里的药品对象
+   *    用的是「数据字段名」,两套名字历史上对不上,列表直接渲染出 undefined。
+   *    对照表(页面契约 ← 数据层实际字段):
+   *      通用名 gn      ← name
+   *      英文名 en      ← generic
+   *      常用剂量 dose  ← usage
+   *      不良反应 adverse ← adr
+   *      相互作用 interact ← inter
+   *    药品档案里本来就没有的字段(主要适应症 ind / otc / photoUrl)按「空」处理,
+   *    不编造内容 —— 页面上显示为「—」,由人工在编辑页补录。
+   */
+  var DRUG_FORMS = ['片剂', '胶囊', '注射液', '缓释片', '分散片'];
+
+  function drugView(d) {
+    d = d || {};
+    return {
+      id: d.id || '',
+      gn: d.gn || d.name || '',                 /* 中文通用名 */
+      en: d.en || d.generic || '',              /* 英文通用名 */
+      cat: d.cat || '',
+      spec: d.spec || '',
+      form: d.form || '',
+      status: d.status || 'on',
+      otc: d.otc || 'rx',                       /* 处方药 Rx(默认) */
+      photoUrl: d.photoUrl || '',
+      dose: d.dose || d.usage || '',            /* 用法用量 */
+      ind: d.ind || '',                        /* 主要适应症(现有档案无来源) */
+      adverse: d.adverse || d.adr || '',
+      contra: d.contra || '',
+      interact: d.interact || d.inter || '',
+      hospitalId: d.hospitalId || ''
+    };
+  }
+
+  /* 把页面契约写回药品对象 —— 一律写数据层的字段名,避免两套 key 并存 */
+  function drugWrite(d, v) {
+    d.name = v.gn;
+    d.generic = v.en;
+    d.cat = v.cat;
+    d.spec = v.spec;
+    d.form = v.form;
+    d.status = v.status;
+    d.otc = v.otc;
+    d.photoUrl = v.photoUrl;
+    d.usage = v.dose;
+    d.ind = v.ind;
+    d.adr = v.adverse;
+    d.contra = v.contra;
+    d.inter = v.interact;
+    return d;
+  }
+
+  /* 剂型候选 = 规范枚举 ∪ 档案里实际出现过的值 */
+  function drugForms() {
+    var set = {};
+    DRUG_FORMS.forEach(function (f) { set[f] = true; });
+    drugs.forEach(function (d) { if (d.form) set[d.form] = true; });
+    return Object.keys(set);
+  }
 
   /* ---- 审计日志(占位页用)---- */
   var audits = [
@@ -278,6 +350,42 @@ var BACK_DATA = (function () {
   function pos(id)    { return byId(positions, id); }
   function member(id) { return byId(staff, id); }
   function hospital(id) { return byId(hospitals, id); }
+
+  /* ---- 角色位判断(全站唯一口径)----
+   * ⚠️ 页面里凡是要判断「此人 / 此职位能否当主管医生 / 护士」,一律调 rolesOf(),
+   *    不要各页面各写各的 cat === 'title' 之类判断。
+   */
+  function posRoles(posId) {
+    var p = pos(posId);
+    return (p && p.roles) ? p.roles.slice() : [];
+  }
+  /**
+   * 统一角色位工具函数。
+   * @param who  职位 id / 人员 id / 职位对象 / 人员对象
+   * @param role 'doctor'(主管医生) / 'nurse'(护士);不传则返回角色位数组
+   * @returns role 为空 → ['doctor'|'nurse'] 数组;role 非空 → boolean
+   */
+  function rolesOf(who, role) {
+    var roles = [];
+    if (who == null) return role ? false : roles;
+    if (typeof who === 'object') {
+      roles = who.roles ? who.roles.slice() : (who.posId ? posRoles(who.posId) : []);
+    } else {
+      var p = pos(String(who));
+      if (p) {
+        roles = posRoles(p.id);
+      } else {
+        var s = member(String(who));
+        roles = s ? posRoles(s.posId) : [];
+      }
+    }
+    if (!role) return roles;
+    return roles.indexOf(role) >= 0;
+  }
+  /* 在岗人员中可承担指定角色位的人(病患归属下拉 / 二维码候选 / 科室计数共用) */
+  function staffWithRole(role) {
+    return staff.filter(function (s) { return s.status === 'on' && rolesOf(s, role); });
+  }
   function maskPhone(p) {
     if (!p) return '';
     return p.length === 11 ? p.slice(0, 3) + '****' + p.slice(7) : p;
@@ -307,11 +415,14 @@ var BACK_DATA = (function () {
   })();
 
   return {
-    hospitals: hospitals, departments: departments, positions: positions, POS_CATS: POS_CATS,
+    hospitals: hospitals, departments: departments, positions: positions,
+    POS_CATS: POS_CATS, ROLE_SLOTS: ROLE_SLOTS,
     staff: staff, pending: pending, patients: patients, components: components,
     drugs: drugs, DRUG_CATS: DRUG_CATS, audits: audits,
+    drugView: drugView, drugWrite: drugWrite, drugForms: drugForms, DRUG_FORMS: DRUG_FORMS,
     byId: byId, dept: dept, pos: pos, member: member, hospital: hospital,
     maskPhone: maskPhone, avatarColor: avatarColor, bioScore: bioScore,
+    rolesOf: rolesOf, posRoles: posRoles, staffWithRole: staffWithRole,
     getCurrentHospitalId: getCurrentHospitalId, setCurrentHospitalId: setCurrentHospitalId,
     clearCurrentHospitalId: clearCurrentHospitalId,
     deptListByHospital: deptListByHospital,

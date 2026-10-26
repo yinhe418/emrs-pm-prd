@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>健康教育 · 后台管理</title>
+  <link rel="stylesheet" href="assets/back.css">
+  <style>
+    /* 操作列用 button 承载,去掉浏览器默认按钮外观,保持与 a.btn-text 一致 */
+    button.btn-text {
+      border: 0; background: none; padding: 0 6px; height: auto;
+      font: inherit; font-size: 12.5px; color: var(--brand); cursor: pointer;
+    }
+    button.btn-text.danger { color: var(--block); }
+    button.btn-text:hover { text-decoration: underline; }
+    .ed-icon {
+      width: 32px; height: 32px; border-radius: 6px; background: var(--bg-3);
+      display: grid; place-items: center; flex: none; overflow: hidden;
+    }
+    .ed-icon img { width: 70%; height: 70%; object-fit: contain; }
+    .tbl td.nowrap { white-space: nowrap; }
+  </style>
+</head>
+<body data-page="edu" data-crumb='[{"name":"后台管理"},{"name":"主数据"},{"name":"健康教育"}]'>
+
+<main class="back-main">
+
+  <div class="page-head">
+    <h1>健康教育</h1>
+    <div class="sub">内容支持图文混排;发布后患者端小程序可见,<b>停止发布后患者端立即不再展示</b>。</div>
+  </div>
+
+  <div id="scopeStrip"></div>
+
+  <div class="kpi-row" style="grid-template-columns:repeat(3,1fr)">
+    <div class="kpi blue">
+      <div class="k-val" id="kAll">0</div>
+      <div class="k-lab">全部文章</div>
+    </div>
+    <div class="kpi green">
+      <div class="k-val" id="kPub">0</div>
+      <div class="k-lab">已发布(患者端可见)</div>
+    </div>
+    <div class="kpi">
+      <div class="k-val" id="kUnpub">0</div>
+      <div class="k-lab">未发布(患者端不可见)</div>
+    </div>
+  </div>
+
+  <div class="tabs" data-tab-group="e" data-scope="eScope">
+    <button data-tab="all" class="active">全部 <span class="cnt grey" id="cntAll">0</span></button>
+    <button data-tab="published">已发布 <span class="cnt grey" id="cntPub">0</span></button>
+    <button data-tab="unpublished">未发布 <span class="cnt grey" id="cntUnpub">0</span></button>
+  </div>
+
+  <div class="filters">
+    <div class="search-wrap">
+      <img src="assets/icons-png/icon-search.png" alt="">
+      <input class="ipt search-ipt" id="kw" placeholder="搜索主标题 / 副标题">
+    </div>
+    <span class="ml-auto"></span>
+    <a class="btn btn-primary" href="back-edu-edit.html"><img src="assets/icons-png/icon-plus.png" alt="">新建文章</a>
+  </div>
+
+  <div class="card flat" id="eScope">
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th style="width:92px">排序</th>
+            <th style="width:60px">封面</th>
+            <th style="width:250px">主标题</th>
+            <th>正文摘要</th>
+            <th style="width:92px">状态</th>
+            <th style="width:142px">更新时间</th>
+            <th class="col-act" style="width:220px">操作</th>
+          </tr>
+        </thead>
+        <tbody id="body"></tbody>
+      </table>
+    </div>
+    <div class="pager">
+      <span>共 <b id="n">0</b> 篇健康教育文章</span>
+      <span class="pg-right"><b>仅已发布</b>的内容会在患者端小程序展示</span>
+    </div>
+  </div>
+</main>
+
+<div class="modal-mask" id="delModal">
+  <div class="modal">
+    <div class="modal-head">
+      <img src="assets/icons-png/icon-warning.png" alt="">
+      <h3>删除文章</h3>
+    </div>
+    <div class="modal-body" id="delBody"></div>
+    <div class="modal-foot">
+      <button class="btn btn-default" type="button" onclick="Back.modal('delModal',false)">取消</button>
+      <button class="btn btn-danger" type="button" id="delOk">确认删除</button>
+    </div>
+  </div>
+</div>
+
+<script src="assets/back-data.js"></script>
+<script src="assets/edu-data.js"></script>
+<script src="assets/back-layout.js"></script>
+<script>
+  Back.bindTabs('[data-tab-group="e"]');
+  var tab = 'all';
+  var pendingDel = '';
+
+  function curHospId() {
+    var h = Back.currentHospital();
+    return h ? h.id : '';
+  }
+
+  function allArticles() {
+    return EDU_DATA.list(curHospId());
+  }
+
+  function stripHtml(s) {
+    return String(s || '')
+      .replace(/<[^>]*>/g, ' ')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  function excerpt(s, n) {
+    var t = stripHtml(s);
+    return t.length > n ? t.slice(0, n) + '…' : t;
+  }
+
+  function iconOf(a) {
+    var ic = a.icon || '';
+    if (EDU_DATA.ICONS.indexOf(ic) < 0) ic = 'icon-document.png';
+    return 'assets/icons-png/' + ic;
+  }
+
+  function filtered() {
+    var kw = document.getElementById('kw').value.trim();
+    return allArticles().filter(function (a) {
+      if (tab === 'published' && a.status !== 'published') return false;
+      if (tab === 'unpublished' && a.status !== 'unpublished') return false;
+      if (kw) {
+        var hay = (a.title || '') + ' ' + (a.subtitle || '');
+        if (hay.indexOf(kw) < 0) return false;
+      }
+      return true;
+    });
+  }
+
+  function render() {
+    var pool = allArticles();
+    var rows = filtered();
+    var nPub = pool.filter(function (x) { return x.status === 'published'; }).length;
+    var nUnpub = pool.length - nPub;
+
+    document.getElementById('kAll').textContent = pool.length;
+    document.getElementById('kPub').textContent = nPub;
+    document.getElementById('kUnpub').textContent = nUnpub;
+    document.getElementById('cntAll').textContent = pool.length;
+    document.getElementById('cntPub').textContent = nPub;
+    document.getElementById('cntUnpub').textContent = nUnpub;
+    document.getElementById('n').textContent = rows.length;
+
+    document.getElementById('body').innerHTML = rows.length ? rows.map(function (a) {
+      var muted = a.status === 'published' ? '' : 'row-muted';
+      return '<tr class="' + muted + '">'
+        + '<td>'
+        +   '<button type="button" class="btn btn-sm btn-default" data-move="up" data-id="' + a.id + '" title="上移" style="padding:0 6px">↑</button> '
+        +   '<button type="button" class="btn btn-sm btn-default" data-move="down" data-id="' + a.id + '" title="下移" style="padding:0 6px">↓</button>'
+        + '</td>'
+        + '<td><span class="ed-icon"><img src="' + iconOf(a) + '" alt=""></span></td>'
+        + '<td>'
+        +   '<div class="cell-user">'
+        +     '<div><div class="cell-main">' + a.title + '</div>'
+        +     (a.subtitle ? '<div class="cell-sub">' + a.subtitle + '</div>' : '')
+        +     '</div></div>'
+        + '</td>'
+        + '<td class="fz-12" style="color:var(--ink-3)">' + excerpt(a.content, 40) + '</td>'
+        + '<td>' + (a.status === 'published'
+            ? '<span class="badge badge-pass">已发布</span>'
+            : '<span class="badge badge-gray">未发布</span>') + '</td>'
+        + '<td class="fz-12 mono nowrap">' + (a.updatedAt || '—') + '</td>'
+        + '<td class="col-act">'
+        +   '<a class="btn-text" href="back-edu-edit.html?id=' + a.id + '">编辑</a>'
+        +   '<button type="button" class="btn-text" data-pub="' + a.id + '">'
+        +     (a.status === 'published' ? '停止发布' : '发布') + '</button>'
+        +   '<a class="btn-text" href="patient-edu-detail.html?id=' + a.id + '&preview=1">预览</a>'
+        +   '<button type="button" class="btn-text danger" data-del="' + a.id + '">删除</button>'
+        + '</td></tr>';
+    }).join('')
+    : '<tr><td colspan="7"><div class="empty"><img src="assets/icons-png/icon-empty-box.png" alt="">'
+      + '<div class="e-t">这里还没有健康教育文章</div>'
+      + '<div class="e-d">新建一篇并发布,患者端小程序就能看到</div>'
+      + '<a class="btn btn-primary" href="back-edu-edit.html">新建文章</a></div></td></tr>';
+  }
+
+  /* Tab 切换(Back.bindTabs 只管高亮,这里负责重新渲染列表) */
+  document.querySelector('[data-tab-group="e"]').addEventListener('click', function () {
+    var b = this.querySelector('button.active');
+    if (b) { tab = b.getAttribute('data-tab'); render(); }
+  });
+
+  document.getElementById('kw').addEventListener('input', render);
+
+  document.body.addEventListener('click', function (e) {
+    var t = e.target;
+    var g = function (a) { return t.getAttribute && t.getAttribute(a); };
+
+    /* 排序 ↑ ↓ */
+    if (g('data-move')) {
+      var id = g('data-id');
+      var dir = g('data-move') === 'up' ? -1 : 1;
+      var ok = EDU_DATA.move(id, dir);
+      if (!ok) {
+        return Back.toast(dir < 0 ? '已经在最前一位' : '已经在最后一位', 'warn');
+      }
+      render();
+      return Back.toast(dir < 0 ? '已上移' : '已下移', 'ok');
+    }
+
+    /* 发布 / 停止发布 */
+    if (g('data-pub')) {
+      var pid = g('data-pub');
+      var st = EDU_DATA.togglePublish(pid);
+      render();
+      if (st === 'published') return Back.toast('已发布,患者端可见', 'ok');
+      if (st === 'unpublished') return Back.toast('已停止发布,患者端不再展示', 'warn');
+      return Back.toast('操作失败', 'err');
+    }
+
+    /* 删除(二次确认) */
+    if (g('data-del')) {
+      pendingDel = g('data-del');
+      var art = EDU_DATA.byId(pendingDel);
+      document.getElementById('delBody').innerHTML =
+        '<div>删除「' + (art ? art.title : pendingDel) + '」后:</div>'
+        + '<ul><li>该文章<b>立即从后台列表移除</b></li>'
+        + '<li>患者端小程序<b>立即不再展示</b>这篇内容</li>'
+        + '<li>此操作不可撤销,如需恢复请重新新建</li></ul>';
+      Back.modal('delModal', true);
+    }
+  });
+
+  document.getElementById('delOk').addEventListener('click', function () {
+    var t = EDU_DATA.byId(pendingDel);
+    EDU_DATA.remove(pendingDel);
+    pendingDel = '';
+    Back.modal('delModal', false);
+    render();
+    Back.toast('已删除:' + (t ? t.title : ''), 'ok');
+  });
+
+  if (!Back.requireHospitalAndApply()) { document.querySelector('.back-main').innerHTML = ''; }
+  else { document.getElementById('scopeStrip').innerHTML = Back.scopeStrip('健康教育按本院过滤'); }
+  render();
+</script>
+</body>
+</html>

@@ -200,6 +200,13 @@
 
   /* ---------- 基本信息 ---------- */
   function row(k, v) { return '<tr><td class="text-3" style="width:130px;border:none">' + k + '</td><td style="border:none">' + (v || '<span class="text-4">未填</span>') + '</td></tr>'; }
+  /* 可承担角色位:取自该人员职位的 roles(人员侧只读,不在人员上单独设置) */
+  function roleBadges(p) {
+    var roles = BACK_DATA.rolesOf(p), out = [];
+    if (roles.indexOf('doctor') >= 0) out.push('<span class="badge badge-outline">主管医生</span>');
+    if (roles.indexOf('nurse') >= 0) out.push('<span class="badge badge-outline">护士</span>');
+    return out.length ? out.join(' ') : '<span class="text-4">—</span>';
+  }
   document.getElementById('tBasic').innerHTML =
       row('姓名', s.name)
     + row('手机号', '<span class="mono">' + BACK_DATA.maskPhone(s.phone) + '</span>')
@@ -210,6 +217,7 @@
             ? '<span class="badge badge-gray">技术职称未设置</span> <span class="badge badge-brand">' + pos.name + '</span>'
             : '<span class="badge badge-info">' + pos.name + '</span>')
         : '')
+    + row('可承担角色位', pos ? roleBadges(pos) : '<span class="text-4">—</span>')
     + row('是否为科室主任', dept && dept.directorId === s.id
         ? '<span class="badge badge-brand">是 · ' + dept.name + '</span>' : '否')
     + row('状态', s.status === 'on' ? '<span class="badge badge-pass">在职</span>' : '<span class="badge badge-gray">已停用</span>')
@@ -229,7 +237,7 @@
     ? '<div class="tbl-wrap"><table class="tbl"><thead><tr>'
       + '<th>患者</th><th style="width:130px">作为</th><th style="width:150px">预警基线</th><th style="width:100px">状态</th></tr></thead><tbody>'
       + pts.map(function (p) {
-          var as = p.docId === s.id ? '归属医生' : '归属护士';
+          var as = p.docId === s.id ? '主管医生' : '归属护士';
           var base = p.base.src === 'doctor'
             ? '<span class="badge badge-pass">医生个体设定</span> <span class="fz-11 text-3">' + p.base.by + ' · ' + p.base.at + '</span>'
             : '<span class="badge badge-gray">科室默认</span>';
@@ -291,11 +299,11 @@
     + (s.intro ? '<div class="pp-sec"><div class="pp-lab">医生说</div><div class="pp-val">' + s.intro + '</div></div>' : '');
 
   /* ---------- 二维码 ---------- */
-  var isDoc = pos && ['P3', 'P4', 'P5', 'P1'].indexOf(s.posId) >= 0;
+  var isDoc = BACK_DATA.rolesOf(s, 'doctor');
   document.getElementById('qrBox').innerHTML = isDoc
     ? '<div class="split"><div class="card grow">'
       + '<div class="card-head"><h3>医生患者码(个人级)</h3>'
-      + '<span class="ch-desc">患者扫描后自动绑定该医生为归属医生</span>'
+      + '<span class="ch-desc">患者扫描后自动绑定该医生为主管医生</span>'
       + '<div class="ch-right"><a class="btn btn-sm btn-primary" href="back-qrcode.html?tab=patient">前往二维码中心</a></div></div>'
       + '<div class="flex" style="gap:20px">'
       +   '<div class="qr-box"><div class="qr-fake"></div></div>'
@@ -307,7 +315,7 @@
       + '</div></div></div>'
     : '<div class="card"><div class="note note-gray" style="margin:0">'
       + '<img src="assets/icons-png/icon-info.png"><div>当前职位为<b>护理岗</b>,没有「医生患者码」。'
-      + '患者归属需由归属医生指定,可在病患列表中调整。</div></div></div>';
+      + '患者归属需由主管医生指定,可在病患列表中调整。</div></div></div>';
 
   /* ---------- 操作记录 ---------- */
   document.getElementById('logBox').innerHTML = [

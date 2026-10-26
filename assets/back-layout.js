@@ -21,6 +21,7 @@
     { type: 'item', page: 'component',icon: 'icon-tab-tasklib', name: '任务组件库',   href: 'back-component-lib.html' },
     { type: 'group', name: '主数据' },
     { type: 'item', page: 'drugs',    icon: 'icon-tab-drugs',   name: '药品库',       href: 'back-drugs.html' },
+    { type: 'item', page: 'edu',       icon: 'icon-document', name: '健康教育',     href: 'back-edu.html' },
     { type: 'group', name: '系统' },
     { type: 'item', page: 'audit',    name: '操作审计日志', disabled: true },
     { type: 'item', page: 'perms',    name: '权限矩阵',       disabled: true }

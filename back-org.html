@@ -163,13 +163,11 @@
     document.getElementById('deptN').textContent = rows.length;
     tb.innerHTML = rows.map(function (d) {
       var dir = d.directorId ? BACK_DATA.member(d.directorId) : null;
-      var nDoc = BACK_DATA.staff.filter(function (s) {
-        return s.deptId === d.id && s.status === 'on'
-          && ['P3','P4','P5'].indexOf(s.posId) >= 0;
+      var nDoc = BACK_DATA.staffWithRole('doctor').filter(function (s) {
+        return s.deptId === d.id;
       }).length;
-      var nNur = BACK_DATA.staff.filter(function (s) {
-        return s.deptId === d.id && s.status === 'on'
-          && ['P6','P7'].indexOf(s.posId) >= 0;
+      var nNur = BACK_DATA.staffWithRole('nurse').filter(function (s) {
+        return s.deptId === d.id;
       }).length;
       return '<tr>'
         + '<td><div class="cell-main">' + d.name + '</div>'
@@ -181,7 +179,7 @@
                 + '<div class="cell-sub">' + ((BACK_DATA.pos(dir.posId) || {}).name || '') + '</div></div></div>'
               : '<span class="btn-text" data-dir="' + d.id + '" style="font-size:12px">+ 指定科室主任</span>')
         + '</td>'
-        + '<td class="fz-12 num-cell">医师 ' + nDoc + ' / 护士 ' + nNur + '</td>'
+        + '<td class="fz-12 num-cell">主管医生 ' + nDoc + ' / 护士 ' + nNur + '</td>'
         + '<td>' + Back.onOff(d.status) + '</td>'
         + '<td class="col-act">'
         +   '<a class="btn-text" href="back-org-edit.html?type=department&amp;id=' + d.id + '">编辑</a>'

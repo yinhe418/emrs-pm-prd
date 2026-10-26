@@ -66,13 +66,13 @@
         <img src="assets/icons-png/icon-info.png">
         <div>
           <b>一名医生 = 一个患者码</b>。患者 / 家属用<b>微信扫描</b>此码进入小程序,
-          扫码后<b>自动绑定该医生为归属医生</b>,无需管理员操作。护士归属仍需另行指派。
+          扫码后<b>自动绑定该医生为主管医生</b>,无需管理员操作。护士归属仍需另行指派。
         </div>
       </div>
 
       <div class="note note-gray">
         <img src="assets/icons-png/icon-info.png">
-        <div>只有<b>医师类职位</b>的工作人员才有患者码。护理岗通过归属医生指定归属,不生成患者码。</div>
+        <div>只有<b>可承担「主管医生」角色位</b>的在岗人员才有患者码。护理岗通过主管医生指定归属,不生成患者码。</div>
       </div>
 
       <div class="filters">
@@ -208,8 +208,7 @@
 
   /* ---------- Tab 2 · 医生 ---------- */
   function isDoctor(s) {
-    var p = BACK_DATA.pos(s.posId);
-    return s.status === 'on' && p && p.cat === 'title';
+    return s.status === 'on' && BACK_DATA.rolesOf(s, 'doctor');
   }
   function renderD() {
     var kw = document.getElementById('dKw').value.trim();
@@ -271,7 +270,7 @@
       document.getElementById('qDesc').textContent = '医生患者码(个人级)· 扫码长期有效';
       document.getElementById('qTip').innerHTML =
         '请患者 / 家属使用<b>微信扫描</b>此码进入小程序<br>'
-        + '扫码后<b>自动绑定该医生为归属医生</b><br>'
+        + '扫码后<b>自动绑定该医生为主管医生</b><br>'
         + '患者不会看到该医生的其他患者信息';
       document.getElementById('qRecDesc').textContent = '已绑定患者(仅本人可见)';
       recs = BACK_DATA.patients.filter(function (x) { return x.docId === id; }).map(function (x) {

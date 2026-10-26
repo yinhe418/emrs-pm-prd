@@ -214,9 +214,14 @@
   function posName(id) {
     var p = BACK_DATA.pos(id);
     if (!p) return '';
-    return p.cat === 'admin' ? '<span class="badge badge-brand">' + p.name + '</span>'
-         : p.cat === 'title' ? '<span class="badge badge-info">' + p.name + '</span>'
-         : '<span class="badge badge-gray">' + p.name + '</span>';
+    var badge = p.cat === 'admin' ? '<span class="badge badge-brand">' + p.name + '</span>'
+              : p.cat === 'title' ? '<span class="badge badge-info">' + p.name + '</span>'
+              : '<span class="badge badge-gray">' + p.name + '</span>';
+    /* 职位徽章旁补「可承担角色位」:角色位取自该人员职位的 roles(不新增列) */
+    var roles = BACK_DATA.rolesOf(p), rs = [];
+    if (roles.indexOf('doctor') >= 0) rs.push('<span class="badge badge-outline">主管医生</span>');
+    if (roles.indexOf('nurse') >= 0) rs.push('<span class="badge badge-outline">护士</span>');
+    return badge + (rs.length ? '<span style="margin-left:6px">' + rs.join(' ') + '</span>' : '');
   }
   function patCount(id) {
     var d = BACK_DATA.patients.filter(function (p) { return p.docId === id || p.nurId === id; }).length;
@@ -383,7 +388,7 @@
       document.getElementById('offBody').innerHTML =
         '<div>停用后该人员<b>无法再登录小程序</b>,历史数据保留。停用必须填原因。</div>'
         + (n ? '<div class="note note-warn" style="margin-top:10px"><img src="assets/icons-png/icon-warning.png">'
-              + '<div>该人员名下有 <b>' + n + '</b> 例病患,停用后需重新指派归属医生 / 护士,'
+              + '<div>该人员名下有 <b>' + n + '</b> 例病患,停用后需重新指派主管医生 / 护士,'
               + '否则患者端将失去对接人。</div></div>' : '');
       document.getElementById('offOk').onclick = function () {
         st.status = 'off';

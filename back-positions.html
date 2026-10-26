@@ -65,12 +65,26 @@
         <span class="err-msg"></span>
       </div>
       <div class="fi mt-12">
+        <label>可承担角色位</label>
+        <div class="flex" style="gap:16px;flex-wrap:wrap" id="pRoleWrap"></div>
+        <span class="hint">可多选,也可一个都不选(默认不选)。决定担任该职位的人能否被选为某个患者的主管医生 / 护士</span>
+        <span class="err-msg"></span>
+      </div>
+      <div class="fi mt-12">
         <label>状态</label>
         <select class="sel" name="pStatus"><option value="on">启用</option><option value="off">停用</option></select>
         <span class="hint">停用后不在新建 / 编辑的下拉中,历史数据保留</span>
       </div>
     </div>
     <div class="note" id="pHint"></div>
+    <div class="note note-info mt-12">
+      <img src="assets/icons-png/icon-info.png">
+      <div><b>角色位决定这个人能否被选为某个患者的主管医生 / 护士。</b>
+        它与「职位类别」(行政职务 / 技术职称 / 其他)是<b>两个维度,互不替代</b>:
+        类别回答「这是什么职位」,角色位回答「担任这个职位的人能当什么角色」。
+        例:科室主任(行政职务)可承担主管医生,护士长(行政职务)可承担护士;
+        技术职称里的护士 / 护师<b>不</b>承担主管医生角色位。</div>
+    </div>
   </div>
   <div class="drawer-foot">
     <span class="fz-12 text-3" id="pFootTip"></span>
@@ -103,8 +117,22 @@
   var editingId = null;
   var pendingDel = null;
 
+  /* 角色位选项:统一取自 BACK_DATA.ROLE_SLOTS(主管医生 / 护士) */
+  (function () {
+    document.getElementById('pRoleWrap').innerHTML = BACK_DATA.ROLE_SLOTS.map(function (r) {
+      return '<label class="chk"><input type="checkbox" name="pRole" value="' + r.key + '">' + r.label + '</label>';
+    }).join('');
+  })();
+
   function countUsed(posId) {
     return BACK_DATA.staff.filter(function (s) { return s.posId === posId && s.status === 'on'; }).length;
+  }
+  /* 角色位单元格:主管医生 / 护士(可同时);都没有显示 — */
+  function roleCell(p) {
+    var roles = BACK_DATA.rolesOf(p), out = [];
+    if (roles.indexOf('doctor') >= 0) out.push('<span class="badge badge-info">主管医生</span>');
+    if (roles.indexOf('nurse') >= 0) out.push('<span class="badge badge-info">护士</span>');
+    return out.length ? out.join(' ') : '<span class="text-4">—</span>';
   }
   function isDirectorPos(posId) {
     var p = BACK_DATA.pos(posId);
@@ -154,6 +182,7 @@
         + '</div>'
         + '<div class="tbl-wrap"><table class="tbl"><thead><tr>'
         + '<th style="width:56px">排序</th><th>职位名称</th><th style="width:96px">类别</th>'
+        + '<th style="width:150px">可承担角色位</th>'
         + '<th style="width:110px">在岗人数</th><th style="width:88px">状态</th>'
         + '<th style="width:118px">来源</th><th class="col-act" style="width:150px">操作</th>'
         + '</tr></thead><tbody>'
@@ -167,6 +196,7 @@
             + '<td><span class="cell-main">' + p.name + '</span>'
             +   (isDirectorPos(p.id) ? ' <span class="badge badge-brand">科室责任人</span>' : '') + '</td>'
             + '<td><span class="badge badge-gray">' + meta.label + '</span></td>'
+            + '<td>' + roleCell(p) + '</td>'
             + '<td class="num-cell">' + used + (used ? ' 人' : '') + '</td>'
             + '<td>' + Back.onOff(p.status) + '</td>'
             + '<td>' + (p.seeded ? '<span class="badge badge-outline">初装种子</span>'
@@ -179,7 +209,7 @@
             +   (used ? '' : '<a class="btn-text danger" data-hard="' + p.id + '">删除</a>')
             + '</td></tr>';
           }).join('')
-          : '<tr><td colspan="7"><div class="empty"><img src="assets/icons-png/icon-empty-box.png" alt="">'
+          : '<tr><td colspan="8"><div class="empty"><img src="assets/icons-png/icon-empty-box.png" alt="">'
             + '<div class="e-t">该类别下暂无职位</div><div class="e-d">点右上角「在此类新增」添加</div></div></td></tr>')
         + '</tbody></table></div>';
       wrap.appendChild(card);
@@ -194,11 +224,14 @@
     var n = document.querySelector('[name="pName"]');
     var c = document.querySelector('[name="pCat"]');
     var s = document.querySelector('[name="pStatus"]');
+    var roleBoxes = document.querySelectorAll('[name="pRole"]');
     document.querySelector('#pDrawer .fi').classList.remove('has-err');
 
     if (id) {
       var p = BACK_DATA.pos(id);
       n.value = p.name; c.value = p.cat; s.value = p.status;
+      var curRoles = BACK_DATA.rolesOf(p);
+      roleBoxes.forEach(function (b) { b.checked = curRoles.indexOf(b.value) >= 0; });
       document.getElementById('pHint').className = 'note note-gray';
       document.getElementById('pHint').innerHTML =
         '<img src="assets/icons-png/icon-info.png"><div>该职位在岗 <b>' + countUsed(id)
@@ -206,6 +239,7 @@
       document.getElementById('pFootTip').textContent = '停用前需先转职或停用人员';
     } else {
       n.value = ''; c.value = cat || 'title'; s.value = 'on';
+      roleBoxes.forEach(function (b) { b.checked = false; });
       var meta = BACK_DATA.POS_CATS[c.value || 'title'];
       document.getElementById('pHint').className = 'note note-info';
       document.getElementById('pHint').innerHTML =
@@ -304,6 +338,10 @@
     var n = document.querySelector('[name="pName"]');
     var c = document.querySelector('[name="pCat"]').value;
     var s = document.querySelector('[name="pStatus"]').value;
+    var roles = [];
+    document.querySelectorAll('[name="pRole"]').forEach(function (b) {
+      if (b.checked) roles.push(b.value);
+    });
     var v = n.value.trim();
 
     document.querySelector('#pDrawer .fi').classList.remove('has-err');
@@ -322,7 +360,7 @@
     if (editingId) {
       var p = BACK_DATA.pos(editingId);
       var wasDir = isDirectorPos(editingId);
-      p.name = v; p.cat = c; p.status = s;
+      p.name = v; p.cat = c; p.status = s; p.roles = roles;
       Back.toast('已保存', 'ok');
       if (wasDir && v !== '科室主任') {
         // 主任职位被改名 → 释放科室主任任命
@@ -335,7 +373,7 @@
     } else {
       var maxOrder = Math.max.apply(null, BACK_DATA.positions.map(function (p) { return p.order; }).concat([0]));
       BACK_DATA.positions.push({
-        id: 'P' + Date.now(), name: v, cat: c, status: s, order: maxOrder + 1, seeded: false
+        id: 'P' + Date.now(), name: v, cat: c, roles: roles, status: s, order: maxOrder + 1, seeded: false
       });
       Back.toast('已新增职位:' + v, 'ok');
     }

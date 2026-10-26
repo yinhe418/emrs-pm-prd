@@ -35,8 +35,9 @@
         <span class="err-msg"></span>
       </div>
       <div class="fi">
-        <label>商品名</label>
-        <input class="ipt" name="bn" placeholder="选填">
+        <label>英文名</label>
+        <input class="ipt" name="en" placeholder="选填,例:Aspirin Enteric-coated Tablets">
+        <span class="hint">英文通用名,便于按英文检索</span>
       </div>
       <div class="fi">
         <label><span class="req">*</span>类别</label>
@@ -50,10 +51,7 @@
       </div>
       <div class="fi">
         <label><span class="req">*</span>剂型</label>
-        <select class="sel" name="form">
-          <option>片剂</option><option>胶囊</option><option>注射液</option>
-          <option>缓释片</option><option>分散片</option>
-        </select>
+        <select class="sel" name="form"></select>
       </div>
       <div class="fi">
         <label>状态</label>
@@ -72,12 +70,13 @@
     <div class="form-grid">
       <div class="fi full">
         <label>常用剂量</label>
-        <input class="ipt" name="dose" placeholder="例:口服,100mg/次,1 次/日">
+        <input class="ipt" name="dose" placeholder="例:每日 1 次,餐后服用">
         <span class="hint">仅用于医生参考,不替代处方剂量</span>
       </div>
       <div class="fi full">
         <label>主要适应症</label>
         <textarea class="ta" name="ind" placeholder="例:抗血小板聚集,用于缺血性心脑血管疾病"></textarea>
+        <span class="hint">现有药品档案未收录该字段,需人工补录</span>
       </div>
       <div class="fi full">
         <label>常见不良反应</label>
@@ -117,9 +116,9 @@
   <div class="card">
     <div class="card-head"><h3>操作记录</h3></div>
     <div class="timeline">
-      <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">2026-10-15 09:12</div><div><b>主任丙</b> 修改「常见不良反应」追加「出血风险」</div></div>
-      <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">2026-09-30 14:35</div><div><b>医生甲</b> 修正「常用剂量」表达</div></div>
-      <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">2026-09-18 11:00</div><div><b>系统</b> 从 HIS 同步该药品档案(C1,仅供参考)</div></div>
+      <div class="tl-item"><div class="tl-t">2026-10-15 09:12</div><div class="tl-b"><b>主任丙</b> 修改「常见不良反应」追加「出血风险」</div></div>
+      <div class="tl-item"><div class="tl-t">2026-09-30 14:35</div><div class="tl-b"><b>医生甲</b> 修正「常用剂量」表达</div></div>
+      <div class="tl-item"><div class="tl-t">2026-09-18 11:00</div><div class="tl-b"><b>系统</b> 从 HIS 同步该药品档案(C1,仅供参考)</div></div>
     </div>
   </div>
 
@@ -136,10 +135,24 @@
   var id = Back.qs('id');
   var d = id ? BACK_DATA.byId(BACK_DATA.drugs, id) : null;
   var isEdit = !!d;
-  if (!d) d = { id: 'MNEW', gn: '', bn: '', cat: '其他', spec: '', form: '片剂', status: 'on', otc: 'rx',
-                photoUrl: '', dose: '', ind: '', adverse: '', contra: '', interact: '' };
 
-  document.getElementById('ttl').textContent = isEdit ? '编辑药品 · ' + d.gn : '新建药品';
+  /* 新建:带上当前医院(否则 hospFilter 会把它过滤掉,新建完列表里看不到),
+     id 也要唯一,不能所有新药都叫 MNEW */
+  function nextDrugId() {
+    var max = 0;
+    BACK_DATA.drugs.forEach(function (x) {
+      var m = /^M(\d+)$/.exec(x.id || '');
+      if (m) max = Math.max(max, parseInt(m[1], 10));
+    });
+    return 'M' + (max + 1);
+  }
+  if (!d) d = { id: nextDrugId(), hospitalId: (Back.currentHospital() || {}).id || 'H1',
+                name: '', generic: '', cat: '其他', spec: '', form: '片剂', status: 'on', otc: 'rx',
+                photoUrl: '', usage: '', ind: '', adr: '', contra: '', inter: '' };
+
+  var v = BACK_DATA.drugView(d);
+
+  document.getElementById('ttl').textContent = isEdit ? '编辑药品 · ' + v.gn : '新建药品';
 
   /* 类别下拉 */
   (function () {
@@ -150,11 +163,28 @@
     cs.insertAdjacentHTML('beforeend', '<option>其他</option>');
   })();
 
+  /* 剂型下拉(规范枚举 ∪ 档案里实际出现过的值) */
+  (function () {
+    var fs = document.querySelector('[name="form"]');
+    BACK_DATA.drugForms().forEach(function (f) {
+      fs.insertAdjacentHTML('beforeend', '<option>' + f + '</option>');
+    });
+  })();
+
   /* 回填 */
-  ['gn', 'bn', 'cat', 'spec', 'form', 'status', 'otc', 'photoUrl',
-   'dose', 'ind', 'adverse', 'contra', 'interact'].forEach(function (n) {
-    document.querySelector('[name="' + n + '"]').value = d[n] || '';
-  });
+  document.querySelector('[name="gn"]').value   = v.gn;
+  document.querySelector('[name="en"]').value   = v.en;
+  document.querySelector('[name="cat"]').value  = v.cat;
+  document.querySelector('[name="spec"]').value = v.spec;
+  document.querySelector('[name="form"]').value = v.form;
+  document.querySelector('[name="status"]').value = v.status;
+  document.querySelector('[name="otc"]').value  = v.otc;
+  document.querySelector('[name="photoUrl"]').value = v.photoUrl;
+  document.querySelector('[name="dose"]').value  = v.dose;
+  document.querySelector('[name="ind"]').value   = v.ind;
+  document.querySelector('[name="adverse"]').value = v.adverse;
+  document.querySelector('[name="contra"]').value = v.contra;
+  document.querySelector('[name="interact"]').value = v.interact;
 
   /* 照片预览 */
   function updatePhoto() {
@@ -174,7 +204,9 @@
       spec: { required: true, msg: '请输入规格' }
     });
     var name = document.querySelector('[name="gn"]').value.trim();
-    var dup = BACK_DATA.drugs.filter(function (x) { return x.gn === name && x.id !== d.id; })[0];
+    var dup = BACK_DATA.drugs.filter(function (x) {
+      return x.id !== d.id && BACK_DATA.drugView(x).gn === name;
+    })[0];
     if (dup) {
       var fi = document.querySelector('[name="gn"]').closest('.fi');
       fi.classList.add('has-err'); fi.querySelector('.err-msg').textContent = '该通用名已存在';
@@ -182,19 +214,22 @@
     }
     if (!ok) return;
 
-    d.gn = name;
-    d.bn = document.querySelector('[name="bn"]').value.trim();
-    d.cat = document.querySelector('[name="cat"]').value;
-    d.spec = document.querySelector('[name="spec"]').value.trim();
-    d.form = document.querySelector('[name="form"]').value;
-    d.status = document.querySelector('[name="status"]').value;
-    d.otc = document.querySelector('[name="otc"]').value;
-    d.photoUrl = document.querySelector('[name="photoUrl"]').value.trim();
-    d.dose = document.querySelector('[name="dose"]').value;
-    d.ind = document.querySelector('[name="ind"]').value;
-    d.adverse = document.querySelector('[name="adverse"]').value;
-    d.contra = document.querySelector('[name="contra"]').value;
-    d.interact = document.querySelector('[name="interact"]').value;
+    /* 一律写回数据层的字段名,避免页面契约和数据层两套 key 并存 */
+    BACK_DATA.drugWrite(d, {
+      gn: name,
+      en: document.querySelector('[name="en"]').value.trim(),
+      cat: document.querySelector('[name="cat"]').value,
+      spec: document.querySelector('[name="spec"]').value.trim(),
+      form: document.querySelector('[name="form"]').value,
+      status: document.querySelector('[name="status"]').value,
+      otc: document.querySelector('[name="otc"]').value,
+      photoUrl: document.querySelector('[name="photoUrl"]').value.trim(),
+      dose: document.querySelector('[name="dose"]').value.trim(),
+      ind: document.querySelector('[name="ind"]').value.trim(),
+      adverse: document.querySelector('[name="adverse"]').value.trim(),
+      contra: document.querySelector('[name="contra"]').value.trim(),
+      interact: document.querySelector('[name="interact"]').value.trim()
+    });
 
     if (!isEdit) BACK_DATA.drugs.push(d);
     Back.toast(isEdit ? '已保存药品' : '已新建药品', 'ok');

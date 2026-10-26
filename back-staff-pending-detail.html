@@ -109,7 +109,7 @@
               <div class="fi full">
                 <label><span class="req">*</span>职称(技术职称必填)</label>
                 <div id="posPick" class="flex flex-wrap" style="gap:8px"></div>
-                <span class="hint">技术职称为每个工作人员的<b>必填项</b>;行政职务(如科室主任)可在此一并指定</span>
+                <span class="hint">技术职称为每个工作人员的<b>必填项</b>;行政职务(如科室主任)可在此一并指定。职位名后的括号是该职位<b>可承担的角色位</b>,决定他能否被选为某个患者的主管医生 / 护士</span>
                 <span class="err-msg"></span>
               </div>
             </div>
@@ -126,7 +126,7 @@
 
   <div style="position:sticky;bottom:0;background:var(--bg);padding:12px 0;border-top:1px solid var(--line);display:flex;gap:9px;z-index:5">
     <a class="btn btn-default" href="back-staff.html?tab=pending">← 返回队列</a>
-    <a class="btn btn-text danger" href="#" id="archBtn" style="margin-left:6px">归档此人</a>
+    <button type="button" class="btn btn-text danger" id="archBtn" style="margin-left:6px">归档此人</button>
     <span class="ml-auto"></span>
     <button class="btn btn-default" id="saveLater">保存并稍后处理</button>
     <button class="btn btn-primary" id="saveBtn">完成设置</button>
@@ -226,10 +226,14 @@
       BACK_DATA.positions.filter(function (p) { return p.cat === cat && p.status === 'on'; })
         .forEach(function (p) {
           var checked = cat === 'title' ? pickedPos === p.id : pickedAdmin === p.id;
+          var rl = BACK_DATA.rolesOf(p);
+          var roleTxt = rl.map(function (r) { return r === 'doctor' ? '主管医生' : '护士'; }).join(' / ');
           var lbl = '<label class="chk" style="border:1px solid ' + (checked ? 'var(--brand)' : 'var(--line)')
             + ';padding:4px 9px;border-radius:14px;background:' + (checked ? 'var(--brand-light)' : '#fff') + '">'
             + '<input type="radio" name="pos_' + cat + '" value="' + p.id + '"' + (checked ? ' checked' : '')
-            + (cat === 'admin' ? ' data-adm="1"' : '') + '>' + p.name + '</label>';
+            + (cat === 'admin' ? ' data-adm="1"' : '') + '>' + p.name
+            + (roleTxt ? '<span style="margin-left:6px;font-size:11px;color:var(--brand)">(' + roleTxt + ')</span>' : '')
+            + '</label>';
           group.insertAdjacentHTML('beforeend', lbl);
         });
       box.appendChild(group);
