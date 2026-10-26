@@ -6,15 +6,28 @@
 (function () {
   'use strict';
 
-  // 项目库 — 与 admin-projects.html / admin-project-edit.html 字段对应
+  /* 项目库 = DB `project` 表(项目主档)的原型对应物
+   * ⚠️ 字段名与 DB 契约一一对应(AR 2026-10-26 拍板):
+   *    id / hospital_id / name / tag / duration_days / price / start_date / end_date
+   *    / lead_doctor_staff_id / summary / description / icon / status
+   * ⚠️ `duration`('90 天')与 `priceLabel`('¥ 100')是**展示派生值**,不是 DB 列,
+   *    真实列是 `durationDays` 与 `price`。
+   * ⚠️ `status` 对外用字符串 'on' / 'off'(DB 存 1 / 0,API 层转字符串)。
+   */
   var PROJECTS = [
     {
       id: '90d_health',
+      hospitalId: 'H1',
       name: '90 天卒中连续健康管理',
+      durationDays: 90,
       duration: '90 天',
       price: 100,
       priceLabel: '¥ 100',
       tag: '管理',
+      startDate: '2026-09-01',
+      endDate: '2026-11-30',
+      leadDoctorId: 'S2',
+      status: 'on',
       icon: 'assets/icons-png/icon-tab-projects.png',
       summary: '出院后 90 天随访管理',
       description:
@@ -23,11 +36,17 @@
     },
     {
       id: 'carotid',
+      hospitalId: 'H1',
       name: '颈动脉斑块管理研究',
+      durationDays: 365,
       duration: '365 天',
       price: 200,
       priceLabel: '¥ 200',
       tag: '研究',
+      startDate: '2026-01-01',
+      endDate: '2026-12-31',
+      leadDoctorId: 'S3',
+      status: 'on',
       icon: 'assets/icons-png/icon-microscope.png',
       summary: '12 月 LDL-C 跟踪 · 需研究者确认',
       description:
@@ -36,11 +55,17 @@
     },
     {
       id: '365d_health',
+      hospitalId: 'H1',
       name: '365 天长周期管理',
+      durationDays: 365,
       duration: '365 天',
       price: 0,
       priceLabel: '¥ 待定',
       tag: '管理',
+      startDate: '2026-01-01',
+      endDate: '2026-12-31',
+      leadDoctorId: 'S4',
+      status: 'on',
       icon: 'assets/icons-png/icon-calendar.png',
       summary: '1 年长周期 · 高复发风险患者',
       description:
@@ -89,10 +114,34 @@
     return arr;
   }
 
+  /* ------------------------------------------------------------------
+   * 未指定项目(占位)
+   * ⚠️ 业务含义:患者已扫码绑定主管医生,但**尚未进入任何项目**(未入组)。
+   *    原型用 projId = '' 表示;DB 侧 AR 用一条「占位项目」记录兜底
+   *    (patient_project 指向占位 project 行),两者语义等价。
+   * ------------------------------------------------------------------ */
+  var UNASSIGNED_LABEL = '未指定项目';
+
+  /**
+   * 取项目名;projId 为空 / 查不到 → 「未指定项目」
+   */
+  function projectName(id) {
+    var p = getProject(id);
+    return p ? p.name : UNASSIGNED_LABEL;
+  }
+
+  /**
+   * 是否为「未指定项目」(占位)
+   */
+  function isUnassigned(id) { return !getProject(id); }
+
   // 暴露
   window.PROJECTS = PROJECTS;
   window.PROJECT_HELPERS = {
     getProject: getProject,
+    projectName: projectName,
+    isUnassigned: isUnassigned,
+    UNASSIGNED_LABEL: UNASSIGNED_LABEL,
     getSubscribed: getSubscribed,
     isSubscribed: isSubscribed,
     subscribe: subscribe

@@ -12,7 +12,8 @@
 
   <div class="page-head">
     <h1>病患</h1>
-    <div class="sub">患者扫描医生二维码后自动绑定主管医生。护士归属需另行指派。</div>
+    <div class="sub">患者扫描医生二维码后自动绑定主管医生(绑定到「患者-项目参与」记录)。
+      一个患者可同时参与多个项目,每个项目下的主管医生 / 主管护士 / 协作护士 / 入组结管信息各自独立。</div>
   </div>
 
   <div id="scopeStrip"></div>
@@ -27,7 +28,7 @@
       <a href="back-patients.html?filter=nonurse" id="toNonurse">查看 ›</a>
       <div class="k-lab">待分配护士</div>
       <div class="k-val" id="kNoNurse">0</div>
-      <div class="k-sub">已绑定主管医生,护士未定</div>
+      <div class="k-sub">该项目下主管医生已定、护士未定</div>
     </div>
     <div class="kpi orange">
       <div class="k-lab">医生个体设定基线</div>
@@ -68,14 +69,14 @@
       <table class="tbl">
         <thead>
           <tr>
-            <th style="width:150px">患者</th>
-            <th style="width:120px">住院号</th>
-            <th style="width:150px">主管医生</th>
-            <th style="width:150px">归属护士</th>
-            <th style="width:200px">当前预警基线</th>
-            <th style="width:112px">入组时间</th>
-            <th style="width:88px">状态</th>
-            <th class="col-act" style="width:80px">操作</th>
+            <th style="width:185px">患者</th>
+            <th style="width:100px">住院号</th>
+            <th style="width:138px">主管医生<br><span class="fz-11 text-3">按项目</span></th>
+            <th style="width:138px">主管护士<br><span class="fz-11 text-3">按项目</span></th>
+            <th style="width:200px">项目参与</th>
+            <th style="width:170px">当前预警基线</th>
+            <th style="width:84px">状态</th>
+            <th class="col-act" style="width:74px">操作</th>
           </tr>
         </thead>
         <tbody id="body"></tbody>
@@ -113,17 +114,31 @@
     <table class="tbl" id="pBasic" style="font-size:12.5px"></table>
 
     <div class="form-sec" style="margin-top:18px">
+      <h4>项目参与<span class="badge badge-gray" style="margin-left:6px" id="pProjCount">—</span></h4>
+      <div id="pProjList"></div>
+      <div class="hint" style="margin-top:6px">
+        一个患者可同时参与多个项目;每个项目下的主管医生 / 主管护士 / 病患协作护士 / 入组与结管信息各自独立。
+      </div>
+    </div>
+
+    <div class="form-sec">
       <h4>归属调整</h4>
       <div class="fi">
-        <label><span class="req">*</span>主管医生</label>
-        <select class="sel w-full" id="pDocSel"></select>
-        <span class="hint">病患必须有主管医生(硬约束),不可清空</span>
+        <label><span class="req">*</span>项目</label>
+        <select class="sel w-full" id="pProjSel"></select>
+        <span class="hint">先选项目,再调整该患者<b>在这个项目下</b>的主管医生 / 主管护士</span>
         <span class="err-msg"></span>
       </div>
       <div class="fi mt-12">
-        <label>归属护士</label>
+        <label><span class="req">*</span>主管医生</label>
+        <select class="sel w-full" id="pDocSel"></select>
+        <span class="hint">该项目下的主管医生(硬约束),不可清空</span>
+        <span class="err-msg"></span>
+      </div>
+      <div class="fi mt-12">
+        <label>主管护士</label>
         <select class="sel w-full" id="pNurSel"></select>
-        <span class="hint">可为「未分配」;共负责护士规则本期不做</span>
+        <span class="hint">可为「未分配」;病患协作护士本轮只读展示</span>
         <span class="err-msg"></span>
       </div>
       <div class="fi mt-12">
@@ -142,7 +157,7 @@
     <div class="note note-gray" style="margin-top:6px">
       <img src="assets/icons-png/icon-info.png">
       <div><b>患者详情页待定,后续单独设计。</b><br>
-        本抽屉只用于查看基本信息与调整归属,不承载病历、任务、文书等内容。</div>
+        本抽屉只用于查看基本信息与按项目调整归属,不承载病历、任务、文书等内容。</div>
     </div>
   </div>
   <div class="drawer-foot">
@@ -168,10 +183,12 @@
   </div>
 </div>
 
+<script src="assets/projects.js"></script>
 <script src="assets/back-data.js"></script>
 <script src="assets/back-layout.js"></script>
 <script>
   var cur = null;
+  var curProjIdx = 0;   /* 当前编辑的项目参与记录下标(归属调整按项目维度) */
 
   /* 下拉:按「可承担角色位」筛(主管医生 = roles 含 doctor;护士 = roles 含 nurse) */
   (function () {
@@ -186,6 +203,12 @@
     nn.insertAdjacentHTML('afterbegin', '<option value="__none">— 未分配 —</option>');
   })();
 
+  /* ---------- 筛选(全部按「患者-项目参与」维度)----------
+   * 主管医生 = X  → 存在某条参与记录,其 docId === X
+   * 归属护士 = X  → 存在某条参与记录,其 nurId === X
+   * 未分配护士    → 该患者**所有**参与记录都没有 nurId
+   *   ⚠️ 另一口径「存在任一条未分配即算待分配」见 admin-design-spec.md §3.11.7,待用户拍板
+   */
   function filtered() {
     var kw = document.getElementById('kw').value.trim();
     var fd = document.getElementById('fDoc').value;
@@ -195,11 +218,11 @@
     var fs = document.getElementById('fStatus').value;
     return Back.hospFilter(BACK_DATA.patients, 'patients').filter(function (p) {
       if (kw && (p.name + p.inNo).indexOf(kw) < 0) return false;
-      if (fd && p.docId !== fd) return false;
-      if (fn === '__none' && p.nurId) return false;
-      if (fn && fn !== '__none' && p.nurId !== fn) return false;
-      if (fns === 'none' && p.nurId) return false;
-      if (fns === 'yes' && !p.nurId) return false;
+      if (fd && !BACK_DATA.hasProjDoc(p, fd)) return false;
+      if (fn === '__none' && !BACK_DATA.pendingNurse(p)) return false;
+      if (fn && fn !== '__none' && !BACK_DATA.hasProjNur(p, fn)) return false;
+      if (fns === 'none' && !BACK_DATA.pendingNurse(p)) return false;
+      if (fns === 'yes' && BACK_DATA.pendingNurse(p)) return false;
       if (fb && p.base.src !== fb) return false;
       if (fs && p.status !== fs) return false;
       return true;
@@ -216,6 +239,32 @@
       + '<div class="cell-sub">' + p.base.by + '</div>';
   }
 
+  /* ---------- 列表单元格(项目维度)---------- */
+  /* 每个项目参与记录在「主管医生 / 主管护士 / 项目参与」三列里各占一个等高块(40px),
+     保证多项目时上下能一一对齐。 */
+  var PROJ_ROW_H = 40;
+
+  function projCell(r) {
+    var name = BACK_DATA.projName(r.projId);
+    var badge = r.projId
+      ? '<span class="badge badge-outline">' + name + '</span>'
+      : '<span class="badge badge-gray">未指定项目</span>';
+    var sub = r.status === 'closed'
+      ? '入组 ' + r.enrole + ' · 已结管'
+      : '入组 ' + r.enrole;
+    return '<div style="height:' + PROJ_ROW_H + 'px">'
+      + badge
+      + '<div class="cell-sub">' + sub + '</div>'
+      + '</div>';
+  }
+  function staffCell(r, id) {
+    var s = id ? BACK_DATA.member(id) : null;
+    return '<div style="height:' + PROJ_ROW_H + 'px;display:flex;align-items:flex-start">'
+      + (s ? '<span class="cell-user">' + Back.staffAv(s, 'xs') + '<span>' + s.name + '</span></span>'
+            : '<span class="text-4">未指定</span>')
+      + '</div>';
+  }
+
   function render() {
     var rows = filtered();
     document.getElementById('n').textContent = rows.length;
@@ -223,25 +272,24 @@
     document.getElementById('kActive').textContent =
       pool.filter(function (p) { return p.status === 'active'; }).length;
     document.getElementById('kNoNurse').textContent =
-      pool.filter(function (p) { return !p.nurId; }).length;
+      pool.filter(function (p) { return BACK_DATA.pendingNurse(p); }).length;
     document.getElementById('kDocBase').textContent =
       pool.filter(function (p) { return p.base.src === 'doctor'; }).length;
 
     document.getElementById('body').innerHTML = rows.length ? rows.map(function (p) {
-      var doc = BACK_DATA.member(p.docId);
-      var nur = p.nurId ? BACK_DATA.member(p.nurId) : null;
+      var rs = BACK_DATA.projsOf(p);
       return '<tr style="cursor:pointer" data-p="' + p.id + '"'
-        + (p.nurId ? '' : ' class="row-warn"') + '>'
+        + (BACK_DATA.pendingNurse(p) ? ' class="row-warn"' : '') + '>'
         + '<td><div class="cell-user"><span class="av-sm" style="background:' + BACK_DATA.avatarColor(p.name) + '">'
         +   p.name.charAt(0) + '</span>'
         +   '<div><div class="cell-main">' + p.name + '</div>'
-        +   '<div class="cell-sub">' + p.age + ' 岁 · ' + (p.sex === 'M' ? '男' : '女') + '</div></div></div></td>'
+        +   '<div class="cell-sub">' + p.age + ' 岁 · ' + (p.sex === 'M' ? '男' : '女')
+        +   (rs.length > 1 ? ' · ' + rs.length + ' 个项目' : '') + '</div></div></div></td>'
         + '<td><span class="mono">' + p.inNo + '</span></td>'
-        + '<td>' + (doc ? '<div class="cell-user">' + Back.staffAv(doc, 'xs') + '<span>' + doc.name + '</span></div>' : '—') + '</td>'
-        + '<td>' + (nur ? '<div class="cell-user">' + Back.staffAv(nur, 'xs') + '<span>' + nur.name + '</span></div>'
-                       : '<span class="badge badge-block">待分配</span>') + '</td>'
+        + '<td>' + rs.map(function (r) { return staffCell(r, r.docId); }).join('') + '</td>'
+        + '<td>' + rs.map(function (r) { return staffCell(r, r.nurId); }).join('') + '</td>'
+        + '<td>' + rs.map(projCell).join('') + '</td>'
         + '<td>' + baseCell(p) + '</td>'
-        + '<td class="fz-12 mono">' + p.enrole + '</td>'
         + '<td>' + (p.status === 'active' ? '<span class="badge badge-pass">在管</span>'
                                          : '<span class="badge badge-gray">已结管</span>') + '</td>'
         + '<td class="col-act"><span class="btn-text">查看 ›</span></td>'
@@ -260,31 +308,69 @@
     openDrawer();
   });
 
-  function openDrawer() {
-    var p = cur;
-    var doc = BACK_DATA.member(p.docId);
-    document.getElementById('pTitle').textContent = p.name + ' · 基本信息';
-    document.getElementById('pAv').textContent = p.name.charAt(0);
-    document.getElementById('pName').textContent = p.name;
-    document.getElementById('pSex').textContent = p.age + ' 岁 · ' + (p.sex === 'M' ? '男' : '女')
-      + ' · 入组 ' + p.enrole;
+  /* 当前正在编辑的项目参与记录 */
+  function curRec() { return BACK_DATA.projsOf(cur)[curProjIdx] || null; }
 
-    document.getElementById('pBasic').innerHTML =
-      '<tr><td class="text-3" style="width:100px;border:none">身份证号</td><td style="border:none">'
-      + '<span class="mono">' + p.inNo + '</span> <span class="badge badge-gray">已脱敏</span></td></tr>'
-      + '<tr><td class="text-3" style="border:none">住院号</td><td style="border:none"><span class="mono">'
-      + p.inNo + '</span></td></tr>'
-      + '<tr><td class="text-3" style="border:none">项目</td><td style="border:none">'
-      + (p.proj === '—' ? '<span class="text-4">未入组</span>' : '<span class="badge badge-outline">' + p.proj + '</span>') + '</td></tr>'
-      + '<tr><td class="text-3" style="border:none">状态</td><td style="border:none">'
-      + (p.status === 'active' ? '<span class="badge badge-pass">在管</span>' : '<span class="badge badge-gray">已结管</span>') + '</td></tr>';
+  /* 项目参与列表(一个参与记录一块) */
+  function projListHtml() {
+    var ps = BACK_DATA.projsOf(cur);
+    if (!ps.length) {
+      return '<div class="empty" style="padding:18px 0"><img src="assets/icons-png/icon-empty-box.png" alt="">'
+        + '<div class="e-d">该患者暂无项目参与记录</div></div>';
+    }
+    function who(id, emptyTxt) {
+      var s = id ? BACK_DATA.member(id) : null;
+      return s ? s.name : '<span class="text-orange">' + emptyTxt + '</span>';
+    }
+    return ps.map(function (r, i) {
+      var badge = r.projId
+        ? '<span class="badge badge-outline">' + BACK_DATA.projName(r.projId) + '</span>'
+        : '<span class="badge badge-gray">未指定项目</span>';
+      var st = r.status === 'active'
+        ? '<span class="badge badge-pass">在管</span>'
+        : '<span class="badge badge-gray">已结管</span>';
+      var co = r.coNurId ? BACK_DATA.member(r.coNurId) : null;
+      return '<div style="border:1px solid var(--line-2);border-radius:8px;padding:9px 11px;margin-bottom:8px">'
+        + '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">' + badge + st
+        +   (i === curProjIdx ? '<span class="badge badge-info">正在调整</span>' : '')
+        +   (r.projId ? '' : '<span class="fz-11 text-3">扫码已绑定主管医生,尚未入组</span>')
+        + '</div>'
+        + '<div style="display:flex;flex-wrap:wrap;gap:4px 18px;margin-top:8px;font-size:12px">'
+        +   '<span><span class="text-3">主管医生</span> ' + who(r.docId, '待分配') + '</span>'
+        +   '<span><span class="text-3">主管护士</span> ' + who(r.nurId, '待分配') + '</span>'
+        +   '<span><span class="text-3">协作护士</span> ' + (co ? co.name : '<span class="text-4">无</span>') + '</span>'
+        +   '<span><span class="text-3">入组</span> <span class="mono">' + r.enrole + '</span></span>'
+        +   (r.status === 'closed'
+              ? '<span><span class="text-3">结管</span> <span class="mono">' + (r.closedAt || '—') + '</span> '
+                + (r.closeReason || '') + '</span>'
+              : '')
+        + '</div></div>';
+    }).join('');
+  }
 
-    /* 归属下拉:按「可承担角色位」筛 */
+  /* 项目下拉 */
+  function fillProjSelect() {
+    var ps = BACK_DATA.projsOf(cur);
+    var s = document.getElementById('pProjSel');
+    s.innerHTML = '';
+    ps.forEach(function (r, i) {
+      var label = BACK_DATA.projName(r.projId) + (r.status === 'closed' ? '(已结管)' : '');
+      s.insertAdjacentHTML('beforeend',
+        '<option value="' + i + '"' + (i === curProjIdx ? ' selected' : '') + '>' + label + '</option>');
+    });
+  }
+
+  /* 归属下拉:按「可承担角色位」筛,绑定到当前选中的项目参与记录 */
+  function fillStaffSelects() {
+    var r = curRec();
     var dSel = document.getElementById('pDocSel');
+    var nSel = document.getElementById('pNurSel');
     dSel.innerHTML = '';
+    nSel.innerHTML = '<option value="">— 未分配 —</option>';
+    if (!r) return;
     var docOpts = BACK_DATA.staffWithRole('doctor');
-    var curDoc = BACK_DATA.member(p.docId);
-    var curDocOk = docOpts.some(function (s) { return s.id === p.docId; });
+    var curDoc = r.docId ? BACK_DATA.member(r.docId) : null;
+    var curDocOk = docOpts.some(function (s) { return s.id === r.docId; });
     if (curDoc && !curDocOk) {
       /* 现主管医生已不具备 doctor 角色位(如职位角色位被改过)——保留原值并标注,保存时拦截 */
       dSel.insertAdjacentHTML('beforeend',
@@ -292,23 +378,57 @@
     }
     docOpts.forEach(function (s) {
       dSel.insertAdjacentHTML('beforeend',
-        '<option value="' + s.id + '"' + (s.id === p.docId ? ' selected' : '') + '>' + s.name + '</option>');
+        '<option value="' + s.id + '"' + (s.id === r.docId ? ' selected' : '') + '>' + s.name + '</option>');
     });
-    var nSel = document.getElementById('pNurSel');
-    nSel.innerHTML = '<option value="">— 未分配 —</option>';
     var nurOpts = BACK_DATA.staffWithRole('nurse');
-    var curNur = p.nurId ? BACK_DATA.member(p.nurId) : null;
-    var curNurOk = !curNur || nurOpts.some(function (s) { return s.id === p.nurId; });
+    var curNur = r.nurId ? BACK_DATA.member(r.nurId) : null;
+    var curNurOk = !curNur || nurOpts.some(function (s) { return s.id === r.nurId; });
     if (curNur && !curNurOk) {
       nSel.insertAdjacentHTML('beforeend',
         '<option value="' + curNur.id + '" selected>' + curNur.name + '(不具备护士角色位)</option>');
     }
     nurOpts.forEach(function (s) {
       nSel.insertAdjacentHTML('beforeend',
-        '<option value="' + s.id + '"' + (s.id === p.nurId ? ' selected' : '') + '>' + s.name + '</option>');
+        '<option value="' + s.id + '"' + (s.id === r.nurId ? ' selected' : '') + '>' + s.name + '</option>');
     });
+  }
+
+  function openDrawer() {
+    var p = cur;
+    var ps = BACK_DATA.projsOf(p);
+    curProjIdx = 0;
+    document.getElementById('pTitle').textContent = p.name + ' · 基本信息';
+    document.getElementById('pAv').textContent = p.name.charAt(0);
+    document.getElementById('pName').textContent = p.name;
+    document.getElementById('pSex').textContent = p.age + ' 岁 · ' + (p.sex === 'M' ? '男' : '女')
+      + ' · ' + ps.length + ' 个项目';
+
+    var extra = (p.extraNurs || []).map(function (id) {
+      var s = BACK_DATA.member(id);
+      return s ? s.name : id;
+    });
+    document.getElementById('pBasic').innerHTML =
+      '<tr><td class="text-3" style="width:110px;border:none">身份证号</td><td style="border:none">'
+      + '<span class="mono">' + p.inNo + '</span> <span class="badge badge-gray">已脱敏</span></td></tr>'
+      + '<tr><td class="text-3" style="border:none">住院号</td><td style="border:none"><span class="mono">'
+      + p.inNo + '</span></td></tr>'
+      + '<tr><td class="text-3" style="border:none">患者状态</td><td style="border:none">'
+      + (p.status === 'active' ? '<span class="badge badge-pass">在管</span>' : '<span class="badge badge-gray">已结管</span>')
+      + '<span class="fz-11 text-3" style="margin-left:6px">患者级</span></td></tr>'
+      + '<tr><td class="text-3" style="border:none">协作护士</td><td style="border:none">'
+      + (extra.length ? extra.join('、') : '<span class="text-4">无</span>')
+      + '<span class="fz-11 text-3" style="margin-left:6px">患者级全局名单</span></td></tr>';
+
+    /* 项目参与 */
+    document.getElementById('pProjCount').textContent = ps.length + ' 个项目';
+    document.getElementById('pProjList').innerHTML = projListHtml();
+
+    /* 归属下拉:先选项目,再选该项目下的医生 / 护士 */
+    fillProjSelect();
+    fillStaffSelects();
     document.getElementById('pReason').value = '';
     document.querySelector('#pReason').closest('.fi').classList.remove('has-err');
+    document.getElementById('pProjSel').closest('.fi').classList.remove('has-err');
     document.getElementById('pDocSel').closest('.fi').classList.remove('has-err');
     document.getElementById('pNurSel').closest('.fi').classList.remove('has-err');
     updateImpact();
@@ -345,30 +465,50 @@
   /* 变更影响提示 */
   function updateImpact() {
     var p = cur;
-    var oldDoc = BACK_DATA.member(p.docId), newDoc = BACK_DATA.member(document.getElementById('pDocSel').value);
-    var oldNur = p.nurId ? BACK_DATA.member(p.nurId) : null;
+    var r = curRec();
+    if (!r) {
+      document.getElementById('pImpact').innerHTML =
+        '<div class="hint mt-12">该患者没有项目参与记录,无法调整归属。</div>';
+      return;
+    }
+    var pjName = BACK_DATA.projName(r.projId);
+    var oldDoc = r.docId ? BACK_DATA.member(r.docId) : null;
+    var newDoc = BACK_DATA.member(document.getElementById('pDocSel').value);
+    var oldNur = r.nurId ? BACK_DATA.member(r.nurId) : null;
     var newNur = BACK_DATA.member(document.getElementById('pNurSel').value);
     var items = [];
     if (oldDoc && newDoc && oldDoc.id !== newDoc.id) {
-      items.push('主管医生 <b>' + oldDoc.name + '</b> → <b>' + newDoc.name + '</b>,患者小程序端即时生效');
-      items.push('<b>' + newDoc.name + '</b> 工作台新增该患者,<b>' + oldDoc.name + '</b> 侧移除');
+      items.push('【' + pjName + '】主管医生 <b>' + oldDoc.name + '</b> → <b>' + newDoc.name + '</b>,患者小程序端即时生效');
+      items.push('<b>' + newDoc.name + '</b> 工作台在该项目下新增该患者,<b>' + oldDoc.name + '</b> 侧移除(仅该项目,其他项目不变)');
       items.push('该患者名下 <b>' + p.fields.length + '</b> 项指标的预警基线来源需新医生确认是否继承(C5)');
     }
     if ((oldNur && oldNur.id) !== (newNur && newNur.id)) {
-      items.push('归属护士 <b>' + (oldNur ? oldNur.name : '未分配') + '</b> → <b>' + (newNur ? newNur.name : '未分配') + '</b>');
+      items.push('【' + pjName + '】主管护士 <b>' + (oldNur ? oldNur.name : '未分配') + '</b> → <b>' + (newNur ? newNur.name : '未分配') + '</b>');
     }
     document.getElementById('pImpact').innerHTML = items.length
       ? '<div class="note note-warn mt-12" style="margin-bottom:0"><img src="assets/icons-png/icon-warning.png">'
-        + '<div><b>本次保存将连带发生:</b><ul style="margin-top:4px">' + items.map(function (x) {
+        + '<div><b>本次保存将连带发生(仅影响「' + pjName + '」这一条参与记录):</b>'
+        + '<ul style="margin-top:4px">' + items.map(function (x) {
             return '<li style="padding-left:14px;position:relative;margin-bottom:3px">' + x + '</li>'; }).join('')
         + '</ul></div></div>'
-      : '<div class="hint mt-12">归属未变更,直接保存即可。</div>';
+      : '<div class="hint mt-12">该项目的归属未变更,直接保存即可。</div>';
   }
   document.getElementById('pDocSel').addEventListener('change', updateImpact);
   document.getElementById('pNurSel').addEventListener('change', updateImpact);
+  document.getElementById('pProjSel').addEventListener('change', function () {
+    curProjIdx = parseInt(document.getElementById('pProjSel').value, 10) || 0;
+    fillStaffSelects();
+    document.getElementById('pProjList').innerHTML = projListHtml();
+    updateImpact();
+  });
 
   /* 保存 */
   document.getElementById('pSave').addEventListener('click', function () {
+    var r = curRec();
+    if (!r) {
+      Back.toast('该患者没有项目参与记录,无法保存', 'err');
+      return;
+    }
     /* 角色位校验:主管医生须具备 doctor 角色位,主管护士须具备 nurse 角色位 */
     var docFi = document.getElementById('pDocSel').closest('.fi');
     var nurFi = document.getElementById('pNurSel').closest('.fi');
@@ -403,23 +543,24 @@
       return;
     }
 
-    var oldDoc = cur.docId, oldNur = cur.nurId;
-    cur.docId = newDocId;
-    cur.nurId = newNurId;
+    var pjName = BACK_DATA.projName(r.projId);
+    var oldDoc = r.docId, oldNur = r.nurId;
+    r.docId = newDocId;
+    r.nurId = newNurId;
 
     // 换医生 → 个体基线挂起,需新医生确认
-    if (oldDoc !== cur.docId && cur.base.src === 'doctor') cur.base.pendingConfirm = true;
+    if (oldDoc !== r.docId && cur.base.src === 'doctor') cur.base.pendingConfirm = true;
 
     Back.drawer('pDrawer', false);
     render();
 
     document.getElementById('okTitle').textContent = '归属已更新';
     document.getElementById('okBody').innerHTML =
-      '<div>已记录留痕:</div>'
+      '<div>已记录留痕(仅 <b>' + pjName + '</b> 这一条参与记录):</div>'
       + '<ul><li>操作人:后台管理员</li>'
-      + '<li>主管医生:' + BACK_DATA.member(oldDoc).name + ' → ' + BACK_DATA.member(cur.docId).name + '</li>'
-      + '<li>归属护士:' + (oldNur ? BACK_DATA.member(oldNur).name : '未分配') + ' → '
-      + (cur.nurId ? BACK_DATA.member(cur.nurId).name : '未分配') + '</li>'
+      + '<li>主管医生:' + (oldDoc ? BACK_DATA.member(oldDoc).name : '未分配') + ' → ' + BACK_DATA.member(r.docId).name + '</li>'
+      + '<li>主管护士:' + (oldNur ? BACK_DATA.member(oldNur).name : '未分配') + ' → '
+      + (r.nurId ? BACK_DATA.member(r.nurId).name : '未分配') + '</li>'
       + '<li>原因:' + reason + '</li></ul>'
       + (cur.base.pendingConfirm
           ? '<div class="note note-warn" style="margin-top:10px"><img src="assets/icons-png/icon-warning.png">'

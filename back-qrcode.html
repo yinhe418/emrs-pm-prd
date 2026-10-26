@@ -158,6 +158,7 @@
   </div>
 </div>
 
+<script src="assets/projects.js"></script>
 <script src="assets/back-data.js"></script>
 <script src="assets/back-layout.js"></script>
 <script>
@@ -222,7 +223,13 @@
     document.getElementById('dN').textContent = rows.length;
     document.getElementById('dBody').innerHTML = rows.length ? rows.map(function (s) {
       var d = BACK_DATA.dept(s.deptId), p = BACK_DATA.pos(s.posId);
-      var pts = BACK_DATA.patients.filter(function (x) { return x.docId === s.id; });
+      /* 该医生名下的患者 = 在**某个项目下**由他担任主管医生的患者(按患者去重) */
+      var pts = BACK_DATA.patients.filter(function (x) { return BACK_DATA.hasProjDoc(x, s.id); });
+      var firstEnrol = '';
+      for (var i = 0; i < pts.length && !firstEnrol; i++) {
+        var mp = BACK_DATA.mainProj(pts[i]);
+        if (mp && mp.docId === s.id) firstEnrol = mp.enrole;
+      }
       return '<tr>'
         + '<td><div class="cell-user">' + Back.staffAv(s) + '<div><div class="cell-main">' + s.name
         +   '</div><div class="cell-sub">' + (BACK_DATA.pos(s.posId) || {}).name + '</div></div></div></td>'
@@ -230,7 +237,7 @@
         + '<td><span class="badge badge-info">' + p.name + '</span></td>'
         + '<td><div class="qr-box sm"><div class="qr-fake"></div></div></td>'
         + '<td class="num-cell">' + pts.length + ' 人</td>'
-        + '<td class="fz-12 mono">' + (pts.length ? pts[0].enrole : '—') + '</td>'
+        + '<td class="fz-12 mono">' + (firstEnrol || '—') + '</td>'
         + '<td><span class="badge badge-pass">生效中</span></td>'
         + '<td class="col-act">'
         +   '<a class="btn-text" href="back-staff-detail.html?id=' + s.id + '">详情</a>'
@@ -273,14 +280,28 @@
         + '扫码后<b>自动绑定该医生为主管医生</b><br>'
         + '患者不会看到该医生的其他患者信息';
       document.getElementById('qRecDesc').textContent = '已绑定患者(仅本人可见)';
-      recs = BACK_DATA.patients.filter(function (x) { return x.docId === id; }).map(function (x) {
-        return { t: x.enrole, who: x.name, st: x.status, reason: '' };
+      /* 扫码绑定记录 = 该医生在**各个项目下**的主管患者(一行 = 患者 × 项目) */
+      recs = [];
+      BACK_DATA.patients.forEach(function (x) {
+        BACK_DATA.projsOf(x).forEach(function (r) {
+          if (r.docId !== id) return;
+          recs.push({
+            t: r.enrole,
+            who: x.name,
+            st: r.status,
+            reason: '项目:' + BACK_DATA.projName(r.projId)
+              + (r.status === 'closed'
+                  ? ' · 已结管 ' + (r.closedAt || '') + (r.closeReason ? ' · ' + r.closeReason : '')
+                  : '')
+          });
+        });
       });
     }
     document.getElementById('qRec').innerHTML = recs.length ? recs.map(function (r) {
       var badge = r.st === 'archived' ? '<span class="badge badge-gray">已归档</span>'
         : r.st === 'pending' ? '<span class="badge badge-block">待认领</span>'
         : r.st === 'claimed' ? '<span class="badge badge-warn">已认领未完成</span>'
+        : r.st === 'closed' ? '<span class="badge badge-gray">已结管</span>'
         : '<span class="badge badge-pass">已完成</span>';
       return '<div class="flex" style="padding:9px 0;border-bottom:1px solid var(--line-2)">'
         + '<span class="cell-main">' + r.who + '</span>' + badge

@@ -275,8 +275,12 @@
     if (kind === 'depts') return items.filter(function (x) { return x.hospitalId === h.id; });
     if (kind === 'staff') return items.filter(function (x) { return cds.indexOf(x.deptId) >= 0; });
     if (kind === 'patients') return items.filter(function (x) {
-      var d = BACK_DATA.dept(x.docId ? BACK_DATA.member(x.docId).deptId : '');
-      return d && d.hospitalId === h.id;
+      /* ⚠️ 2026-10-26:主管医生已下沉到「患者-项目参与」维度,
+       *    科室按**主项目**(第一条在管参与记录)下的主管医生推导。 */
+      var mp = BACK_DATA.mainProj(x);
+      var mem = mp && mp.docId ? BACK_DATA.member(mp.docId) : null;
+      var d = mem ? BACK_DATA.dept(mem.deptId) : null;
+      return !!(d && d.hospitalId === h.id);
     });
     if (kind === 'drugs') return items.filter(function (x) { return x.hospitalId === h.id; });
     if (kind === 'components') return items.filter(function (x) { return cds.indexOf(x.deptId) >= 0; });

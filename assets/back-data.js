@@ -27,11 +27,11 @@ var BACK_DATA = (function () {
 
   /* ---- 科室(带责任人 = 科室主任)---- */
   var departments = [
-    { id: 'D1', name: '神经内科', type: '卒中中心', hospitalId: 'H1', directorId: 'S1', parent: '', intro: '负责急性卒中绿色通道与出院后连续管理。', status: 'on' },
-    { id: 'D2', name: '神经外科', type: '神经外科', hospitalId: 'H1', directorId: 'S8', parent: '', intro: '', status: 'on' },
-    { id: 'D3', name: '急诊科',   type: '急诊科',   hospitalId: 'H1', directorId: '',   parent: '', intro: '卒中绿色通道首诊。', status: 'on' },
-    { id: 'D4', name: '康复医学科', type: '康复科', hospitalId: 'H1', directorId: 'S10', parent: '', intro: '', status: 'on' },
-    { id: 'D5', name: '神经内科', type: '神经内科', hospitalId: 'H2', directorId: '',   parent: '', intro: '', status: 'on' }
+    { id: 'D1', name: '神经内科', hospitalId: 'H1', directorId: 'S1', intro: '负责急性卒中绿色通道与出院后连续管理。', status: 'on' },
+    { id: 'D2', name: '神经外科', hospitalId: 'H1', directorId: 'S8', intro: '', status: 'on' },
+    { id: 'D3', name: '急诊科',   hospitalId: 'H1', directorId: '',   intro: '卒中绿色通道首诊。', status: 'on' },
+    { id: 'D4', name: '康复医学科', hospitalId: 'H1', directorId: 'S10', intro: '', status: 'on' },
+    { id: 'D5', name: '神经内科', hospitalId: 'H2', directorId: '',   intro: '', status: 'on' }
   ];
 
   /* ---- 职位字典:三类(初装 6 个只是种子数据,可增删改)----
@@ -146,38 +146,84 @@ var BACK_DATA = (function () {
     { id: 'W5', nick: '刘**', avatarText: '刘', scanAt: '2026-10-10 16:22', days: 11, state: 'archived', archivedReason: '误扫(非本院人员)', claimedBy: '', claimAt: '', source: 'H 市第一医院' }
   ];
 
-  /* ---- 病患 ---- */
+  /* ---- 病患 ----
+   * ⚠️ 2026-10-26 用户拍板:一个患者可参与**多个项目**,每个项目下的
+   *    主管医生 / 主管护士 / 病患协作护士 / 入组时间 / 结管信息**各不相同**。
+   *    因此 docId / nurId / enrole / proj 这 4 个字段从患者级**下沉到项目级**。
+   *
+   * 字段说明
+   *   患者级: id / name / sex / age / inNo / status(在管·已结管)
+   *            extraNurs[] —— 患者级「病患协作护士」全局名单(DB patient_co_nurse)
+   *   项目级(projs[] 一行 = DB patient_project 一行):
+   *            projId     —— 项目主档 id;'' = 未指定项目(占位,患者未入组)
+   *            docId      —— 该患者**在这个项目下**的主管医生
+   *            nurId      —— 该患者**在这个项目下**的主管护士;'' = 待分配
+   *            coNurId    —— 该患者**在这个项目下**的病患协作护士;'' = 无
+   *            enrole     —— 入组时间
+   *            closedAt   —— 结管时间;closeReason —— 结管原因
+   *            status     —— 项目级状态:'active' 在管 / 'closed' 已结管
+   */
   var patients = [
-    { id: 'PT1', name: '陈丙英', sex: 'F', age: 81, inNo: '320***22', docId: 'S2', nurId: 'S6', extraNurs: [],
-      enrole: '2026-09-30', status: 'active', proj: '90 天卒中连续健康管理',
+    { id: 'PT1', name: '陈丙英', sex: 'F', age: 81, inNo: '320***22', extraNurs: [], status: 'active',
+      projs: [
+        { projId: '90d_health', docId: 'S2', nurId: 'S6', coNurId: '',
+          enrole: '2026-09-30', closedAt: '', closeReason: '', status: 'active' },
+        { projId: '365d_health', docId: 'S3', nurId: 'S7', coNurId: '',
+          enrole: '2026-10-12', closedAt: '', closeReason: '', status: 'active' }
+      ],
       base: { src: 'doctor', by: '医生甲', at: '2026-10-20' },
       fields: [
         { name: '收缩压', comp: '90 - 140', now: '100 - 150', unit: 'mmHg' },
         { name: '舒张压', comp: '60 - 90',  now: '60 - 95',   unit: 'mmHg' },
         { name: 'LDL-C', comp: '< 1.8',   now: '< 1.4',    unit: 'mmol/L' }
       ] },
-    { id: 'PT2', name: '陈明远', sex: 'M', age: 68, inNo: '320***58', docId: 'S2', nurId: 'S6', extraNurs: [],
-      enrole: '2026-10-06', status: 'active', proj: '90 天卒中连续健康管理',
+    { id: 'PT2', name: '陈明远', sex: 'M', age: 68, inNo: '320***58', extraNurs: [], status: 'active',
+      projs: [
+        { projId: '90d_health', docId: 'S2', nurId: 'S6', coNurId: '',
+          enrole: '2026-10-06', closedAt: '', closeReason: '', status: 'active' },
+        /* 2 个项目:研究项目「颈动脉斑块管理研究」下主管护士尚未指派(该行 nurId 为空) */
+        { projId: 'carotid', docId: 'S3', nurId: '', coNurId: '',
+          enrole: '2026-10-20', closedAt: '', closeReason: '', status: 'active' }
+      ],
       base: { src: 'dept', by: '神经内科 · 科室配置', at: '' },
       fields: [ { name: '收缩压', comp: '90 - 140', now: '—', unit: 'mmHg' } ] },
-    { id: 'PT3', name: '李桂芳', sex: 'F', age: 74, inNo: '320***71', docId: 'S3', nurId: 'S5', extraNurs: ['S7'],
-      enrole: '2026-09-12', status: 'active', proj: '90 天卒中连续健康管理',
+    { id: 'PT3', name: '李桂芳', sex: 'F', age: 74, inNo: '320***71', extraNurs: ['S7'], status: 'active',
+      projs: [
+        /* 协作护士两层演示:患者级 extraNurs = ['S7'],本项目下 coNurId 也是 'S7' */
+        { projId: '90d_health', docId: 'S3', nurId: 'S5', coNurId: 'S7',
+          enrole: '2026-09-12', closedAt: '', closeReason: '', status: 'active' }
+      ],
       base: { src: 'doctor', by: '医生乙', at: '2026-10-12' },
       fields: [ { name: '收缩压', comp: '90 - 140', now: '95 - 145', unit: 'mmHg' } ] },
-    { id: 'PT4', name: '王建国', sex: 'M', age: 65, inNo: '320***09', docId: 'S2', nurId: '', extraNurs: [],
-      enrole: '2026-10-18', status: 'active', proj: '—',
+    { id: 'PT4', name: '王建国', sex: 'M', age: 65, inNo: '320***09', extraNurs: [], status: 'active',
+      /* 未入组:projId = '' = 未指定项目(占位),主管医生已由扫码绑定,主管护士待分配 */
+      projs: [
+        { projId: '', docId: 'S2', nurId: '', coNurId: '',
+          enrole: '2026-10-18', closedAt: '', closeReason: '', status: 'active' }
+      ],
       base: { src: 'dept', by: '神经内科 · 科室配置', at: '' },
       fields: [] },
-    { id: 'PT5', name: '周淑珍', sex: 'F', age: 79, inNo: '320***33', docId: 'S4', nurId: 'S7', extraNurs: [],
-      enrole: '2026-08-25', status: 'active', proj: '90 天卒中连续健康管理',
+    { id: 'PT5', name: '周淑珍', sex: 'F', age: 79, inNo: '320***33', extraNurs: [], status: 'active',
+      projs: [
+        { projId: '90d_health', docId: 'S4', nurId: 'S7', coNurId: '',
+          enrole: '2026-08-25', closedAt: '', closeReason: '', status: 'active' }
+      ],
       base: { src: 'dept', by: '神经内科 · 科室配置', at: '' },
       fields: [ { name: '收缩压', comp: '90 - 140', now: '—', unit: 'mmHg' } ] },
-    { id: 'PT6', name: '赵国强', sex: 'M', age: 71, inNo: '320***84', docId: 'S3', nurId: 'S5', extraNurs: [],
-      enrole: '2026-06-14', status: 'closed', proj: '90 天卒中连续健康管理',
+    { id: 'PT6', name: '赵国强', sex: 'M', age: 71, inNo: '320***84', extraNurs: [], status: 'closed',
+      /* 已结管:项目级 status='closed' + 结管时间 + 结管原因 */
+      projs: [
+        { projId: '90d_health', docId: 'S3', nurId: 'S5', coNurId: '',
+          enrole: '2026-06-14', closedAt: '2026-09-12', closeReason: '疗程完成,指标稳定', status: 'closed' }
+      ],
       base: { src: 'doctor', by: '医生乙', at: '2026-06-14', expired: true },
       fields: [ { name: '收缩压', comp: '90 - 140', now: '—', unit: 'mmHg' } ] },
-    { id: 'PT7', name: '孙丽华', sex: 'F', age: 66, inNo: '320***47', docId: 'S8', nurId: 'S9', extraNurs: [],
-      enrole: '2026-10-01', status: 'active', proj: '—',
+    { id: 'PT7', name: '孙丽华', sex: 'F', age: 66, inNo: '320***47', extraNurs: [], status: 'active',
+      /* 未入组:projId = '' = 未指定项目(占位) */
+      projs: [
+        { projId: '', docId: 'S8', nurId: 'S9', coNurId: '',
+          enrole: '2026-10-01', closedAt: '', closeReason: '', status: 'active' }
+      ],
       base: { src: 'dept', by: '神经外科 · 科室配置', at: '' },
       fields: [] }
   ];
@@ -407,6 +453,56 @@ var BACK_DATA = (function () {
     return departments.filter(function (d) { return d.hospitalId === hid; });
   }
 
+  /* ---- 患者-项目参与(patient_project)查询辅助 ----
+   * ⚠️ 全站唯一口径:凡是要判断「这个患者在这个项目下的主管医生 / 主管护士是谁」,
+   *    一律走 projsOf(),不要直接读患者对象上的 docId / nurId(那两个字段已下沉)。
+   */
+  /* 该患者的全部项目参与记录 */
+  function projsOf(p) {
+    return (p && p.projs) ? p.projs : [];
+  }
+  /* 主项目 = 第一条在管记录;若没有在管记录则取第一条;再没有返回 null */
+  function mainProj(p) {
+    var ps = projsOf(p);
+    for (var i = 0; i < ps.length; i++) if (ps[i].status === 'active') return ps[i];
+    return ps.length ? ps[0] : null;
+  }
+  /* 项目名:查不到 / projId 为空 → 「未指定项目」 */
+  function projName(pid) {
+    if (window.PROJECT_HELPERS && window.PROJECT_HELPERS.projectName) {
+      return window.PROJECT_HELPERS.projectName(pid);
+    }
+    return pid || '未指定项目';
+  }
+  /* 该患者是否在某个项目下由 staffId 任主管医生 */
+  function hasProjDoc(p, staffId) {
+    if (!staffId) return false;
+    return projsOf(p).some(function (r) { return r.docId === staffId; });
+  }
+  /* 该患者是否在某个项目下由 staffId 任主管护士 */
+  function hasProjNur(p, staffId) {
+    if (!staffId) return false;
+    return projsOf(p).some(function (r) { return r.nurId === staffId; });
+  }
+  /* 该患者是否在某个项目下由 staffId 任病患协作护士 */
+  function hasProjCoNur(p, staffId) {
+    if (!staffId) return false;
+    return projsOf(p).some(function (r) { return r.coNurId === staffId; });
+  }
+  /* 「待分配主管护士」判定(本轮口径:该患者**所有**项目参与记录都没有主管护士)
+   * ⚠️ 另一口径「存在任一条未分配即算待分配」见 admin-design-spec.md §3.11.7,待用户拍板 */
+  function pendingNurse(p) {
+    var ps = projsOf(p);
+    if (!ps.length) return false;
+    return ps.every(function (r) { return !r.nurId; });
+  }
+  /* 该患者名下由 staffId 担任主管医生 / 主管护士的全部参与记录 */
+  function bindingsOf(p, staffId) {
+    return projsOf(p).filter(function (r) {
+      return r.docId === staffId || r.nurId === staffId || r.coNurId === staffId;
+    });
+  }
+
   /* 给药品打医院标签(本轮简单分:H1 多 / H2 少);原本的 status 字段保留 */
   (function () {
     drugs.forEach(function (d) { d.hospitalId = 'H1'; });
@@ -423,6 +519,9 @@ var BACK_DATA = (function () {
     byId: byId, dept: dept, pos: pos, member: member, hospital: hospital,
     maskPhone: maskPhone, avatarColor: avatarColor, bioScore: bioScore,
     rolesOf: rolesOf, posRoles: posRoles, staffWithRole: staffWithRole,
+    projsOf: projsOf, mainProj: mainProj, projName: projName,
+    hasProjDoc: hasProjDoc, hasProjNur: hasProjNur, hasProjCoNur: hasProjCoNur,
+    pendingNurse: pendingNurse, bindingsOf: bindingsOf,
     getCurrentHospitalId: getCurrentHospitalId, setCurrentHospitalId: setCurrentHospitalId,
     clearCurrentHospitalId: clearCurrentHospitalId,
     deptListByHospital: deptListByHospital,

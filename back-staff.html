@@ -223,8 +223,12 @@
     if (roles.indexOf('nurse') >= 0) rs.push('<span class="badge badge-outline">护士</span>');
     return badge + (rs.length ? '<span style="margin-left:6px">' + rs.join(' ') + '</span>' : '');
   }
+  /* 主管患者数:该员工在**任一项目下**担任主管医生 / 主管护士的患者数(按患者去重)
+   * ⚠️ 2026-10-26:主管医生 / 主管护士已下沉到「患者-项目参与」维度 */
   function patCount(id) {
-    var d = BACK_DATA.patients.filter(function (p) { return p.docId === id || p.nurId === id; }).length;
+    var d = BACK_DATA.patients.filter(function (p) {
+      return BACK_DATA.hasProjDoc(p, id) || BACK_DATA.hasProjNur(p, id);
+    }).length;
     return d;
   }
   function emptyRow(cols, t, d) {

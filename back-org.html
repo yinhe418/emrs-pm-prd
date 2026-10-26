@@ -60,11 +60,10 @@
           <thead>
             <tr>
               <th>科室名称</th>
-              <th style="width:110px">科室类型</th>
-              <th style="width:200px">科室主任(责任人)</th>
-              <th style="width:120px">医护人数</th>
-              <th style="width:80px">状态</th>
-              <th class="col-act" style="width:170px">操作</th>
+              <th style="width:250px">科室主任(责任人)</th>
+              <th style="width:150px">医护人数</th>
+              <th style="width:90px">状态</th>
+              <th class="col-act" style="width:190px">操作</th>
             </tr>
           </thead>
           <tbody id="deptBody"></tbody>
@@ -172,7 +171,6 @@
       return '<tr>'
         + '<td><div class="cell-main">' + d.name + '</div>'
         +   (d.intro ? '<div class="cell-sub">' + d.intro + '</div>' : '') + '</td>'
-        + '<td><span class="badge badge-outline">' + (d.type || '—') + '</span></td>'
         + '<td>' + (dir
               ? '<div class="cell-user" style="cursor:pointer" data-dir="' + d.id + '" title="点击更换科室主任">'
                 + Back.staffAv(dir) + '<div><div class="cell-main">' + dir.name + '</div>'
@@ -188,7 +186,7 @@
               ? '<a class="btn-text danger" data-off="department" data-id="' + d.id + '">停用</a>'
               : '<a class="btn-text" data-enable="department" data-id="' + d.id + '">启用</a>')
         + '</td></tr>';
-    }).join('') || emptyRow(6, '本院还没有科室', '点右上角「添加科室」开始搭建本院组织架构');
+    }).join('') || emptyRow(5, '本院还没有科室', '点右上角「添加科室」开始搭建本院组织架构');
   }
 
   function emptyRow(cols, t, d) {
