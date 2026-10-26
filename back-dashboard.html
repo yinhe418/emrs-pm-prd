@@ -24,10 +24,10 @@
       <div class="k-sub">扫码后尚未设置科室 / 职称</div>
     </div>
     <div class="kpi orange">
-      <a href="back-component-lib.html?tab=noalert">去处理 ›</a>
-      <div class="k-lab">监控字段缺报警线</div>
-      <div class="k-val">1</div>
-      <div class="k-sub">已开监控但未设报警线(C8 由科室定)</div>
+      <a href="back-component-lib.html">去处理 ›</a>
+      <div class="k-lab">组件字段待补全</div>
+      <div class="k-val" id="kpiNoRange">0</div>
+      <div class="k-sub">数字字段还没设标准范围(系统不预填)</div>
     </div>
     <div class="kpi blue">
       <a href="back-patients.html?filter=nonurse">去处理 ›</a>
@@ -74,14 +74,14 @@
             <td class="col-act"><a class="btn-text" href="back-staff.html?tab=pending">去处理</a></td>
           </tr>
           <tr class="row-warn">
-            <td><span class="badge badge-warn">预警</span></td>
+            <td><span class="badge badge-warn">组件</span></td>
             <td>
-              <div class="cell-main">「记录血糖」餐后血糖 已开监控但未设报警线</div>
-              <div class="cell-sub">系统不预填报警线(C8),须科室在使用前确定</div>
+              <div class="cell-main"><span id="todoNoRange">0</span> 个数字字段尚未设置标准范围</div>
+              <div class="cell-sub">系统不预填默认值,须科室在使用前确定</div>
             </td>
-            <td class="fz-12 text-3">该项不触发告警</td>
+            <td class="fz-12 text-3">录入照常进行</td>
             <td><span class="badge badge-warn">待补齐</span></td>
-            <td class="col-act"><a class="btn-text" href="back-component-field.html?c=T2&amp;f=F12">去配置</a></td>
+            <td class="col-act"><a class="btn-text" href="back-component-lib.html">去配置</a></td>
           </tr>
           <tr>
             <td><span class="badge badge-info">归属</span></td>
@@ -123,8 +123,7 @@
       <div class="card-head"><h3>本 Demo 覆盖范围</h3></div>
       <div class="fz-12 text-3" style="line-height:1.9">
         · 组织与人员:医院 / 科室 / 职位 / 工作人员 / 病患 / 二维码<br>
-        · 任务组件库:组件 + 字段定义 + 监控开关 + 报警线<br>
-        · 预警规则:组件指标唯一可配,医生个体优先(后台只读)<br>
+        · 任务组件库:组件 + 字段定义(字段名 / 类型 / 标准范围 / 必填)<br>
         · 药品库:11 个演示药品主数据<br>
         <span class="text-orange">· 未覆盖:项目模板 / 权限矩阵 / 审计日志 / 患者详情页</span>
       </div>
@@ -136,7 +135,7 @@
     <div class="card-head">
       <h3>最近配置变更</h3>
       <span class="ch-desc">谁 · 什么时候 · 改了什么(最近 6 条,只读)</span>
-      <div class="ch-right"><span class="badge badge-outline">操作审计日志 本期不做</span></div>
+      <div class="ch-right"><span class="badge badge-outline" id="auditBadge">操作审计日志 本期不做</span></div>
     </div>
     <table class="tbl">
       <thead>
@@ -163,7 +162,7 @@
     </div></div>
     <h4 style="font-size:13px;margin-bottom:9px">必须留痕的四类操作</h4>
     <ul style="font-size:12.5px;line-height:2;color:var(--ink-2)">
-      <li>① 配置变更(谁在何时改了报警线 / 组件 / 职位 / 头像)</li>
+      <li>① 配置变更(谁在何时改了组件 / 字段范围 / 职位 / 头像)</li>
       <li>② 超限输入(数值超出有效区间的提交)</li>
       <li>③ 病患归属调整(操作人 / 原归属 / 新归属 / 原因)</li>
       <li>④ 越权访问与敏感字段查看(如查看完整身份证号)</li>
@@ -175,6 +174,15 @@
 <script src="assets/back-layout.js"></script>
 <script>
   document.getElementById('kpiPending').textContent = BACK_DATA.pendingCount;
+  (function () {
+    var n = BACK_DATA.components.reduce(function (acc, c) {
+      return acc + c.fields.filter(function (f) {
+        return f.type === 'num' && f.rangeMin == null && f.rangeMax == null;
+      }).length;
+    }, 0);
+    document.getElementById('kpiNoRange').textContent = n;
+    document.getElementById('todoNoRange').textContent = n;
+  })();
 
   var tb = document.getElementById('auditBody');
   BACK_DATA.audits.forEach(function (a) {
@@ -188,11 +196,15 @@
     tb.appendChild(tr);
   });
 
-  var card = document.querySelectorAll('.card-head')[2];
-  card.querySelector('.badge').style.cursor = 'pointer';
-  card.querySelector('.badge').addEventListener('click', function () {
-    Back.drawer('auditDrawer', true);
-  });
+  /* 「操作审计日志」徽标 → 打开审计抽屉。
+     按 id 取,不用 .card-head 下标 —— 下标会随卡片增删错位(曾把无 badge 的卡片当成有)。*/
+  var auditBadge = document.getElementById('auditBadge');
+  if (auditBadge) {
+    auditBadge.style.cursor = 'pointer';
+    auditBadge.addEventListener('click', function () {
+      Back.drawer('auditDrawer', true);
+    });
+  }
 </script>
 </body>
 </html>

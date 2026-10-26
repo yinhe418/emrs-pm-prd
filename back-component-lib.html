@@ -12,21 +12,20 @@
 
   <div class="page-head">
     <h1>任务组件库</h1>
-    <div class="sub">每个组件定义一组录入字段。字段的<b>录入区间</b>决定能不能填,<b>报警线</b>决定要不要提醒医生和护士。</div>
+    <div class="sub">每个组件定义一组录入字段。字段的<b>标准范围</b>由科室在本组件上配置,决定能不能填。</div>
   </div>
 
   <div id="scopeStrip"></div>
 
-  <div class="note note-warn">
-    <img src="assets/icons-png/icon-warning.png">
-    <div><b>报警线系统不预填(C8)。</b>报警线属于临床规则,<b>由科室在使用前确定</b>。
-      新建字段时报警线一律留空,需科室主动配置后才生效。<a href="back-monitor-rules.html" style="color:var(--brand);text-decoration:underline">查看预警规则 ›</a></div>
+  <div class="note note-info">
+    <img src="assets/icons-png/icon-info.png">
+    <div><b>每个字段由四件事决定:</b>字段名 / 字段类型 / 标准范围 / 是否必填。<br>
+      <b>标准范围</b>是科室在本组件上填的配置项,下限与上限<b>各自独立</b>,留空 = 该侧不限。<br>
+      录入值还需通过临床有效区间校验(取自 <code class="k">field-constraints.md</code>,系统内部判定、不在本页展示),超出即禁止提交。</div>
   </div>
 
   <div class="tabs" data-tab-group="c" data-scope="cScope">
     <button data-tab="all" class="active">全部组件 <span class="cnt grey" id="cntAll">0</span></button>
-    <button data-tab="monitor">字段含监控 <span class="cnt grey" id="cntMon">0</span></button>
-    <button data-tab="noalert">⚠️ 监控缺报警线 <span class="cnt" id="cntNo">0</span></button>
     <button data-tab="off">已停用 <span class="cnt grey" id="cntOff">0</span></button>
   </div>
 
@@ -36,12 +35,6 @@
       <input class="ipt search-ipt" id="kw" placeholder="组件名称">
     </div>
     <select class="sel" id="fDept"><option value="">归属科室:全部</option></select>
-    <select class="sel" id="fScope">
-      <option value="">适用范围:全部</option>
-      <option value="patient">患者端</option>
-      <option value="nurse">护士端</option>
-      <option value="doctor">医生端</option>
-    </select>
     <span class="ml-auto"></span>
     <a class="btn btn-primary" href="back-component-edit.html"><img src="assets/icons-png/icon-plus.png" alt="">新建组件</a>
   </div>
@@ -54,8 +47,6 @@
             <th style="width:190px">组件名称</th>
             <th style="width:150px">归属科室</th>
             <th style="width:150px">字段构成</th>
-            <th style="width:140px">监控字段</th>
-            <th style="width:130px">适用范围</th>
             <th style="width:110px">被引用</th>
             <th style="width:80px">状态</th>
             <th class="col-act" style="width:176px">操作</th>
@@ -66,7 +57,7 @@
     </div>
     <div class="pager">
       <span>共 <b id="n">0</b> 个组件</span>
-      <span class="pg-right">点击「编辑」配置字段定义与监控</span>
+      <span class="pg-right">点击「编辑」配置字段定义</span>
     </div>
   </div>
 </main>
@@ -100,28 +91,12 @@
     });
   })();
 
-  function scopeLabel(sc) {
-    return sc.map(function (x) {
-      return { patient: '患者端', nurse: '护士端', doctor: '医生端' }[x];
-    }).join(' / ');
-  }
-  function monCount(c) { return c.fields.filter(function (f) { return f.monitor; }).length; }
-  function noAlertCount(c) {
-    return c.fields.filter(function (f) {
-      return f.monitor && f.type === 'num' && (f.alertMin === null && f.alertMax === null);
-    }).length;
-  }
-
   function filtered() {
     var kw = document.getElementById('kw').value.trim();
     var fd = document.getElementById('fDept').value;
-    var fs = document.getElementById('fScope').value;
     return Back.hospFilter(BACK_DATA.components, 'components').filter(function (c) {
       if (kw && c.name.indexOf(kw) < 0) return false;
       if (fd && c.deptId !== fd) return false;
-      if (fs && c.scope.indexOf(fs) < 0) return false;
-      if (tab === 'monitor' && monCount(c) === 0) return false;
-      if (tab === 'noalert' && noAlertCount(c) === 0) return false;
       if (tab === 'off' && c.status !== 'off') return false;
       if (tab !== 'off' && c.status === 'off') return false;
       return true;
@@ -134,31 +109,21 @@
     document.getElementById('n').textContent = rows.length;
     document.getElementById('cntAll').textContent =
       pool.filter(function (c) { return c.status === 'on'; }).length;
-    document.getElementById('cntMon').textContent =
-      pool.filter(function (c) { return c.status === 'on' && monCount(c) > 0; }).length;
-    document.getElementById('cntNo').textContent =
-      pool.filter(function (c) { return c.status === 'on' && noAlertCount(c) > 0; }).length;
     document.getElementById('cntOff').textContent =
       pool.filter(function (c) { return c.status === 'off'; }).length;
 
     document.getElementById('body').innerHTML = rows.length ? rows.map(function (c) {
-      var na = noAlertCount(c);
       var req = c.fields.filter(function (f) { return f.req === 'required'; }).length;
       var d = BACK_DATA.dept(c.deptId);
       var refs = c.id === 'T1' || c.id === 'T2' ? 2 : 1;
-      return '<tr' + (na ? ' class="row-warn"' : c.status === 'off' ? ' class="row-muted"' : '') + '>'
+      return '<tr' + (c.status === 'off' ? ' class="row-muted"' : '') + '>'
         + '<td><div class="cell-user"><span class="av-xs" style="background:var(--brand-light)">'
-        +   '<img src="assets/icons-png/' + c.icon + '.png" alt="" style="width:100%;height:100%;border-radius:50%"></span>'
+        +   '<img src="' + (c.iconImg || 'assets/icons-png/' + c.icon + '.png') + '" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover"></span>'
         +   '<div><div class="cell-main">' + c.name + '</div></div></div></td>'
         + '<td class="fz-12">' + (d ? d.name : '—') + '</td>'
         + '<td class="fz-12">' + c.fields.length + ' 个字段<br><span class="cell-sub">必填 ' + req
         +   ' · 选填 ' + c.fields.filter(function (f) { return f.req === 'optional'; }).length
         +   ' · 自动 ' + c.fields.filter(function (f) { return f.req === 'auto'; }).length + '</span></td>'
-        + '<td>' + (monCount(c)
-            ? '<span class="badge badge-pass">' + monCount(c) + ' / ' + c.fields.length + ' 开启</span>'
-              + (na ? '<div class="mt-8"><span class="badge badge-warn">⚠️ ' + na + ' 项缺报警线</span></div>' : '')
-            : '<span class="badge badge-gray">未开启</span>') + '</td>'
-        + '<td class="fz-12">' + scopeLabel(c.scope) + '</td>'
         + '<td class="fz-12 num-cell">' + refs + ' 个任务模板</td>'
         + '<td>' + Back.onOff(c.status) + '</td>'
         + '<td class="col-act">'
@@ -166,13 +131,12 @@
         +   (c.status === 'on'
               ? '<a class="btn-text danger" data-stop="' + c.id + '">停用</a>'
               : '<a class="btn-text" data-en="' + c.id + '">启用</a>')
-        +   '<a class="btn-text" href="back-monitor-rules.html">规则</a>'
         + '</td></tr>';
     }).join('')
-    : '<tr><td colspan="8"><div class="empty"><img src="assets/icons-png/icon-empty-box.png" alt="">'
-      + '<div class="e-t">' + (tab === 'noalert' ? '没有缺少报警线的字段' : '没有符合条件的组件') + '</div>'
-      + '<div class="e-d">' + (tab === 'noalert'
-          ? '所有已开启监控的数值字段都已配置报警线' : '试试调整筛选条件,或新建一个组件') + '</div></div></td></tr>';
+    : '<tr><td colspan="7"><div class="empty"><img src="assets/icons-png/icon-empty-box.png" alt="">'
+      + '<div class="e-t">' + (tab === 'off' ? '没有已停用的组件' : '没有符合条件的组件') + '</div>'
+      + '<div class="e-d">' + (tab === 'off'
+          ? '组件只会停用、不会物理删除,停用后会出现在这里' : '试试调整筛选条件,或新建一个组件') + '</div></div></td></tr>';
   }
 
   document.querySelector('[data-tab-group="c"]').addEventListener('click', function () {
@@ -204,7 +168,7 @@
     }
   });
 
-  ['kw', 'fDept', 'fScope'].forEach(function (id) {
+  ['kw', 'fDept'].forEach(function (id) {
     var el = document.getElementById(id);
     el.addEventListener('input', render);
     el.addEventListener('change', render);

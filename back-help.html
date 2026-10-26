@@ -20,7 +20,7 @@
     <div class="text-2" style="line-height:1.85">
       本后台是 <b>EMRS(智病历 AIS)</b> 的 <b>医院侧管理工具</b>,与小程序并行运行。<br>
       服务对象是:<b>医院管理员 / 科室主任</b>。<br>
-      主要职责是:<b>建档</b>(组织、职位、人员、组件库、药品字典)、<b>核口径</b>(监控报警线、组件字段约束)、<b>补缺口</b>(待分配队列、待分配护士)、<b>看大盘</b>(本院运转全景)。<br><br>
+      主要职责是:<b>建档</b>(组织、职位、人员、组件库、药品字典)、<b>核口径</b>(组件字段约束)、<b>补缺口</b>(待分配队列、待分配护士)、<b>看大盘</b>(本院运转全景)。<br><br>
       后台 <b>不</b> 处理诊疗活动,不写处方、不读 PACS / LIS、不发出院小结。
     </div>
   </div>
@@ -32,7 +32,7 @@
         <b>0.0 可回放</b><br>所有数据存在浏览器本地 mock 里,<br>关页面即重置。便于演示。
       </div></div>
       <div class="note note-pass" style="margin:0"><img src="assets/icons-png/icon-check-circle.png"><div>
-        <b>不写死</b><br>职位字典、组件字段、报警线、组件监控阈值,<br>全部可编辑。
+        <b>不写死</b><br>职位字典、组件字段、标准范围、组件图标,<br>全部可编辑。
       </div></div>
       <div class="note note-warn" style="margin:0"><img src="assets/icons-png/icon-warning.png"><div>
         <b>不替医生决策</b><br>医生个体目标范围(L3)在医生小程序端设置,<br>后台只读,不替代。
@@ -59,9 +59,8 @@
           <li>职位字典(行政 / 技术职称 / 其他)可增删改</li>
           <li>工作人员建档 + 微信扫码入队列 + 认领 / 归档</li>
           <li>二维码中心(医院邀请码 + 医生患者码)</li>
-          <li>任务组件库(字段定义 + 监控 + 报警线,C8)</li>
-          <li>预警规则(三层优先级 + 17 类文案,L1/L2/L3)</li>
-          <li>病患列表(归属 + 预警基线来源只读)</li>
+          <li>任务组件库(字段定义:字段名 / 字段类型 / 标准范围 / 是否必填)</li>
+          <li>病患列表(归属 + 医生个体范围来源只读)</li>
           <li>药品库(字典,不作处方依据,C1)</li>
         </ul>
       </div>
@@ -73,7 +72,7 @@
           <li>电子签名 / CA 认证</li>
           <li>移动端 App(本期只做 H5 + 微信小程序)</li>
           <li>处方录入 / 审方 / 调剂</li>
-          <li>病历文书录入(Q1 前台只做监控 / 任务中心,文书留 Q2)</li>
+          <li>病历文书录入(Q1 前台只做任务中心,文书留 Q2)</li>
         </ul>
       </div>
     </div>
@@ -95,12 +94,11 @@
           <tr><td><a href="back-staff-pending-detail.html">back-staff-pending-detail</a></td><td>认领并设置(科室 + 职位)</td></tr>
           <tr><td><a href="back-staff-edit.html">back-staff-edit</a></td><td>工作人员编辑(基本 / 头像 / 简介 / 内部信息)</td></tr>
           <tr><td><a href="back-staff-detail.html">back-staff-detail</a></td><td>工作人员详情(4 Tab:基本信息 / 简介 / 二维码 / 操作记录)</td></tr>
-          <tr><td><a href="back-patients.html">back-patients</a></td><td>病患列表(归属调整 + 预警基线来源)</td></tr>
+          <tr><td><a href="back-patients.html">back-patients</a></td><td>病患列表(归属调整 + 医生个体范围来源)</td></tr>
           <tr><td><a href="back-qrcode.html">back-qrcode</a></td><td>二维码中心(医院邀请码 + 医生患者码)</td></tr>
           <tr><td><a href="back-component-lib.html">back-component-lib</a></td><td>任务组件库</td></tr>
-          <tr><td><a href="back-component-edit.html">back-component-edit</a></td><td>组件编辑(3 列表格 + 自定义字段行)</td></tr>
-          <tr><td><a href="back-component-field.html">back-component-field</a></td><td>字段配置(录入区间只读 / 报警线可编辑)</td></tr>
-          <tr><td><a href="back-monitor-rules.html">back-monitor-rules</a></td><td>预警规则(L1/L2/L3 + 17 类文案)</td></tr>
+          <tr><td><a href="back-component-edit.html">back-component-edit</a></td><td>组件编辑(字段定义表格 + 图标上传 + 自定义字段行)</td></tr>
+          <tr><td><a href="back-component-field.html">back-component-field</a></td><td>字段配置(标准范围可编辑,下限 / 上限各一个输入框)</td></tr>
           <tr><td><a href="back-drugs.html">back-drugs</a></td><td>药品库</td></tr>
           <tr><td><a href="back-drug-edit.html">back-drug-edit</a></td><td>药品编辑</td></tr>
           <tr><td><a href="back-empty.html">back-empty</a></td><td>空状态示范</td></tr>
@@ -120,7 +118,7 @@
       · <b>9 个职位</b>(3 类:行政职务 / 技术职称 / 其他)<br>
       · <b>11 名医护人员</b>(含 1 名已停用)<br>
       · <b>5 名待分配</b>的微信扫码用户<br>
-      · <b>7 名病患</b>(含 1 名基线超期)<br>
+      · <b>7 名病患</b>(含 1 名个体目标已过期)<br>
       · <b>8 个任务组件</b>(含 1 个自定义字段演示)<br>
       · <b>11 种药品</b>(含 1 个停用)<br><br>
       真实病例取自档案 (陈丙英·81岁·女,4 次住院),

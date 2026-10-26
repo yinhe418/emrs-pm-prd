@@ -27,19 +27,33 @@
         <input class="ipt" name="cName" placeholder="2–30 字,同医院内唯一">
         <span class="err-msg"></span>
       </div>
-      <div class="fi">
+      <div class="fi full">
         <label>图标</label>
         <div class="flex" style="gap:6px" id="iconPick"></div>
         <span class="err-msg"></span>
+        <div class="image-up" style="margin-top:10px">
+          <div class="iu-preview" id="icPrev">
+            <div>暂无图<br>上传后将显示在这里</div>
+          </div>
+          <div class="iu-main">
+            <div class="iu-btns">
+              <label class="btn btn-default btn-sm" for="icFile">上传图片</label>
+              <button class="btn btn-text danger" id="icClear" type="button">移除</button>
+              <input id="icFile" type="file" accept="image/jpeg,image/png,image/webp">
+            </div>
+            <div class="iu-hint">
+              或在下方直接上传自定义图标,优先级高于内置图标。<br>
+              接受 jpg / png / webp,大小 ≤ 2 MB。<br>
+              <b>DEMO 阶段:</b>上传后预览保存为 base64,不传到服务器。
+            </div>
+          </div>
+        </div>
       </div>
       <div class="fi">
         <label><span class="req">*</span>归属科室</label>
-        <select class="sel" name="cDept"></select>
+        <select class="sel" id="cDept" name="cDept"></select>
+        <span class="hint" id="cDeptHint">只列科室,不再重复显示医院(当前医院见顶栏徽章)</span>
         <span class="err-msg"></span>
-      </div>
-      <div class="fi">
-        <label>适用范围</label>
-        <div class="flex flex-wrap" id="scopePick" style="gap:12px"></div>
       </div>
       <div class="fi">
         <label>状态</label>
@@ -54,39 +68,46 @@
     </div>
   </div>
 
-  <!-- ============ 字段定义(3 列) ============ -->
+  <!-- ============ 字段定义 ============ -->
   <div class="card flat">
     <div class="card-head" style="padding:16px 16px 0;margin-bottom:12px">
       <h3>字段定义</h3>
       <span class="ch-desc">
-        <b>上下限</b>列显示的是<b>报警线</b>(医生和护士看到的就是这个),不是录入有效区间
+        每个字段 = <b>字段名 + 字段类型 + 标准范围 + 是否必填</b>。标准范围的下限与上限各自独立填写,留空 = 该侧不限。
       </span>
       <div class="ch-right"><span class="badge badge-brand" id="fieldN">0 个字段</span></div>
-    </div>
-
-    <div class="note note-warn" style="margin:0 16px 14px" id="alertWarn" style="display:none">
-      <img src="assets/icons-png/icon-warning.png">
-      <div id="alertWarnT"></div>
     </div>
 
     <div class="tbl-wrap">
       <table class="tbl" id="fTbl">
         <thead>
           <tr>
-            <th style="width:170px">指标名称</th>
-            <th style="width:200px">上下限(报警线)</th>
-            <th style="width:110px">是否必填</th>
-            <th style="width:110px">监控</th>
-            <th style="width:80px">单位</th>
-            <th style="width:150px">录入区间</th>
-            <th class="col-act" style="width:150px">操作</th>
+            <th style="width:160px">字段名</th>
+            <th style="width:96px">字段类型</th>
+            <th style="width:104px">标准范围 下限</th>
+            <th style="width:104px">标准范围 上限</th>
+            <th style="width:86px">单位</th>
+            <th style="width:104px">是否必填</th>
+            <th class="col-act" style="width:112px">操作</th>
           </tr>
         </thead>
         <tbody id="fBody"></tbody>
         <tfoot>
           <tr style="background:var(--bg-3)">
             <td><input class="ipt" id="cn" placeholder="如 瞳孔直径"></td>
-            <td><input class="ipt" id="cr" placeholder="如 1~8 mm"></td>
+            <td>
+              <select class="sel" id="ctype">
+                <option value="num">数字类型</option>
+                <option value="datetime">日期时间</option>
+                <option value="enum">枚举</option>
+                <option value="drug">药品库(选择)</option>
+                <option value="file">图片(上传)</option>
+                <option value="text">文本</option>
+              </select>
+            </td>
+            <td><input class="ipt" id="cmin" type="number" step="any" placeholder="不限"></td>
+            <td><input class="ipt" id="cmax" type="number" step="any" placeholder="不限"></td>
+            <td><input class="ipt" id="cunit" placeholder="如 mm"></td>
             <td>
               <select class="sel" id="creq">
                 <option value="required">必填</option>
@@ -94,9 +115,6 @@
                 <option value="auto">自动</option>
               </select>
             </td>
-            <td style="text-align:center"><input type="checkbox" id="cmon"></td>
-            <td class="text-3 fz-12">—</td>
-            <td class="text-3 fz-12">自定义</td>
             <td class="col-act"><button class="btn btn-sm btn-primary" id="cAdd"><img src="assets/icons-png/icon-plus.png" alt="">添加</button></td>
           </tr>
         </tfoot>
@@ -104,6 +122,8 @@
     </div>
 
     <div style="padding:13px 16px;border-top:1px solid var(--line-2)" class="fz-12 text-3">
+      <b>数字类型</b> = 上下限对它生效,单位必填 &nbsp;·&nbsp;
+      <b>日期时间 / 枚举 / 药品库(选择) / 图片(上传) / 文本</b> = 上下限无意义,添加时自动置灰<br>
       <b>必填</b> = 患者提交时必须填 &nbsp;·&nbsp;
       <b>选填</b> = 可留空 &nbsp;·&nbsp;
       <b>自动</b> = 系统自动采集(如测量时间),患者不可编辑
@@ -112,11 +132,11 @@
 
   <div class="note note-info">
     <img src="assets/icons-png/icon-info.png">
-    <div><b>三列的语义差异</b><br>
-      ① <b>录入区间</b>(最后一列)= 物理有效区间,超出<b>硬阻断禁止提交</b>,取自
-      <code class="k">field-constraints.md</code><br>
-      ② <b>上下限</b>(报警线)= 超出<b>软告警</b>提醒医生和护士,<b>由科室确定,系统不预填</b>(C8)<br>
-      ③ <b>监控开关</b>= 关闭时只做录入校验,不产生告警</div>
+    <div><b>标准范围</b>= 科室在本组件上填的配置项,下限 / 上限<b>各自独立</b>,
+      留空 = 该侧不限,只填一侧也有效。<br>
+      录入值还需通过<b>临床有效区间</b>校验(取自
+      <code class="k">field-constraints.md</code>,系统内部判定、<b>不在本页展示</b>),超出即禁止提交;
+      标准范围不得超出该区间,填了会在保存时报错。</div>
   </div>
 
   <div style="position:sticky;bottom:0;background:var(--bg);padding:12px 0;border-top:1px solid var(--line);display:flex;gap:9px;z-index:5">
@@ -148,7 +168,9 @@
   var c = id ? BACK_DATA.byId(BACK_DATA.components, id) : null;
   var isEdit = !!c;
   if (!c) {
-    c = { id: 'TNEW', name: '', icon: 'icon-bp', deptId: 'D1', scope: ['patient'],
+    /* 组件不再维护 scope:适用范围改由小程序「下发任务」时选(医生 / 护士 / 病患),
+       后台组件库列表页也不再展示该列,故此处不保留该字段。*/
+    c = { id: 'TNEW', name: '', icon: 'icon-bp', iconImg: '', deptId: 'D1',
           desc: '', status: 'on', order: 9, fields: [] };
   }
   var fields = c.fields.map(function (f) { return JSON.parse(JSON.stringify(f)); });
@@ -156,8 +178,32 @@
 
   var ICONS = ['icon-bp', 'icon-blood-drop', 'icon-pill', 'icon-call', 'icon-camera',
                'icon-run', 'icon-microscope', 'icon-document', 'icon-calendar', 'icon-edit'];
-  var SCOPES = { patient: '患者端', nurse: '护士端', doctor: '医生端' };
   var REQ = { required: '必填', optional: '选填', auto: '自动' };
+  var FTYPES = {
+    num: '数字类型', datetime: '日期时间', enum: '枚举', drug: '药品库(选择)',
+    file: '图片(上传)', text: '文本', date: '日期'
+  };
+
+  /* ---------- 图标:上传 / 预览 / 移除(写法和 back-hospital-pick.html 一致) ---------- */
+  var pickedIcon = c.iconImg || '';
+  function renderIconPrev() {
+    document.getElementById('icPrev').innerHTML = pickedIcon
+      ? '<img src="' + pickedIcon + '" alt="">'
+      : '<div>暂无图<br>上传后将显示在这里</div>';
+  }
+  document.getElementById('icFile').addEventListener('change', function (e) {
+    var f = e.target.files[0]; if (!f) return;
+    if (!/^image\/(jpeg|png|webp)$/.test(f.type)) { Back.toast('只接受 jpg / png / webp', 'err'); return; }
+    if (f.size > 2 * 1024 * 1024) { Back.toast('图片超过 2 MB,请压缩', 'err'); return; }
+    var r = new FileReader();
+    r.onload = function (ev) { pickedIcon = ev.target.result; renderIconPrev(); };
+    r.readAsDataURL(f);
+  });
+  document.getElementById('icClear').addEventListener('click', function () {
+    pickedIcon = ''; document.getElementById('icFile').value = ''; renderIconPrev();
+    Back.toast('已移除自定义图标,回落到内置图标', 'warn');
+  });
+  renderIconPrev();
 
   document.getElementById('ttl').textContent = isEdit ? '编辑组件 · ' + c.name : '新建组件';
 
@@ -168,14 +214,20 @@
     set('cStatus', c.status);
     document.getElementById('nDesc').textContent = (c.desc || '').length;
 
+    /* 归属科室:只列科室名,不重复显示医院(当前医院见顶栏徽章)。
+       有当前医院上下文时按本院过滤,避免同名科室(如两院都有「神经内科」)混淆。*/
+    var curH = Back.currentHospital();
     var d = document.getElementById('cDept');
+    var dlist = curH ? BACK_DATA.deptListByHospital(curH.id) : BACK_DATA.departments;
+    if (curH && !BACK_DATA.dept(c.deptId)) dlist = dlist.concat([BACK_DATA.dept(c.deptId)].filter(Boolean));
     d.innerHTML = '';
-    BACK_DATA.departments.forEach(function (x) {
-      var h = BACK_DATA.hospital(x.hospitalId);
-      d.insertAdjacentHTML('beforeend',
-        '<option value="' + x.id + '">' + (h ? h.short + ' · ' : '') + x.name + '</option>');
+    dlist.forEach(function (x) {
+      d.insertAdjacentHTML('beforeend', '<option value="' + x.id + '">' + x.name + '</option>');
     });
     d.value = c.deptId;
+    document.getElementById('cDeptHint').textContent = curH
+      ? '只列「' + curH.short + '」的科室,不再重复显示医院(医院见顶栏徽章)'
+      : '只列科室,不再重复显示医院(当前医院见顶栏徽章)';
 
     var ip = document.getElementById('iconPick');
     ICONS.forEach(function (ic) {
@@ -192,13 +244,6 @@
         ip.querySelector('input[value="' + r.value + '"]').parentNode.style.borderColor = 'var(--brand)';
       });
     });
-
-    var sp = document.getElementById('scopePick');
-    Object.keys(SCOPES).forEach(function (k) {
-      var on = c.scope.indexOf(k) >= 0;
-      sp.insertAdjacentHTML('beforeend',
-        '<label class="chk"><input type="checkbox" value="' + k + '"' + (on ? ' checked' : '') + '>' + SCOPES[k] + '</label>');
-    });
   })();
 
   document.querySelector('[name="cDesc"]').addEventListener('input', function () {
@@ -206,95 +251,59 @@
   });
 
   /* ---------- 字段表格 ---------- */
-  function rangeText(f) {
-    if (f.type !== 'num') {
-      return { t: { enum: '枚举(' + f.enumVals.length + ' 项)', datetime: 'datetime 自动',
-                    date: 'date', text: '文本', file: '文件' }[f.type] || '—', warn: false };
-    }
-    if (f.alertMin === null && f.alertMax === null) return { t: '⚠️ 未设置', warn: true };
-    if (f.alertMin === null) return { t: '< ' + f.alertMax + ' ' + f.unit, warn: false };
-    if (f.alertMax === null) return { t: '> ' + f.alertMin + ' ' + f.unit, warn: false };
-    return { t: f.alertMin + ' – ' + f.alertMax + ' ' + f.unit, warn: false };
+  /* 标准范围:下限 / 上限各自独立,留空 = 该侧不限 */
+  function sideText(v, unit) {
+    if (v === null || v === undefined) return '<span class="text-4">不限</span>';
+    return '<span class="mono">' + v + '</span>' + (unit ? ' ' + unit : '');
   }
+  function isNum(f) { return f.type === 'num'; }
+
   function reqBadge(r) {
     return r === 'required' ? '<span class="badge badge-block">必填</span>'
          : r === 'auto' ? '<span class="badge badge-info">自动</span>'
          : '<span class="badge badge-gray">选填</span>';
   }
-  function validText(f) {
-    if (f.type !== 'num') return '<span class="text-4">—</span>';
-    return '<span class="mono fz-11">' + f.validMin + ' – ' + f.validMax + '</span>'
-      + ' <span class="lock-tag">权威</span>';
-  }
-
   function renderFields() {
     var tb = document.getElementById('fBody');
     tb.innerHTML = fields.map(function (f, i) {
-      var r = rangeText(f);
-      var rowCls = r.warn ? 'row-warn' : '';
       var bg = f.req === 'required' ? 'background:#FFF8F8'
              : f.req === 'auto' ? 'background:#F7FBFF' : '';
-      return '<tr class="' + rowCls + '">'
+      var ranged = isNum(f);
+      return '<tr>'
         + '<td><span class="cell-main" style="' + bg + ';padding:3px 6px;border-radius:4px">' + f.name + '</span>'
         +   (f.custom ? ' <span class="badge badge-warn">自定义</span>' : '')
         +   (f.disputed ? '<div><span class="badge badge-warn" title="field-constraints 与 field-catalog 口径冲突,待 clinical-expert 统一">⚠️ 上下限口径待定</span></div>' : '')
         + '</td>'
-        + '<td>' + (r.warn
-            ? '<span class="badge badge-warn">' + r.t + '</span>'
-            : '<span class="badge badge-outline">' + r.t + '</span>') + '</td>'
-        + '<td>' + reqBadge(f.req) + '</td>'
-        + '<td style="text-align:center">'
-        +   (f.type === 'num'
-              ? '<label class="switch"><input type="checkbox" data-mon="' + i + '"' + (f.monitor ? ' checked' : '')
-                + '><span class="sw-track"></span></label>'
-              : '<span class="text-4 fz-11">不支持</span>') + '</td>'
+        + '<td class="fz-12"><span class="badge badge-outline">' + (FTYPES[f.type] || f.type) + '</span>'
+        +   (f.type === 'enum' && f.enumVals ? '<div class="cell-sub fz-11">' + f.enumVals.length + ' 项 · 可手填</div>' : '')
+        +   (f.type === 'drug' ? '<div class="cell-sub fz-11">选自药品库</div>' : '') + '</td>'
+        + '<td class="fz-12">' + (ranged ? sideText(f.rangeMin, f.unit) : '<span class="text-4">不适用</span>') + '</td>'
+        + '<td class="fz-12">' + (ranged ? sideText(f.rangeMax, f.unit) : '<span class="text-4">不适用</span>') + '</td>'
         + '<td class="fz-12 text-3">' + (f.unit || '—') + '</td>'
-        + '<td>' + validText(f) + '</td>'
+        + '<td>' + reqBadge(f.req) + '</td>'
         + '<td class="col-act">'
         +   '<a class="btn-text" href="back-component-field.html?c=' + c.id + '&f=' + f.id + '">编辑</a>'
         +   '<a class="btn-text danger" data-del="' + i + '">停用</a>'
         + '</td></tr>';
     }).join('') || '<tr><td colspan="7"><div class="empty" style="padding:34px 0">'
       + '<img src="assets/icons-png/icon-empty-box.png" alt=""><div class="e-t">还没有字段</div>'
-      + '<div class="e-d">用下方最后一行自定义添加,或从标准字段库引入</div></div></td></tr>';
-
-    tb.querySelectorAll('[data-mon]').forEach(function (cb) {
-      cb.addEventListener('change', function () {
-        var i = cb.getAttribute('data-mon');
-        if (cb.checked && fields[i].type === 'num'
-            && fields[i].alertMin === null && fields[i].alertMax === null) {
-          cb.checked = false;
-          Back.modal('delModal');
-          document.getElementById('delTitle').textContent = '需先设置报警线';
-          document.getElementById('delBody').innerHTML =
-            '<div class="note note-block" style="margin:0"><img src="assets/icons-png/icon-warning.png">'
-            + '<div><b>「' + fields[i].name + '」还没有报警线。</b><br>'
-            + '报警线属于临床规则,<b>由科室在使用前确定</b>(C8),系统不预填默认值。<br><br>'
-            + '开启监控前必须先填写报警线。</div></div>';
-          document.getElementById('delOk').textContent = '去配置报警线';
-          document.getElementById('delOk').onclick = function () {
-            Back.modal('delModal', false);
-            location.href = 'back-component-field.html?c=' + c.id + '&f=' + fields[i].id;
-          };
-          return;
-        }
-        fields[i].monitor = cb.checked;
-        renderFields();
-        Back.toast(cb.checked ? '已开启监控「' + fields[i].name + '」' : '已关闭监控「' + fields[i].name + '」', 'ok');
-      });
-    });
+      + '<div class="e-d">用下方最后一行自定义添加</div></div></td></tr>';
 
     document.getElementById('fieldN').textContent = fields.length + ' 个字段';
-    var miss = fields.filter(function (f) { return f.monitor && f.type === 'num' && f.alertMin === null && f.alertMax === null; });
-    var box = document.getElementById('alertWarn');
-    box.style.display = miss.length ? 'flex' : 'none';
-    if (miss.length) {
-      document.getElementById('alertWarnT').innerHTML =
-        '<b>' + miss.length + ' 个字段已开启监控但没有报警线</b> —— '
-        + miss.map(function (f) { return f.name; }).join('、')
-        + '<br>这些字段暂<b>不触发任何告警</b>。报警线由科室在使用前确定(C8),系统不预填。';
-    }
   }
+
+  /* ---------- 自定义字段行:类型 ↔ 上下限联动 ---------- */
+  function syncCustomType() {
+    var num = document.getElementById('ctype').value === 'num';
+    ['cmin', 'cmax'].forEach(function (id) {
+      var el = document.getElementById(id);
+      el.disabled = !num;
+      el.placeholder = num ? '不限' : '不适用';
+    });
+    document.getElementById('cunit').disabled = !num;
+  }
+  document.getElementById('ctype').addEventListener('change', syncCustomType);
+  syncCustomType();
 
   /* 删除字段(软删除) */
   document.getElementById('fBody').addEventListener('click', function (e) {
@@ -325,39 +334,55 @@
   /* ---------- 自定义字段添加 ---------- */
   document.getElementById('cAdd').addEventListener('click', function () {
     var n = document.getElementById('cn').value.trim();
-    var r = document.getElementById('cr').value.trim();
+    var type = document.getElementById('ctype').value;
     var req = document.getElementById('creq').value;
-    var mon = document.getElementById('cmon').checked;
 
-    if (!n) { Back.toast('请输入指标名称', 'err'); document.getElementById('cn').focus(); return; }
-    if (n.length < 2 || n.length > 20) { Back.toast('指标名称 2–20 字', 'err'); return; }
+    if (!n) { Back.toast('请输入字段名', 'err'); document.getElementById('cn').focus(); return; }
+    if (n.length < 2 || n.length > 20) { Back.toast('字段名 2–20 字', 'err'); return; }
     if (fields.some(function (f) { return f.name === n; })) { Back.toast('该字段已存在:' + n, 'err'); return; }
-    if (!r) { Back.toast('请输入上下限,例如「1~8 mm」', 'err'); document.getElementById('cr').focus(); return; }
 
-    // 解析 "1~8 mm" 或 "1 - 8 mm" 或 ">= 90"
-    var unit = (r.match(/[^\d\s~\-<>≤≥.]+/) || [''])[0];
-    var nums = r.match(/\d+(\.\d+)?/g);
-    var lo = null, hi = null;
-    if (/[<≤]/.test(r)) hi = nums ? parseFloat(nums[nums.length - 1]) : null;
-    else if (/[>≥]/.test(r)) lo = nums ? parseFloat(nums[0]) : null;
-    else if (nums && nums.length >= 2) { lo = parseFloat(nums[0]); hi = parseFloat(nums[1]); }
-    else if (nums && nums.length === 1) { lo = parseFloat(nums[0]); hi = 1e9; }
+    var f = { id: 'C' + Date.now(), name: n, type: type, req: req, custom: true,
+              validMin: null, validMax: null, rangeMin: null, rangeMax: null,
+              unit: '', step: 1 };
 
-    if (mon && (lo === null && hi === null)) {
-      Back.toast('自定义指标请写明上下限,例如「1~8 mm」', 'err');
-      return;
+    if (type === 'num') {
+      var loS = document.getElementById('cmin').value.trim();
+      var hiS = document.getElementById('cmax').value.trim();
+      var unit = document.getElementById('cunit').value.trim();
+      if (loS === '' && hiS === '') {
+        Back.toast('数字类型请至少填写下限或上限;都不填等于没有范围', 'err');
+        document.getElementById('cmin').focus(); return;
+      }
+      var lo = loS === '' ? null : parseFloat(loS);
+      var hi = hiS === '' ? null : parseFloat(hiS);
+      if (isNaN(lo)) { Back.toast('下限不是数字', 'err'); return; }
+      if (isNaN(hi)) { Back.toast('上限不是数字', 'err'); return; }
+      if (lo !== null && hi !== null && lo >= hi) {
+        Back.toast('下限必须小于上限', 'err'); document.getElementById('cmax').focus(); return;
+      }
+      if (unit === '') { Back.toast('数字类型请填写单位,例如 mm / bpm / mmol/L', 'err'); document.getElementById('cunit').focus(); return; }
+      f.rangeMin = lo; f.rangeMax = hi; f.unit = unit;
+    } else if (type === 'enum') {
+      /* 枚举值管理员可自行输入,不限定预设清单;
+         添加后还能在「字段配置」页用「+ 新增枚举值」继续增删。*/
+      var vals = window.prompt(
+        '枚举值(用顿号「、」分隔,可自行填写,不限于预设清单)',
+        '正常服用、减量服用、未正常服用');
+      if (vals === null) return;
+      f.enumVals = vals.split(/[、,，]/).map(function (x) { return x.trim(); })
+                    .filter(function (x) { return x.length; });
+      if (!f.enumVals.length) { Back.toast('枚举至少要有 1 个值', 'err'); return; }
+    } else if (type === 'drug') {
+      /* 药名只能从药品库选,不可手打;具体可选药品在「字段配置」页按本院药品库生成 */
+      f.fromDrugLib = true;
     }
 
-    fields.push({
-      id: 'C' + Date.now(), name: n, type: 'num',
-      validMin: lo === null ? 0 : lo, validMax: hi === null ? 999999 : hi,
-      alertMin: lo, alertMax: hi === 1e9 ? null : hi,
-      unit: unit, step: 1, req: req, monitor: mon, custom: true
-    });
+    fields.push(f);
 
     document.getElementById('cn').value = '';
-    document.getElementById('cr').value = '';
-    document.getElementById('cmon').checked = false;
+    document.getElementById('cmin').value = '';
+    document.getElementById('cmax').value = '';
+    document.getElementById('cunit').value = '';
     renderFields();
     Back.toast('已添加自定义字段「' + n + '」,可继续添加或编辑', 'ok');
   });
@@ -377,24 +402,20 @@
       ok = false;
     }
 
-    var scopes = [];
-    document.querySelectorAll('#scopePick input').forEach(function (x) { if (x.checked) scopes.push(x.value); });
-    if (!scopes.length) { Back.toast('请至少选择一个适用范围', 'err'); ok = false; }
-
-    // 报警线必须落在录入区间内
+    // 标准范围:必须落在临床有效区间内,且下限 < 上限
     for (var i = 0; i < fields.length; i++) {
       var f = fields[i];
-      if (f.type !== 'num' || (!f.monitor && f.alertMin === null && f.alertMax === null)) continue;
-      if (f.alertMin !== null && f.alertMin < f.validMin) {
-        Back.toast('「' + f.name + '」报警下限 ' + f.alertMin + ' 超出录入区间 ' + f.validMin + ',请修正', 'err');
+      if (f.type !== 'num') continue;
+      if (f.rangeMin !== null && f.validMin !== null && f.rangeMin < f.validMin) {
+        Back.toast('「' + f.name + '」标准范围下限 ' + f.rangeMin + ' 低于临床有效区间 ' + f.validMin + ',请修正', 'err');
         ok = false; break;
       }
-      if (f.alertMax !== null && f.alertMax > f.validMax) {
-        Back.toast('「' + f.name + '」报警上限 ' + f.alertMax + ' 超出录入区间 ' + f.validMax + ',请修正', 'err');
+      if (f.rangeMax !== null && f.validMax !== null && f.rangeMax > f.validMax) {
+        Back.toast('「' + f.name + '」标准范围上限 ' + f.rangeMax + ' 高于临床有效区间 ' + f.validMax + ',请修正', 'err');
         ok = false; break;
       }
-      if (f.alertMin !== null && f.alertMax !== null && f.alertMin >= f.alertMax) {
-        Back.toast('「' + f.name + '」报警下限必须小于上限', 'err');
+      if (f.rangeMin !== null && f.rangeMax !== null && f.rangeMin >= f.rangeMax) {
+        Back.toast('「' + f.name + '」标准范围下限必须小于上限', 'err');
         ok = false; break;
       }
     }
@@ -402,8 +423,8 @@
 
     c.name = name;
     c.icon = document.querySelector('#iconPick input:checked').value;
+    c.iconImg = pickedIcon || '';
     c.deptId = document.querySelector('[name="cDept"]').value;
-    c.scope = scopes;
     c.desc = document.querySelector('[name="cDesc"]').value.trim();
     c.status = document.querySelector('[name="cStatus"]').value;
     c.fields = fields;

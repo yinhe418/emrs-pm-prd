@@ -5,6 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>下发任务</title>
   <link rel="stylesheet" href="assets/styles.css">
+  <!-- 「使用范围」新增样式:仅本页追加,不改动 assets/styles.css -->
+  <style>
+    .sc-chip{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border:1px solid var(--line);
+      border-radius:999px;background:#fff;font-size:var(--fs-md,14px);color:var(--ink-2);cursor:pointer;user-select:none}
+    .sc-chip input{width:16px;height:16px;accent-color:var(--brand);margin:0}
+    .sc-chip.on{border-color:var(--brand);background:var(--brand-light);color:var(--brand);font-weight:600}
+    .sc-hint{font-size:12px;color:var(--ink-3);line-height:1.7;margin-top:10px}
+    .sc-hint b{color:var(--ink-2)}
+    .sc-err{font-size:12px;color:var(--block);margin-top:8px}
+  </style>
 </head>
 <body>
   <div class="app">
@@ -61,6 +71,21 @@
 
       <div class="section-title">任务参数</div>
       <div class="group">
+        <!-- 使用范围:原在后台「组件」上配的「适用范围」,移到小程序下发时按次选择 -->
+        <div class="form-item" id="scopeItem">
+          <span class="form-label"><span class="req">*</span>使用范围</span>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;padding-top:4px">
+            <label class="sc-chip"><input type="checkbox" value="doctor" data-scope><span>医生</span></label>
+            <label class="sc-chip"><input type="checkbox" value="nurse" data-scope><span>护士</span></label>
+            <label class="sc-chip"><input type="checkbox" value="patient" data-scope checked><span>病患</span></label>
+          </div>
+          <div class="sc-hint">
+            这个任务下发给<b>哪几端</b>,可多选,至少选一端。<br>
+            例:「记录血压」患者端填、护士端复核 → 勾<b>病患 + 护士</b>,医生端不勾。<br>
+            例:「电话回访」由护士打电话、医生不参与 → 只勾<b>护士</b>。
+          </div>
+          <div class="sc-err" id="scopeErr" style="display:none">请至少选择一个使用范围</div>
+        </div>
         <div class="form-item">
           <span class="form-label"><span class="req">*</span>起始日期</span>
           <input class="form-input" type="date" value="2025-12-28">
@@ -101,7 +126,7 @@
         </div>
       </div>
 
-      <a href="doctor-patient-detail.html" class="btn btn-primary btn-block" style="margin-top:20px;">
+      <a href="doctor-patient-detail.html" class="btn btn-primary btn-block" style="margin-top:20px;" onclick="return window.__scopeOK()">
         下发
       </a>
     </div>
@@ -109,6 +134,35 @@
   <script src="assets/layout.js"></script>
   <script>
     var issueToastEl = null;
+
+    /* ---------- 使用范围:多选 chip + 至少选一端 ---------- */
+    (function () {
+      var chips = Array.prototype.slice.call(document.querySelectorAll('.sc-chip'));
+      var err = document.getElementById('scopeErr');
+      function sync() {
+        chips.forEach(function (l) {
+          l.classList.toggle('on', l.querySelector('input').checked);
+        });
+        var n = document.querySelectorAll('[data-scope]:checked').length;
+        err.style.display = n ? 'none' : '';
+        document.querySelectorAll('.sc-chip').forEach(function (l) {
+          l.style.borderColor = l.querySelector('input').checked ? 'var(--brand)' : '';
+        });
+      }
+      chips.forEach(function (l) {
+        l.querySelector('input').addEventListener('change', sync);
+      });
+      sync();
+      window.__scopeOK = function () {
+        var n = document.querySelectorAll('[data-scope]:checked').length;
+        if (!n) { err.style.display = ''; showIssueToast('请至少选择一个使用范围'); return false; }
+        return true;
+      };
+      window.__scopeText = function () {
+        return Array.prototype.slice.call(document.querySelectorAll('[data-scope]:checked'))
+          .map(function (i) { return i.parentNode.querySelector('span').textContent; }).join(' + ') || '—';
+      };
+    })();
     function showIssueToast(msg) {
       if (!issueToastEl) {
         issueToastEl = document.createElement('div');

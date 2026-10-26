@@ -37,30 +37,56 @@
     </div>
   </div>
 
-  <!-- ============ 录入区间(只读,锁权威) ============ -->
+  <!-- ============ 取值来源(枚举 / 药品库,按字段类型显示) ============ -->
+  <div class="card" id="srcCard" style="display:none">
+    <div class="card-head">
+      <h3 id="srcTitle">取值来源</h3>
+      <span class="ch-desc" id="srcDesc"></span>
+    </div>
+
+    <div id="enumBox" style="display:none;padding:0 16px 14px">
+      <div class="flex" style="align-items:center;gap:8px">
+        <div class="text-3 fz-12">枚举值</div>
+        <span class="cell-sub fz-11" id="enumCount">—</span>
+        <span class="ml-auto"></span>
+        <button class="btn btn-default btn-sm" id="enumAdd" type="button">
+          <img src="assets/icons-png/icon-plus.png" alt="">新增枚举值
+        </button>
+      </div>
+      <div class="flex flex-wrap" id="enumList" style="gap:8px;margin-top:10px"></div>
+      <div class="hint" style="display:block;margin-top:10px">
+        枚举值<b>由管理员手动维护</b>,不限于预设清单:点「新增枚举值」自行添加,点值上的 ✕ 删除。
+        删到 0 项无法保存(枚举至少要有 1 个值)。
+      </div>
+    </div>
+
+    <div id="drugBox" style="display:none;padding:0 16px 14px">
+      <div class="text-3 fz-12 mb-8">药品库来源</div>
+      <div class="flex" style="align-items:center;gap:8px;flex-wrap:wrap">
+        <select class="sel" id="drugPick" style="max-width:400px"></select>
+        <a class="btn-text" href="back-drugs.html">去药品库维护 ›</a>
+      </div>
+      <div class="hint" style="display:block;margin-top:10px">
+        药名<b>只能从药品库选择,不能手打</b>;列表按当前医院过滤,来源
+        <code class="k">BACK_DATA.drugs</code>。此处选中的药作为该字段的默认值,<br>
+        患者/护士实际录入时从同一药品库中选择。
+      </div>
+    </div>
+
+    </div>
+
+  <!-- ============ 标准范围(可编辑,唯一的上下限输入) ============ -->
   <div class="card">
     <div class="card-head">
-      <h3>
-        <span class="lock-tag" style="background:var(--brand);color:#fff;margin-right:8px">权威</span>
-        录入有效区间
-      </h3>
-      <span class="ch-desc">
-        取自
-        <code class="k">docs/clinical/field-constraints.md</code>,<b>不可编辑</b>。<br>
-        任何超出该区间的录入值<b>硬阻断禁止提交</b>。
-      </span>
+      <h3>标准范围 <span class="ch-desc">(可编辑,下限 / 上限各一个输入框)</span></h3>
     </div>
-    <div class="form-grid">
-      <div class="fi">
-        <label>下限</label>
-        <input class="ipt read" id="vLo" readonly>
-        <span class="hint">例如 SBP 50 mmHg</span>
-      </div>
-      <div class="fi">
-        <label>上限</label>
-        <input class="ipt read" id="vHi" readonly>
-        <span class="hint">例如 SBP 280 mmHg</span>
-      </div>
+
+    <div class="note note-gray" id="nonNumTip" style="display:none;margin:0 16px 14px">
+      <img src="assets/icons-png/icon-info.png">
+      <div><b></b>不是数字类型,<b>标准范围对它没有意义</b>,所以下面两个输入框已隐藏。
+        <br>需要范围,请在「编辑组件」里把字段类型改成<b>数字类型</b>。</div>
+    </div>
+    <div class="form-grid" id="numArea">
       <div class="fi">
         <label>单位(权威)</label>
         <input class="ipt read" id="vUnit" readonly>
@@ -72,38 +98,15 @@
         <input class="ipt read" id="vStep" readonly>
         <span class="hint">小数位</span>
       </div>
-    </div>
-
-    <div id="enumBox" style="display:none;padding:0 16px 14px">
-      <div class="text-3 fz-12 mb-8">枚举值</div>
-      <div class="flex flex-wrap" id="enumList" style="gap:8px"></div>
-    </div>
-
-    <div class="note note-gray" style="margin:0 16px 16px">
-      <img src="assets/icons-png/icon-info.png">
-      <div>
-        <b>录入区间 vs 报警线(本质不同):</b><br>
-        · <b>录入区间</b> = 物理意义上下限(L1),超出<b>硬阻断</b>(HARD);<br>
-        · <b>报警线</b> = 临床意义上下限(L2),超出<b>软告警</b>(SOFT)。
-      </div>
-    </div>
-  </div>
-
-  <!-- ============ 报警线(可编辑) ============ -->
-  <div class="card">
-    <div class="card-head">
-      <h3>报警线 <span class="ch-desc">(可编辑,必须落在录入区间内)</span></h3>
-    </div>
-    <div class="form-grid" id="numArea">
       <div class="fi">
-        <label>报警下限</label>
-        <input class="ipt" id="aLo" placeholder="留空 = 不设下限">
+        <label>下限</label>
+        <input class="ipt" id="aLo" placeholder="留空 = 不限">
         <span class="hint">例:收缩压 90 mmHg</span>
         <span class="err-msg"></span>
       </div>
       <div class="fi">
-        <label>报警上限</label>
-        <input class="ipt" id="aHi" placeholder="留空 = 不设上限">
+        <label>上限</label>
+        <input class="ipt" id="aHi" placeholder="留空 = 不限">
         <span class="hint">例:收缩压 140 mmHg</span>
         <span class="err-msg"></span>
       </div>
@@ -116,39 +119,21 @@
       </div>
     </div>
 
-    <div class="note note-warn" id="noAlert" style="display:none;margin:0 16px 14px">
-      <img src="assets/icons-png/icon-warning.png">
-      <div>
-        <b>该字段属于临床规则,由科室在使用前确定(C8)。</b><br>
-        系统<b>不预填任何默认报警线</b>。请在下方填写后保存。<br>
-        若决定不留报警线,请保持<b>关闭监控</b>。
-      </div>
-    </div>
-  </div>
-
-  <!-- ============ 监控 + C8 说明 ============ -->
-  <div class="card">
-    <div class="card-head">
-      <h3>监控</h3>
-    </div>
-    <div class="form-grid">
-      <div class="fi full">
-        <label class="switch">
-          <input type="checkbox" id="monOn">
-          <span class="sw-track"></span>
-          <span class="sw-text">开启监控(产生告警,推送给医生和护士)</span>
-        </label>
-        <span class="err-msg"></span>
-      </div>
- \</div>
-
-    <div class="note note-info">
+    <div class="note note-info" style="margin:0 16px 14px">
       <img src="assets/icons-png/icon-info.png">
       <div>
-        <b>报警线、监控开关都是临床规则(C8)</b><br>
-        · 不由系统预设,不由默认开启;<br>
-        · 由<b>科室主任</b>或受权人在组件上下发<b>新的任务</b>之前确定;<br>
-        · 改报警线会让所有进行中的任务<b>按新阈值</b>生效,会触发既有目标的变更提示。
+        <b>下限与上限各自独立,单独填一半也有效。</b><br>
+        留空 = 该侧不限;只填下限表示「不小于」,只填上限表示「不大于」。<br>
+        两边都留空 = 本字段不设标准范围,系统<b>不预填任何默认值</b>。<br>
+        改了会同步到本组件下所有进行中的任务。
+      </div>
+    </div>
+
+    <div class="note note-gray" style="margin:0 16px 14px">
+      <img src="assets/icons-png/icon-info.png">
+      <div>
+        <b>临床有效区间</b>取自 <code class="k">field-constraints.md</code>,系统内部判定、<b>不在本页展示</b>。<br>
+        实际录入值超出该区间会<b>硬阻断禁止提交</b>;本页填的标准范围不能超出它,填了会在保存时报错。
       </div>
     </div>
   </div>
@@ -181,70 +166,111 @@
     document.getElementById('fName').textContent = f.name;
     document.getElementById('fCode').textContent = f.id;
     document.getElementById('fType').innerHTML = ({
-      num: '数值型', enum: '枚举型', datetime: '日期时间', date: '日期', text: '文本', file: '文件'
+      num: '数字类型', enum: '枚举', drug: '药品库(选择)', datetime: '日期时间', date: '日期', text: '文本', file: '图片(上传)'
     })[f.type];
     document.getElementById('fReq').innerHTML =
       f.req === 'required' ? '<span class="badge badge-block">必填</span>'
       : f.req === 'auto' ? '<span class="badge badge-info">自动</span>'
       : '<span class="badge badge-gray">选填</span>';
 
-    document.getElementById('vLo').value = f.validMin;
-    document.getElementById('vHi').value = f.validMax;
     document.getElementById('vUnit').value = f.unit || '—';
     document.getElementById('vStep').value = f.step != null ? f.step : '1';
 
-    if (f.enumVals) {
-      document.getElementById('enumBox').style.display = '';
-      document.getElementById('enumList').innerHTML = f.enumVals.map(function (v) {
-        return '<span class="badge badge-outline">' + v + '</span>';
-      }).join('');
+    /* 取值来源卡片:只有枚举 / 药品库类型才有内容,其余类型整卡隐藏 */
+    if (f.type === 'enum' || f.type === 'drug') {
+      document.getElementById('srcCard').style.display = '';
+      document.getElementById('srcTitle').textContent =
+        f.type === 'enum' ? '枚举值维护' : '药品库来源';
+      document.getElementById('srcDesc').innerHTML = f.type === 'enum'
+        ? '枚举值由管理员手动维护,不限于预设清单。'
+        : '药名只能从药品库选择,不能手打。';
     }
 
-    /* 报警线 */
-    document.getElementById('aLo').value = f.alertMin == null ? '' : f.alertMin;
-    document.getElementById('aHi').value = f.alertMax == null ? '' : f.alertMax;
+    /* 枚举值:管理员可手动增删,不限于预设清单 */
+    function esc(s) {
+      return String(s).replace(/[&<>"']/g, function (x) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[x];
+      });
+    }
+    function renderEnum() {
+      var box = document.getElementById('enumList');
+      box.innerHTML = (f.enumVals || []).map(function (v, i) {
+        return '<span class="badge badge-outline" style="display:inline-flex;align-items:center;gap:6px;padding-right:4px">'
+          + esc(v)
+          + '<button type="button" class="btn-text danger" data-rm="' + i + '" title="删除该枚举值">✕</button></span>';
+      }).join('') || '<span class="text-4 fz-12">还没有枚举值,点上方「新增枚举值」添加</span>';
+      document.getElementById('enumCount').textContent = (f.enumVals || []).length + ' 项';
+    }
 
-    /* 监控开关 */
-    document.getElementById('monOn').checked = !!f.monitor;
-    toggleMon();
+    if (f.type === 'enum') {
+      f.enumVals = f.enumVals || [];
+      document.getElementById('enumBox').style.display = '';
+      renderEnum();
+      document.getElementById('enumAdd').addEventListener('click', function () {
+        var v = window.prompt('新增枚举值(管理员自行填写,不限于预设清单)', '');
+        if (v === null) return;
+        v = v.trim();
+        if (!v) { Back.toast('枚举值不能为空', 'err'); return; }
+        if (f.enumVals.indexOf(v) >= 0) { Back.toast('该枚举值已存在:' + v, 'err'); return; }
+        f.enumVals.push(v);
+        renderEnum();
+        Back.toast('已新增枚举值「' + v + '」,记得点保存', 'ok');
+      });
+      document.getElementById('enumList').addEventListener('click', function (e) {
+        var el = e.target.closest('[data-rm]'); if (!el) return;
+        var i = +el.getAttribute('data-rm');
+        var gone = f.enumVals.splice(i, 1)[0];
+        renderEnum();
+        Back.toast('已删除枚举值「' + gone + '」,记得点保存', 'warn');
+      });
+    }
+
+    /* 药名字段:从本院药品库选,不可手打 */
+    if (f.type === 'drug') {
+      var dp = document.getElementById('drugPick');
+      var pool = Back.hospFilter(BACK_DATA.drugs, 'drugs');
+      if (!pool.length) pool = BACK_DATA.drugs;
+      dp.innerHTML = '<option value="">— 不预填默认药 —</option>' + pool.map(function (d) {
+        return '<option value="' + d.id + '">' + d.name + ' · ' + d.spec + ' · ' + d.cat + '</option>';
+      }).join('');
+      dp.value = f.defaultDrugId || '';
+      document.getElementById('drugBox').style.display = '';
+    }
+
+    /* 标准范围:下限 / 上限各自独立,留空 = 该侧不限 */
+    var isNum = f.type === 'num';
+    document.getElementById('numArea').style.display = isNum ? '' : 'none';
+    document.getElementById('aLo').value = f.rangeMin == null ? '' : f.rangeMin;
+    document.getElementById('aHi').value = f.rangeMax == null ? '' : f.rangeMax;
+
+    /* 非数字类型:下限 / 上限无意义,禁用并说明原因 */
+    if (!isNum) {
+      var tip = document.getElementById('nonNumTip');
+      tip.style.display = '';
+      tip.querySelector('b').textContent = '「' + f.name + '」是' + ({
+        datetime: '日期时间', enum: '枚举', drug: '药品库(选择)', file: '图片(上传)', text: '文本', date: '日期'
+      })[f.type] + '类型';
+    }
 
     function updateRange() {
       var lo = parseFloat(document.getElementById('aLo').value);
       var hi = parseFloat(document.getElementById('aHi').value);
-      if (isNaN(lo)) lo = f.validMin;
-      if (isNaN(hi)) hi = f.validMax;
+      var hasLo = !isNaN(lo), hasHi = !isNaN(hi);
+      var vLo = hasLo ? lo : f.validMin;
+      var vHi = hasHi ? hi : f.validMax;
 
-      document.getElementById('rngLabel').innerHTML = '当前报警线:<b>'
-        + (isNaN(parseFloat(document.getElementById('aLo').value)) ? '不设下限' : lo + ' ' + (f.unit || ''))
-        + ' → ' + (isNaN(parseFloat(document.getElementById('aHi').value)) ? '不设上限' : hi + ' ' + (f.unit || ''))
+      document.getElementById('rngLabel').innerHTML = '当前标准范围:<b>'
+        + (hasLo ? lo + ' ' + (f.unit || '') : '不限')
+        + ' → ' + (hasHi ? hi + ' ' + (f.unit || '') : '不限')
         + '</b>';
-      document.getElementById('rngLft').textContent = lo + ' ' + (f.unit || '');
-      document.getElementById('rngRgt').textContent = hi + ' ' + (f.unit || '');
+      document.getElementById('rngLft').textContent = vLo + ' ' + (f.unit || '');
+      document.getElementById('rngRgt').textContent = vHi + ' ' + (f.unit || '');
 
       var fullSpan = f.validMax - f.validMin;
-      var l = ((lo - f.validMin) / fullSpan * 100).toFixed(1);
-      var r = ((hi - f.validMin) / fullSpan * 100).toFixed(1);
-      document.getElementById('rngFill').style.left = l + '%';
-      document.getElementById('rngFill').style.right = (100 - r) + '%';
-
-      var warn = false;
-      if (!isNaN(parseFloat(document.getElementById('aLo').value)) && lo < f.validMin) warn = true;
-      if (!isNaN(parseFloat(document.getElementById('aHi').value)) && hi > f.validMax) warn = true;
-      if (!isNaN(lo) && !isNaN(hi) && lo >= hi) warn = true;
-      var box = document.getElementById('noAlert');
-      box.style.display = (f.type === 'num'
-        && ((!isNaN(parseFloat(document.getElementById('aLo').value)) || !isNaN(parseFloat(document.getElementById('aHi').value))) ? false : true)
-        && false || !document.getElementById('monOn').checked) ? 'none' : 'none';
-      // 简化:仅在开启监控且没填报警线时显示
-      var hasA = !isNaN(parseFloat(document.getElementById('aLo').value)) || !isNaN(parseFloat(document.getElementById('aHi').value));
-      box.style.display = (document.getElementById('monOn').checked && !hasA) ? '' : 'none';
-    }
-
-    function toggleMon() {
-      var on = document.getElementById('monOn').checked;
-      document.getElementById('aLo').disabled = !on;
-      document.getElementById('aHi').disabled = !on;
-      updateRange();
+      var l = ((vLo - f.validMin) / fullSpan * 100).toFixed(1);
+      var r = ((vHi - f.validMin) / fullSpan * 100).toFixed(1);
+      document.getElementById('rngFill').style.left = Math.max(0, l) + '%';
+      document.getElementById('rngFill').style.right = Math.max(0, (100 - r)) + '%';
     }
 
     ['aLo', 'aHi'].forEach(function (id) {
@@ -255,42 +281,56 @@
         updateRange();
       });
     });
-    document.getElementById('monOn').addEventListener('change', toggleMon);
 
     /* 保存 */
     document.getElementById('saveBtn').addEventListener('click', function () {
-      var lo = document.getElementById('aLo').value;
-      var hi = document.getElementById('aHi').value;
+      /* 枚举:至少留 1 个值,否则小程序端无从选择 */
+      if (f.type === 'enum' && !(f.enumVals || []).length) {
+        Back.toast('枚举至少要有 1 个值,请点「新增枚举值」添加', 'err');
+        return;
+      }
+      /* 药名:只能来自药品库 */
+      if (f.type === 'drug') {
+        f.defaultDrugId = document.getElementById('drugPick').value || '';
+        f.fromDrugLib = true;
+      }
+      if (!isNum) { Back.toast('已保存字段配置:' + f.name, 'ok');
+        setTimeout(function () { location.href = editUrl; }, 700); return; }
+
+      var lo = document.getElementById('aLo').value.trim();
+      var hi = document.getElementById('aHi').value.trim();
       var loN = lo === '' ? null : parseFloat(lo);
       var hiN = hi === '' ? null : parseFloat(hi);
-      var mon = document.getElementById('monOn').checked;
 
-      /* 校验 */
+      /* 校验:两个输入框各自独立校验;单边留空合法 */
       var ok = true;
+      if (lo !== '' && isNaN(loN)) { Back.toast('下限不是数字', 'err'); ok = false; }
+      if (hi !== '' && isNaN(hiN)) { Back.toast('上限不是数字', 'err'); ok = false; }
+      if (!ok) return;
+
       if (loN !== null && loN < f.validMin) {
         var b1 = document.getElementById('aLo').closest('.fi');
         b1.classList.add('has-err');
-        b1.querySelector('.err-msg').textContent = '不能低于录入下限 ' + f.validMin + ' ' + (f.unit || '');
+        b1.querySelector('.err-msg').textContent = '不能低于临床有效下限 ' + f.validMin + ' ' + (f.unit || '');
         ok = false;
       }
       if (hiN !== null && hiN > f.validMax) {
         var b2 = document.getElementById('aHi').closest('.fi');
         b2.classList.add('has-err');
-        b2.querySelector('.err-msg').textContent = '不能高于录入上限 ' + f.validMax + ' ' + (f.unit || '');
+        b2.querySelector('.err-msg').textContent = '不能高于临床有效上限 ' + f.validMax + ' ' + (f.unit || '');
         ok = false;
       }
       if (loN !== null && hiN !== null && loN >= hiN) {
-        Back.toast('下限必须小于上限', 'err');
-        ok = false;
-      }
-      if (mon && loN === null && hiN === null) {
-        Back.toast('开启监控前必须填写至少一个报警线(C8)', 'err');
+        var b3 = document.getElementById('aLo').closest('.fi');
+        b3.classList.add('has-err');
+        b3.querySelector('.err-msg').textContent = '下限必须小于上限(当前 ' + loN + ' ≥ ' + hiN + ')';
         ok = false;
       }
       if (!ok) return;
 
-      f.alertMin = loN; f.alertMax = hiN; f.monitor = mon;
-      Back.toast('已保存字段配置:' + f.name, 'ok');
+      f.rangeMin = loN; f.rangeMax = hiN;
+      Back.toast('已保存字段配置:' + f.name
+        + (loN === null && hiN === null ? '(未设标准范围)' : ''), 'ok');
       setTimeout(function () { location.href = editUrl; }, 700);
     });
 

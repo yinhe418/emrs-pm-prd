@@ -172,57 +172,66 @@ var BACK_DATA = (function () {
   ];
 
   /* ---- 任务组件库 ----
-   * ⚠️ 录入区间 = field-constraints.md 物理有效区间(硬阻断)
-   * ⚠️ 报警线   = field-constraints.md 校验规则(软告警);C8 由科室填,系统不预填
+   * ⚠️ 临床有效区间 validMin/validMax = field-constraints.md 物理有效区间(硬阻断,只读,系统权威;后台 UI 不展示,仅内部校验)
+   * ⚠️ 标准范围 rangeMin/rangeMax = 科室在本组件上配置的标准范围,留空 = 该侧不限
    */
   var components = [
-    { id: 'T1', name: '记录血压', icon: 'icon-bp', deptId: 'D1', scope: ['patient'],
+    { id: 'T1', name: '记录血压', icon: 'icon-bp', deptId: 'D1',
       desc: '患者每日早晚各测一次血压,可与个人目标对比。', status: 'on', order: 1,
       fields: [
-        { id: 'F1', name: '收缩压', type: 'num', validMin: 50, validMax: 280, alertMin: 90, alertMax: 140, unit: 'mmHg', step: 1, req: 'required', monitor: true },
-        { id: 'F2', name: '舒张压', type: 'num', validMin: 20, validMax: 180, alertMin: 60, alertMax: 90,  unit: 'mmHg', step: 1, req: 'required', monitor: true },
-        { id: 'F3', name: '心率',   type: 'num', validMin: 20, validMax: 250, alertMin: 60, alertMax: 100, unit: 'bpm',   step: 1, req: 'optional', monitor: false },
-        { id: 'F4', name: '测量时间', type: 'datetime', validMin: null, validMax: null, alertMin: null, alertMax: null, unit: '', step: 1, req: 'auto', monitor: false },
-        { id: 'F5', name: '测量体位', type: 'enum', enumVals: ['坐位', '卧位', '立位'], validMin: null, validMax: null, alertMin: null, alertMax: null, unit: '', step: 1, req: 'optional', monitor: false }
+        { id: 'F1', name: '收缩压', type: 'num', validMin: 50, validMax: 280, rangeMin: 90, rangeMax: 140, unit: 'mmHg', step: 1, req: 'required' },
+        { id: 'F2', name: '舒张压', type: 'num', validMin: 20, validMax: 180, rangeMin: 60, rangeMax: 90,  unit: 'mmHg', step: 1, req: 'required' },
+        { id: 'F3', name: '心率',   type: 'num', validMin: 20, validMax: 250, rangeMin: 60, rangeMax: 100, unit: 'bpm',   step: 1, req: 'optional' },
+        { id: 'F4', name: '测量时间', type: 'datetime', validMin: null, validMax: null, rangeMin: null, rangeMax: null, unit: '', step: 1, req: 'auto' },
+        { id: 'F5', name: '测量体位', type: 'enum', enumVals: ['坐位', '卧位', '立位'], validMin: null, validMax: null, rangeMin: null, rangeMax: null, unit: '', step: 1, req: 'optional' }
       ] },
-    { id: 'T2', name: '记录血糖', icon: 'icon-blood-drop', deptId: 'D1', scope: ['patient'],
+    { id: 'T2', name: '记录血糖', icon: 'icon-blood-drop', deptId: 'D1',
       desc: '指尖血糖自测,空腹与餐后各测一次。', status: 'on', order: 2,
       fields: [
-        { id: 'F11', name: '空腹血糖', type: 'num', validMin: 1.0, validMax: 30.0, alertMin: 3.9, alertMax: 6.1, unit: 'mmol/L', step: 0.1, req: 'required', monitor: true },
-        { id: 'F12', name: '餐后血糖', type: 'num', validMin: 1.0, validMax: 30.0, alertMin: null, alertMax: 7.8, unit: 'mmol/L', step: 0.1, req: 'optional', monitor: true },
-        { id: 'F13', name: '测量时间', type: 'datetime', validMin: null, validMax: null, alertMin: null, alertMax: null, unit: '', step: 1, req: 'auto', monitor: false }
+        { id: 'F11', name: '空腹血糖', type: 'num', validMin: 1.0, validMax: 30.0, rangeMin: 3.9, rangeMax: 6.1, unit: 'mmol/L', step: 0.1, req: 'required' },
+        { id: 'F12', name: '餐后血糖', type: 'num', validMin: 1.0, validMax: 30.0, rangeMin: null, rangeMax: 7.8, unit: 'mmol/L', step: 0.1, req: 'optional' },
+        { id: 'F13', name: '测量时间', type: 'datetime', validMin: null, validMax: null, rangeMin: null, rangeMax: null, unit: '', step: 1, req: 'auto' }
       ] },
-    { id: 'T3', name: '服药反馈', icon: 'icon-pill', deptId: 'D1', scope: ['patient', 'nurse'],
+    { id: 'T3', name: '服药反馈', icon: 'icon-pill', deptId: 'D1',
       desc: '患者反馈当日服药情况,护士据此跟进。', status: 'on', order: 3,
       fields: [
-        { id: 'F21', name: '服药情况', type: 'enum', enumVals: ['按医嘱服用', '漏服', '自行停药', '自行加量'], validMin: null, validMax: null, alertMin: null, alertMax: null, unit: '', step: 1, req: 'required', monitor: false },
-        { id: 'F22', name: '备注', type: 'text', validMin: null, validMax: null, alertMin: null, alertMax: null, unit: '', step: 1, req: 'optional', monitor: false }
+        { id: 'F21', name: '服药情况', type: 'enum', enumVals: ['正常服用', '减量服用', '未正常服用'], validMin: null, validMax: null, rangeMin: null, rangeMax: null, unit: '', step: 1, req: 'required' },
+        { id: 'F22', name: '备注', type: 'text', validMin: null, validMax: null, rangeMin: null, rangeMax: null, unit: '', step: 1, req: 'optional' },
+        { id: 'F23', name: '填写理由', type: 'text', validMin: null, validMax: null, rangeMin: null, rangeMax: null, unit: '', step: 1, req: 'optional' }
       ] },
-    { id: 'T4', name: '电话回访', icon: 'icon-call', deptId: 'D1', scope: ['nurse'],
+    { id: 'T4', name: '电话回访', icon: 'icon-call', deptId: 'D1',
       desc: '护士电话随访记录接通情况与随访结论。', status: 'on', order: 4,
       fields: [
-        { id: 'F31', name: '接通状态', type: 'enum', enumVals: ['电话接通', '未接通', '拒接'], validMin: null, validMax: null, alertMin: null, alertMax: null, unit: '', step: 1, req: 'required', monitor: false },
-        { id: 'F32', name: '随访结论', type: 'text', validMin: null, validMax: null, alertMin: null, alertMax: null, unit: '', step: 1, req: 'optional', monitor: false }
+        { id: 'F31', name: '接通状态', type: 'enum', enumVals: ['电话接通', '未接通', '拒接'], validMin: null, validMax: null, rangeMin: null, rangeMax: null, unit: '', step: 1, req: 'required' },
+        { id: 'F32', name: '随访结论', type: 'text', validMin: null, validMax: null, rangeMin: null, rangeMax: null, unit: '', step: 1, req: 'optional' }
       ] },
-    { id: 'T5', name: '上传检查报告', icon: 'icon-camera', deptId: 'D1', scope: ['patient'],
+    { id: 'T5', name: '上传检查报告', icon: 'icon-camera', deptId: 'D1',
       desc: '上传复查报告照片,自动识别数值后由医生核对。', status: 'on', order: 5,
       fields: [
-        { id: 'F41', name: '报告照片', type: 'file', validMin: null, validMax: null, alertMin: null, alertMax: null, unit: '', step: 1, req: 'required', monitor: false },
-        { id: 'F42', name: '检查日期', type: 'date', validMin: null, validMax: null, alertMin: null, alertMax: null, unit: '', step: 1, req: 'required', monitor: false }
+        { id: 'F41', name: '报告照片', type: 'file', validMin: null, validMax: null, rangeMin: null, rangeMax: null, unit: '', step: 1, req: 'required' },
+        { id: 'F42', name: '检查日期', type: 'date', validMin: null, validMax: null, rangeMin: null, rangeMax: null, unit: '', step: 1, req: 'required' }
       ] },
-    { id: 'T6', name: '康复训练打卡', icon: 'icon-run', deptId: 'D1', scope: ['patient'],
+    { id: 'T6', name: '康复训练打卡', icon: 'icon-run', deptId: 'D1',
       desc: '每日康复训练打卡。', status: 'on', order: 6,
       fields: [
-        { id: 'F51', name: '训练项目', type: 'enum', enumVals: ['步行训练', '被动运动', '语言训练'], validMin: null, validMax: null, alertMin: null, alertMax: null, unit: '', step: 1, req: 'required', monitor: false },
-        { id: 'F52', name: '训练时长', type: 'num', validMin: 0, validMax: 600, alertMin: null, alertMax: null, unit: '分钟', step: 1, req: 'optional', monitor: false, custom: true }
+        { id: 'F51', name: '训练项目', type: 'enum', enumVals: ['步行训练', '被动运动', '语言训练'], validMin: null, validMax: null, rangeMin: null, rangeMax: null, unit: '', step: 1, req: 'required' },
+        { id: 'F52', name: '训练时长', type: 'num', validMin: 0, validMax: 600, rangeMin: null, rangeMax: null, unit: '分钟', step: 1, req: 'optional', custom: true }
       ] },
-    { id: 'T7', name: '口述病例', icon: 'icon-microscope', deptId: 'D1', scope: ['patient', 'doctor'],
+    { id: 'T7', name: '口述病例', icon: 'icon-microscope', deptId: 'D1',
       desc: '患者语音描述病情变化,AI 结构化后由医生确认。', status: 'on', order: 7, fields: [] },
-    { id: 'T8', name: '建立药物清单', icon: 'icon-drug-package', deptId: 'D1', scope: ['patient', 'doctor', 'nurse'],
-      desc: '录入出院带药,两栏分开:医嘱使用 / 实际使用。', status: 'on', order: 8,
+    { id: 'T8', name: '建立药品清单', icon: 'icon-drug-package', deptId: 'D1',
+      desc: '录入出院带药:药名(选自药品库)+ 剂量 + 频次。', status: 'on', order: 8,
       fields: [
-        { id: 'F71', name: '体重', type: 'num', validMin: 1.0, validMax: 300.0, alertMin: null, alertMax: null, unit: 'kg', step: 0.1, req: 'required', monitor: false, disputed: true },
-        { id: 'F72', name: '服药时间', type: 'enum', enumVals: ['QD', 'BID', 'TID', 'Q4H', 'Q6H', 'Q8H', 'PRN'], validMin: null, validMax: null, alertMin: null, alertMax: null, unit: '', step: 1, req: 'required', monitor: false }
+        /* 药名只能从药品库(BACK_DATA.drugs)选,不可手打;defaultDrugId 为后台预填的默认药 */
+        { id: 'F71', name: '药名', type: 'drug', fromDrugLib: true, defaultDrugId: '',
+          validMin: null, validMax: null, rangeMin: null, rangeMax: null, unit: '', step: 1, req: 'required' },
+        /* 剂量:field-constraints.md 未规定口服二级预防药的剂量数值区间,
+           故按「文本 + 单位」录入(如「100 mg」),不做数值校验、不编造上下限 */
+        { id: 'F72', name: '剂量', type: 'text', ph: '如 100 mg',
+          validMin: null, validMax: null, rangeMin: null, rangeMax: null, unit: '', step: 1, req: 'required' },
+        { id: 'F73', name: '频次', type: 'enum',
+          enumVals: ['每日一次', '每日两次', '每晚一次', '必要时'],
+          validMin: null, validMax: null, rangeMin: null, rangeMax: null, unit: '', step: 1, req: 'required' }
       ] }
   ];
 
@@ -255,7 +264,7 @@ var BACK_DATA = (function () {
 
   /* ---- 审计日志(占位页用)---- */
   var audits = [
-    { t: '2026-10-20 16:42', who: '主任丙', what: '修改组件「记录血压」', detail: '收缩压 报警线 90-140 → 90-140(未变);心率 报警线由未设置改为 60-100', tag: '配置变更' },
+    { t: '2026-10-20 16:42', who: '主任丙', what: '修改组件「记录血压」', detail: '收缩压 标准范围 90-140 → 90-140(未变);心率 标准范围由未设置改为 60-100', tag: '配置变更' },
     { t: '2026-10-20 10:15', who: '主任丙', what: '设置工作人员', detail: '王** → 神经内科 · 护师', tag: '人员' },
     { t: '2026-10-19 20:22', who: '主任丙', what: '认领待设置人员', detail: '认领 王**(停留 2 天)', tag: '人员' },
     { t: '2026-10-18 09:05', who: '主任丙', what: '替换医生头像', detail: '医生乙:微信头像 → 后台上传头像', tag: '配置变更' },
