@@ -406,12 +406,14 @@
     for (var i = 0; i < fields.length; i++) {
       var f = fields[i];
       if (f.type !== 'num') continue;
+      /* ⚠️ 临床有效区间(validMin/validMax)按冻结规则是「内部硬校验,UI 不展示」。
+         报错只说明超界,不回显临床上下限数值。 */
       if (f.rangeMin !== null && f.validMin !== null && f.rangeMin < f.validMin) {
-        Back.toast('「' + f.name + '」标准范围下限 ' + f.rangeMin + ' 低于临床有效区间 ' + f.validMin + ',请修正', 'err');
+        Back.toast('「' + f.name + '」标准范围下限超出临床允许范围(允许范围不在本页展示),请在允许区间内设置', 'err');
         ok = false; break;
       }
       if (f.rangeMax !== null && f.validMax !== null && f.rangeMax > f.validMax) {
-        Back.toast('「' + f.name + '」标准范围上限 ' + f.rangeMax + ' 高于临床有效区间 ' + f.validMax + ',请修正', 'err');
+        Back.toast('「' + f.name + '」标准范围上限超出临床允许范围(允许范围不在本页展示),请在允许区间内设置', 'err');
         ok = false; break;
       }
       if (f.rangeMin !== null && f.rangeMax !== null && f.rangeMin >= f.rangeMax) {

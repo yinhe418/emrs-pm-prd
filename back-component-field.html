@@ -256,21 +256,19 @@
       var lo = parseFloat(document.getElementById('aLo').value);
       var hi = parseFloat(document.getElementById('aHi').value);
       var hasLo = !isNaN(lo), hasHi = !isNaN(hi);
-      var vLo = hasLo ? lo : f.validMin;
-      var vHi = hasHi ? hi : f.validMax;
 
-      document.getElementById('rngLabel').innerHTML = '当前标准范围:<b>'
-        + (hasLo ? lo + ' ' + (f.unit || '') : '不限')
-        + ' → ' + (hasHi ? hi + ' ' + (f.unit || '') : '不限')
-        + '</b>';
-      document.getElementById('rngLft').textContent = vLo + ' ' + (f.unit || '');
-      document.getElementById('rngRgt').textContent = vHi + ' ' + (f.unit || '');
+      document.getElementById('rngLabel').innerHTML = '标准范围状态:<b>'
+        + ((hasLo || hasHi) ? '已设置' : '未设置(不限)') + '</b>';
 
-      var fullSpan = f.validMax - f.validMin;
-      var l = ((vLo - f.validMin) / fullSpan * 100).toFixed(1);
-      var r = ((vHi - f.validMin) / fullSpan * 100).toFixed(1);
-      document.getElementById('rngFill').style.left = Math.max(0, l) + '%';
-      document.getElementById('rngFill').style.right = Math.max(0, (100 - r)) + '%';
+      /* ⚠️ 临床有效区间(validMin/validMax)是内部硬校验,按冻结规则不展示。
+         所以这条色带画的是「标准范围本身」,不是「标准范围落在临床区间里的位置」——
+         后者的刻度与填充位置会直接反推出临床上下限。 */
+      document.getElementById('rngLft').textContent = hasLo ? lo + ' ' + (f.unit || '') : '不限';
+      document.getElementById('rngRgt').textContent = hasHi ? hi + ' ' + (f.unit || '') : '不限';
+
+      var fill = document.getElementById('rngFill');
+      fill.style.left = '0%';
+      fill.style.right = (hasLo || hasHi) ? '0%' : '100%';   /* 未设 = 空条 */
     }
 
     ['aLo', 'aHi'].forEach(function (id) {
@@ -308,16 +306,17 @@
       if (hi !== '' && isNaN(hiN)) { Back.toast('上限不是数字', 'err'); ok = false; }
       if (!ok) return;
 
+      /* ⚠️ 临床有效区间是内部硬校验,报错不回显临床上下限数值 */
       if (loN !== null && loN < f.validMin) {
         var b1 = document.getElementById('aLo').closest('.fi');
         b1.classList.add('has-err');
-        b1.querySelector('.err-msg').textContent = '不能低于临床有效下限 ' + f.validMin + ' ' + (f.unit || '');
+        b1.querySelector('.err-msg').textContent = '标准范围下限超出临床允许范围(允许范围不在本页展示)';
         ok = false;
       }
       if (hiN !== null && hiN > f.validMax) {
         var b2 = document.getElementById('aHi').closest('.fi');
         b2.classList.add('has-err');
-        b2.querySelector('.err-msg').textContent = '不能高于临床有效上限 ' + f.validMax + ' ' + (f.unit || '');
+        b2.querySelector('.err-msg').textContent = '标准范围上限超出临床允许范围(允许范围不在本页展示)';
         ok = false;
       }
       if (loN !== null && hiN !== null && loN >= hiN) {
