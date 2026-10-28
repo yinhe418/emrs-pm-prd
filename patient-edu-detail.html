@@ -61,10 +61,10 @@
     <div class="page edu-page" id="eduPage"></div>
 
     <div class="tabbar">
-      <a href="patient-home.html" class="tab"><span <img src="assets/icons-png/icon-tab-home.png" alt="首" />首页</a>
-      <a href="patient-tasks.html" class="tab"><span <img src="assets/icons-png/icon-tab-tasks.png" alt="任" />任务</a>
-      <a href="patient-im.html" class="tab"><span <img src="assets/icons-png/icon-im.png" alt="信" />联系</a>
-      <a href="patient-emergency.html" class="tab" style="color:var(--block);"><span <img src="assets/icons-png/icon-sos.png" alt="急" />紧急</a>
+      <a href="patient-home.html" class="tab"><span class="tab-icon"><img src="assets/icons-png/icon-tab-home.png" alt="首" /></span>首页</a>
+      <a href="patient-tasks.html" class="tab"><span class="tab-icon"><img src="assets/icons-png/icon-tab-tasks.png" alt="任" /></span>任务</a>
+      <a href="patient-im.html" class="tab"><span class="tab-icon"><img src="assets/icons-png/icon-im.png" alt="信" /></span>联系</a>
+      <a href="patient-emergency.html" class="tab" style="color:var(--block);"><span class="tab-icon"><img src="assets/icons-png/icon-sos.png" alt="急" /></span>紧急</a>
     </div>
   </div>
   <script src="assets/edu-data.js"></script>
@@ -108,7 +108,6 @@
         + '<div class="edu-meta">更新时间:' + esc(a.updatedAt || '—') + '</div>'
         + '<div class="edu-body">' + (a.content || '') + '</div>'
         + '</div>'
-        + '<div class="edu-tip">本内容为演示文案,正式科普内容待临床确认。</div>'
         + '<div class="edu-foot"><a class="btn btn-primary btn-block" href="patient-im.html">咨询主管医生</a></div>';
     })();
   </script>

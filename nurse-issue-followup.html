@@ -16,8 +16,8 @@
 
     <div class="page">
       <div class="banner banner-warn">
-        <b>F-NURSE-1 预约复查</b><br>
-        录入复查日期 / 项目 / 备注。<b>本期不对接挂号系统</b>——护士需线下手动预留医生号(C-外部依赖)。
+        <b>预约复查</b><br>
+        录入复查日期 / 项目 / 备注。<b>当前不对接挂号系统</b>——护士需线下手动预留医生号。
       </div>
 
       <!-- 患者快读 -->
@@ -31,7 +31,7 @@
         </div>
       </div>
 
-      <!-- 录入字段(§7.3.1 F-NURSE-1) -->
+      <!-- 录入字段 -->
       <div class="section-title">复查信息</div>
       <div class="group">
         <div class="form-item">
@@ -65,12 +65,12 @@
       <!-- 本期限制 -->
       <div class="notice notice-warn">
         <b>任务标记完成口径</b>:以"复查日期已到 + 患者到场"为准(护士手动确认);<br>
-        <b>"已预约挂号号"≠"已完成复查"</b>(§7.3.1)。
+        <b>"已预约挂号号"≠"已完成复查"</b>。
       </div>
 
       <!-- 临床约束 -->
       <div class="notice notice-block">
-        <b>临床约束(C1)</b>:护士不能替代医生作临床判断。任务内容只能是"复查安排",不能含治疗建议。
+        <b>临床约束</b>:护士不能替代医生作临床判断。任务内容只能是"复查安排",不能含治疗建议。
       </div>
 
       <a href="nurse-patient-detail.html" class="btn btn-primary btn-block" style="margin-top:20px;" onclick="submitFollowup(event)">

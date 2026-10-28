@@ -36,7 +36,7 @@
       </div>
 
         <div class="banner banner-warn">
-          <b>此角色待临床确认</b>(§2.1, Q6):由主任指定,可由科室医生 / 护士兼任。
+          由主任指定,可由科室医生 / 护士兼任。
         </div>
 
         <!-- 普通医生(有管理权限)快捷入口提示 -->
@@ -92,16 +92,17 @@
           </div>
         </a>
 
-        <div class="notice">
+        <!-- 演示前隐藏:内部排期说明(PRD 章节引用 / 开发中固化)。恢复请删掉 display:none -->
+        <div class="notice" style="display:none">
           <b>P0 范围说明</b>:任务库和药品库是 PRD §7.5 提到的角色功能,具体组件由系统在开发中固化,后续需求再迭代扩展。
         </div>
     </div>
 
     <div class="tabbar">
-      <a href="admin-projects.html" class="tab active"><span <img src="assets/icons-png/icon-tab-projects.png" alt="项" />项目</a>
-      <a href="admin-task-lib.html" class="tab"><span <img src="assets/icons-png/icon-tab-tasklib.png" alt="库" />任务库</a>
-      <a href="admin-drugs.html" class="tab"><span <img src="assets/icons-png/icon-tab-drugs.png" alt="药" />药品</a>
-      <a href="role-switch.html" class="tab"><span <img src="assets/icons-png/icon-tab-switch.png" alt="切" />切换</a>
+      <a href="admin-projects.html" class="tab active"><span class="tab-icon"><img src="assets/icons-png/icon-tab-projects.png" alt="项" /></span>项目</a>
+      <a href="admin-task-lib.html" class="tab"><span class="tab-icon"><img src="assets/icons-png/icon-tab-tasklib.png" alt="库" /></span>任务库</a>
+      <a href="admin-drugs.html" class="tab"><span class="tab-icon"><img src="assets/icons-png/icon-tab-drugs.png" alt="药" /></span>药品</a>
+      <a href="role-switch.html" class="tab"><span class="tab-icon"><img src="assets/icons-png/icon-tab-switch.png" alt="切" /></span>切换</a>
     </div>
   </div>
   <script>

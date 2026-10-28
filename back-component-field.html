@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, 1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>字段配置 · 后台管理</title>
   <link rel="stylesheet" href="assets/back.css">
 </head>
@@ -90,8 +90,7 @@
       <div class="fi">
         <label>单位(权威)</label>
         <input class="ipt read" id="vUnit" readonly>
-        <span class="hint">不可改;若与临床实际不符,反查
-          <code class="k">field-constraints.md</code></span>
+        <span class="hint">不可改</span>
       </div>
       <div class="fi">
         <label>精度</label>
@@ -132,7 +131,7 @@
     <div class="note note-gray" style="margin:0 16px 14px">
       <img src="assets/icons-png/icon-info.png">
       <div>
-        <b>临床有效区间</b>取自 <code class="k">field-constraints.md</code>,系统内部判定、<b>不在本页展示</b>。<br>
+        <b>临床有效区间</b>由系统内部判定、<b>不在本页展示</b>。<br>
         实际录入值超出该区间会<b>硬阻断禁止提交</b>;本页填的标准范围不能超出它,填了会在保存时报错。
       </div>
     </div>

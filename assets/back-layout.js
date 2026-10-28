@@ -33,7 +33,7 @@
   function renderSide(active) {
     var html = '<aside class="back-side">';
     html += '<div class="side-logo"><div class="lg-mark">智</div>'
-          +  '<div class="lg-txt">智病历 AIS<small>管理后台 · Demo</small></div></div>';
+          +  '<div class="lg-txt">智病历 AIS<small>管理后台</small></div></div>';
     html += '<nav class="side-nav">';
     NAV.forEach(function (n) {
       if (n.type === 'group') {
@@ -56,7 +56,7 @@
     });
     html += '</nav>';
     html += '<div class="side-foot">'
-          +   '<a href="back-help.html">关于本 Demo</a> · <a href="index.html">返回小程序 Demo</a>'
+          +   '<a href="back-help.html">关于本系统</a> · <a href="index.html">返回小程序端</a>'
           + '</div>';
     html += '</aside>';
     return html;

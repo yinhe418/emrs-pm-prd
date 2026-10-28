@@ -19,7 +19,7 @@
       </p>
     </div>
     <div class="lb-foot">
-      ⚠️ 独立于小程序端的 PC Web 系统 · 登录态不互通 · Q1 阶段为 HTML Demo,数据为演示数据
+      ⚠️ 独立于小程序端的 PC Web 系统 · 登录态不互通
     </div>
   </div>
 
@@ -29,17 +29,21 @@
       <h2>管理员登录</h2>
       <p class="lb-t">请使用科室分配的后台账号登录</p>
 
-      <div class="fi" id="fi-user">
-        <label for="u"><span class="req">*</span>账号</label>
-        <input class="ipt w-full" id="u" name="user" placeholder="后台账号" autocomplete="username">
-        <span class="err-msg">请输入账号</span>
-      </div>
+      <!-- 账号 / 密码放进 form:密码框脱离 form 会让 Chrome 控制台报
+           「Password field is not contained in a form」。提交按钮通过 form 属性关联。 -->
+      <form id="loginForm" novalidate>
+        <div class="fi" id="fi-user">
+          <label for="u"><span class="req">*</span>账号</label>
+          <input class="ipt w-full" id="u" name="user" placeholder="后台账号" autocomplete="username">
+          <span class="err-msg">请输入账号</span>
+        </div>
 
-      <div class="fi" id="fi-pwd">
-        <label for="p"><span class="req">*</span>密码</label>
-        <input class="ipt w-full" id="p" name="pwd" type="password" placeholder="请输入密码" autocomplete="current-password">
-        <span class="err-msg">请输入密码</span>
-      </div>
+        <div class="fi" id="fi-pwd">
+          <label for="p"><span class="req">*</span>密码</label>
+          <input class="ipt w-full" id="p" name="pwd" type="password" placeholder="请输入密码" autocomplete="current-password">
+          <span class="err-msg">请输入密码</span>
+        </div>
+      </form>
 
       <div class="fi" id="fi-err" style="display:none">
         <div class="note note-block" style="margin:0" id="errBox"></div>
@@ -47,9 +51,11 @@
 
       <label class="chk mb-12"><input type="checkbox" checked> 记住我(7 天内免登录)</label>
 
-      <button class="btn btn-primary" id="loginBtn">登 录</button>
+      <button class="btn btn-primary" id="loginBtn" type="submit" form="loginForm">登 录</button>
 
-      <div class="login-demo">
+      <!-- Demo 提示:演示时隐藏。需要演示异常态时,删掉下面这行 style="display:none" 即可。
+           (异常态触发词:账号或密码填 error → 账号或密码不正确;账号填 locked → 账号已临时锁定) -->
+      <div class="login-demo" style="display:none">
         <b>Demo 提示</b><br>
         账号 <code class="k">admin</code> · 密码 <code class="k">123456</code>(任意非空账号密码均可进入)<br>
         输入 <code class="k">error</code> 可查看「账号或密码不正确」异常态
@@ -60,13 +66,12 @@
         本系统仅供医院授权人员使用,操作全程留痕。<br>
         如需开通账号,请联系科室主任 / 医务科。
       </p>
-      <p class="fz-12 mt-12"><a href="index.html" style="color:var(--brand)">← 返回小程序端 Demo 入口</a></p>
+      <p class="fz-12 mt-12"><a href="index.html" style="color:var(--brand)">← 返回小程序端入口</a></p>
     </div>
   </div>
 
   <script>
     (function () {
-      var btn = document.getElementById('loginBtn');
       var errBox = document.getElementById('errBox');
       var fiErr = document.getElementById('fi-err');
 
@@ -103,9 +108,11 @@
         location.href = 'back-hospital-pick.html';
       }
 
-      btn.addEventListener('click', doLogin);
-      document.getElementById('p').addEventListener('keydown', function (e) {
-        if (e.key === 'Enter') doLogin();
+      /* 走 form 的 submit 事件(回车 = 浏览器隐式提交),不再绑 click,避免重复执行 */
+      var form = document.getElementById('loginForm');
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        doLogin();
       });
 
       // 默认填充 Demo 账号,方便点击验收

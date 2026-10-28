@@ -138,7 +138,7 @@
       <div class="fi mt-12">
         <label>主管护士</label>
         <select class="sel w-full" id="pNurSel"></select>
-        <span class="hint">可为「未分配」;病患协作护士本轮只读展示</span>
+        <span class="hint">可为「未分配」;病患协作护士只读展示</span>
         <span class="err-msg"></span>
       </div>
       <div class="fi mt-12">
@@ -156,7 +156,7 @@
 
     <div class="note note-gray" style="margin-top:6px">
       <img src="assets/icons-png/icon-info.png">
-      <div><b>患者详情页待定,后续单独设计。</b><br>
+      <div>
         本抽屉只用于查看基本信息与按项目调整归属,不承载病历、任务、文书等内容。</div>
     </div>
   </div>
@@ -439,7 +439,7 @@
       b = '<div class="note note-pass" style="margin:0"><img src="assets/icons-png/icon-check-circle.png"><div>'
         + '当前预警基线:<b>医生个体设定</b>(医生' + p.base.by.replace('医生', '') + ' · ' + p.base.at + ' 设定)'
         + (p.base.expired ? '<br><span class="text-orange">该个体目标已到期,现按科室默认执行</span>' : '')
-        + '<br><span class="fz-11 text-3">个人目标由主管医生在小程序端设定,优先级高于科室配置(C5)。后台只读,不可编辑。</span>'
+        + '<br><span class="fz-11 text-3">个人目标由主管医生在小程序端设定,优先级高于科室配置。后台只读,不可编辑。</span>'
         + '</div></div>';
     } else {
       b = '<div class="note note-gray" style="margin:0"><img src="assets/icons-png/icon-info.png"><div>'
@@ -480,7 +480,7 @@
     if (oldDoc && newDoc && oldDoc.id !== newDoc.id) {
       items.push('【' + pjName + '】主管医生 <b>' + oldDoc.name + '</b> → <b>' + newDoc.name + '</b>,患者小程序端即时生效');
       items.push('<b>' + newDoc.name + '</b> 工作台在该项目下新增该患者,<b>' + oldDoc.name + '</b> 侧移除(仅该项目,其他项目不变)');
-      items.push('该患者名下 <b>' + p.fields.length + '</b> 项指标的预警基线来源需新医生确认是否继承(C5)');
+      items.push('该患者名下 <b>' + p.fields.length + '</b> 项指标的预警基线来源需新医生确认是否继承');
     }
     if ((oldNur && oldNur.id) !== (newNur && newNur.id)) {
       items.push('【' + pjName + '】主管护士 <b>' + (oldNur ? oldNur.name : '未分配') + '</b> → <b>' + (newNur ? newNur.name : '未分配') + '</b>');
@@ -565,7 +565,7 @@
       + (cur.base.pendingConfirm
           ? '<div class="note note-warn" style="margin-top:10px"><img src="assets/icons-png/icon-warning.png">'
             + '<div>该患者的<b>医生个体基线</b>已挂起,需新主管医生确认是否继承(原:' + cur.base.by + ' · '
-            + cur.base.at + ')。后台不代医生决定(C5)。</div></div>'
+            + cur.base.at + ')。后台不代医生决定。</div></div>'
           : '');
     Back.modal('okModal', true);
   });

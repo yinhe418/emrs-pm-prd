@@ -120,12 +120,11 @@
 
       <div class="divider"></div>
 
-      <div class="card-head"><h3>本 Demo 覆盖范围</h3></div>
+      <div class="card-head"><h3>覆盖范围</h3></div>
       <div class="fz-12 text-3" style="line-height:1.9">
         · 组织与人员:医院 / 科室 / 职位 / 工作人员 / 病患 / 二维码<br>
         · 任务组件库:组件 + 字段定义(字段名 / 类型 / 标准范围 / 必填)<br>
-        · 药品库:11 个演示药品主数据<br>
-        <span class="text-orange">· 未覆盖:项目模板 / 权限矩阵 / 审计日志 / 患者详情页</span>
+        · 药品库:11 个药品主数据<br>
       </div>
     </div>
   </div>
@@ -157,7 +156,8 @@
 <div class="drawer" id="auditDrawer" data-mask="auditMask">
   <div class="drawer-head"><h3>操作留痕说明</h3><button class="d-close">×</button></div>
   <div class="drawer-body">
-    <div class="note note-info"><img src="assets/icons-png/icon-info.png"><div>
+    <!-- 演示前隐藏:内部排期说明(模块未做 / 后续单独设计)。恢复请删掉 display:none -->
+    <div class="note note-info" style="display:none"><img src="assets/icons-png/icon-info.png"><div>
       <b>本期只做展示</b><br>完整的操作审计日志模块(可检索、可导出)不在本轮范围。留痕字段设计已定,后续单独设计。
     </div></div>
     <h4 style="font-size:13px;margin-bottom:9px">必须留痕的四类操作</h4>

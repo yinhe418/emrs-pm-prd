@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>打分弹窗组件 · 预览</title>
+  <title>打分弹窗组件</title>
   <link rel="stylesheet" href="assets/styles.css">
   <style>
     .star {
@@ -86,7 +86,8 @@
 
     <div class="page">
 
-      <div class="banner banner-info" style="margin:0 0 16px;">
+      <!-- 演示前隐藏:内部说明(组件复用关系 / 此页用于演示)。恢复请删掉 display:none -->
+      <div class="banner banner-info" style="display:none;margin:0 0 16px;">
         <b>打分弹窗组件预览</b>
         同一组件被患者端(patient-rate.html)与主任端(director-rate.html)引用。此页用于演示各种状态。
       </div>
@@ -128,7 +129,7 @@
       </div>
 
       <!-- 状态 4:频次超限 -->
-      <div class="section-title">状态 4 · 频次超限(Q-VOTE-3)</div>
+      <div class="section-title">状态 4 · 频次超限</div>
       <div class="toast-block" style="background:var(--warn-soft); border-color:var(--warn-bg); color:var(--warn);">
         <span style="font-size:14px; font-weight:400; line-height:1;">·</span>
         <div>
@@ -155,10 +156,10 @@
 
     <!-- 角色入口 -->
     <div class="tabbar">
-      <a href="patient-rate.html" class="tab"><span <img src="assets/icons-png/icon-im.png" alt="信" />患者</a>
+      <a href="patient-rate.html" class="tab"><span class="tab-icon"><img src="assets/icons-png/icon-im.png" alt="信" /></span>患者</a>
       <a href="director-rate.html" class="tab"><span class="tab-icon">改</span>主任</a>
-      <a href="leaderboard.html?role=director" class="tab"><span <img src="assets/icons-png/icon-tab-eval.png" alt="评" />排行</a>
-      <a href="index.html" class="tab"><span <img src="assets/icons-png/icon-tab-home.png" alt="首" />首页</a>
+      <a href="leaderboard.html?role=director" class="tab"><span class="tab-icon"><img src="assets/icons-png/icon-tab-eval.png" alt="评" /></span>排行</a>
+      <a href="index.html" class="tab"><span class="tab-icon"><img src="assets/icons-png/icon-tab-home.png" alt="首" /></span>首页</a>
     </div>
   </div>
 </body>

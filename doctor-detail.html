@@ -226,17 +226,17 @@
       <!-- 提示 -->
       <div class="card" style="background:var(--info-bg); border:none; margin-top:12px;">
         <div style="font-size:12px; color:var(--info); line-height:1.6;">
-          仅 90 天管理期内可评价(Q-VOTE-4)。评价不会显示您的姓名,只显示评分与评语。
+          仅 90 天管理期内可评价。评价不会显示您的姓名,只显示评分与评语。
         </div>
       </div>
 
     </div>
 
     <div class="tabbar">
-      <a href="patient-home.html" class="tab active"><span <img src="assets/icons-png/icon-tab-home.png" alt="首" />首页</a>
-      <a href="patient-tasks.html" class="tab"><span <img src="assets/icons-png/icon-tab-tasks.png" alt="任" />任务</a>
-      <a href="patient-im.html" class="tab"><span <img src="assets/icons-png/icon-im.png" alt="信" />联系</a>
-      <a href="patient-emergency.html" class="tab danger"><span <img src="assets/icons-png/icon-sos.png" alt="急" />紧急</a>
+      <a href="patient-home.html" class="tab active"><span class="tab-icon"><img src="assets/icons-png/icon-tab-home.png" alt="首" /></span>首页</a>
+      <a href="patient-tasks.html" class="tab"><span class="tab-icon"><img src="assets/icons-png/icon-tab-tasks.png" alt="任" /></span>任务</a>
+      <a href="patient-im.html" class="tab"><span class="tab-icon"><img src="assets/icons-png/icon-im.png" alt="信" /></span>联系</a>
+      <a href="patient-emergency.html" class="tab danger"><span class="tab-icon"><img src="assets/icons-png/icon-sos.png" alt="急" /></span>紧急</a>
     </div>
   </div>
 
@@ -263,7 +263,7 @@
 
       <div class="quota-warn" id="quotaWarn">
         <b>7 天内已评价过</b><br>
-        同一医生每 7 天可评价 1 次(Q-VOTE-3),下次可评:2026-09-23
+        同一医生每 7 天可评价 1 次,下次可评:2026-09-23
       </div>
 
       <div class="modal-actions" style="display:flex; gap:8px; margin-top:14px;">
@@ -280,7 +280,7 @@
     const STORAGE_KEY = 'doctor-rated-医生甲'; // 演示用本地状态
 
     function openRate(){
-      // 检查 7 天频次(Q-VOTE-3 演示逻辑)
+      // 检查 7 天频次(演示逻辑)
       const last = localStorage.getItem(STORAGE_KEY);
       if (last){
         const diff = Date.now() - parseInt(last, 10);

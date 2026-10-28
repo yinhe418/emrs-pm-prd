@@ -43,8 +43,7 @@
             </div>
             <div class="iu-hint">
               或在下方直接上传自定义图标,优先级高于内置图标。<br>
-              接受 jpg / png / webp,大小 ≤ 2 MB。<br>
-              <b>DEMO 阶段:</b>上传后预览保存为 base64,不传到服务器。
+              接受 jpg / png / webp,大小 ≤ 2 MB。
             </div>
           </div>
         </div>
@@ -134,8 +133,7 @@
     <img src="assets/icons-png/icon-info.png">
     <div><b>标准范围</b>= 科室在本组件上填的配置项,下限 / 上限<b>各自独立</b>,
       留空 = 该侧不限,只填一侧也有效。<br>
-      录入值还需通过<b>临床有效区间</b>校验(取自
-      <code class="k">field-constraints.md</code>,系统内部判定、<b>不在本页展示</b>),超出即禁止提交;
+      录入值还需通过<b>临床有效区间</b>校验(系统内部判定、<b>不在本页展示</b>),超出即禁止提交;
       标准范围不得超出该区间,填了会在保存时报错。</div>
   </div>
 
@@ -272,7 +270,7 @@
       return '<tr>'
         + '<td><span class="cell-main" style="' + bg + ';padding:3px 6px;border-radius:4px">' + f.name + '</span>'
         +   (f.custom ? ' <span class="badge badge-warn">自定义</span>' : '')
-        +   (f.disputed ? '<div><span class="badge badge-warn" title="field-constraints 与 field-catalog 口径冲突,待 clinical-expert 统一">⚠️ 上下限口径待定</span></div>' : '')
+        +   (f.disputed ? '<div><span class="badge badge-warn" title="上下限口径存在冲突,待统一">⚠️ 上下限口径待定</span></div>' : '')
         + '</td>'
         + '<td class="fz-12"><span class="badge badge-outline">' + (FTYPES[f.type] || f.type) + '</span>'
         +   (f.type === 'enum' && f.enumVals ? '<div class="cell-sub fz-11">' + f.enumVals.length + ' 项 · 可手填</div>' : '')

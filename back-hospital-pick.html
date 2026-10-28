@@ -12,18 +12,6 @@
 
   <div style="text-align:center;padding:38px 0 16px">
     <h1 style="font-size:24px;letter-spacing:-.4px">选择医院</h1>
-    <div style="font-size:13px;color:var(--ink-3);margin-top:6px">
-      登录成功 · 第一步:<b>选择</b>或<b>添加</b>一个医院。后续所有数据(科室 / 人员 / 任务组件 / 药品 / 病患)都按所选医院过滤。
-    </div>
-  </div>
-
-  <div class="hp-scope" style="margin:0 auto 22px;max-width:960px">
-    <img src="assets/icons-png/icon-info.png" style="width:16px;height:16px">
-    <div>
-      切换医院不会丢失数据,只是<b>改变作用域</b>。
-      <b>未来</b>:普通管理员只具备单一医院的权限,登录后自动进入其所属医院;
-      <b>超级管理员</b>可以从顶栏的医院徽章直接切换医院。
-    </div>
   </div>
 
   <div style="max-width:960px;margin:0 auto">
@@ -33,10 +21,10 @@
     <div class="card" style="margin-top:20px">
       <div class="card-head"><h3>说明</h3></div>
       <div class="text-2" style="line-height:1.85;font-size:12.5px">
-        · <b>本轮范围:</b>医院字段在医院档案阶段配齐(图片 / 名称 / 简称 / 级别 / 床位 / 联系电话 / 简介);<br>
-        · <b>本轮限制:</b>后台暂不实施基于角色的自动匹配;当前以<b>手动选择</b>为入口。<br>
+        · <b>可配置字段:</b>图片 / 名称 / 简称 / 级别 / 床位 / 联系电话 / 简介;<br>
+        · <b>当前限制:</b>后台暂不实施基于角色的自动匹配;当前以<b>手动选择</b>为入口。<br>
         · <b>软删除约定:</b>医院只停用、不物理删除,与组件 / 药品字典一致。<br>
-        · <b>图片用途:</b>展示在顶栏当前医院徽章和选医院卡片上,后端不会用于临床匹配。
+        · <b>图片用途:</b>展示在顶栏当前医院徽章和选医院卡片上,不用于临床匹配。
       </div>
     </div>
 
@@ -57,13 +45,13 @@
         <div class="iu-main">
           <div class="iu-btns">
             <label class="btn btn-default btn-sm" for="imgFile">上传图片</label>
-            <button class="btn btn-default btn-sm" id="imgDemo" type="button">使用演示图</button>
+            <!-- 演示前隐藏:「使用演示图」是演示辅助按钮。恢复请删掉 display:none -->
+            <button class="btn btn-default btn-sm" id="imgDemo" type="button" style="display:none">使用演示图</button>
             <button class="btn btn-text danger" id="imgClear" type="button">移除</button>
             <input id="imgFile" type="file" accept="image/*">
           </div>
           <div class="iu-hint">
-            支持 jpg / png / webp / gif,大小 ≤ 2 MB。<br>
-            <b>DEMO 阶段:</b>上传后预览保存为 base64,不传到服务器。
+            支持 jpg / png / webp / gif,大小 ≤ 2 MB。
           </div>
         </div>
       </div>
@@ -121,8 +109,24 @@
 <script src="assets/back-data.js"></script>
 <script src="assets/back-layout.js"></script>
 <script>
+  /* ==========================================================
+   * 演示期临时隐藏:不在本页展示的医院 id。
+   * ⚠️ 只做「本页过滤」,不改 assets/back-data.js 里的原始数据 ——
+   *    H2 仍被组织架构 / 医护 / 科室 / 项目等页面引用,删数据会连环坏掉。
+   * ✅ 以后要把「H 市中医医院」放回来:把下面这一项清空即可
+   *      var HIDE_HOSPITAL_IDS = [];
+   * ========================================================== */
+  var HIDE_HOSPITAL_IDS = ['H2'];
+
+  /* 本页可见的医院列表(过滤掉隐藏项) */
+  function visibleHospitals() {
+    return BACK_DATA.hospitals.filter(function (h) {
+      return HIDE_HOSPITAL_IDS.indexOf(h.id) === -1;
+    });
+  }
+
   function renderGrid() {
-    var list = BACK_DATA.hospitals;
+    var list = visibleHospitals();
     var cards = list.map(function (h, i) {
       var ds = BACK_DATA.deptListByHospital(h.id);
       var staff = BACK_DATA.staff.filter(function (s) {
@@ -167,6 +171,25 @@
     setTimeout(function () { location.href = 'back-dashboard.html'; }, 500);
   }
 
+  /* 进入本页时校正当前医院:
+     若当前医院不在可见列表(被本页隐藏 / 已失效),回落到第一家可见医院并提示,
+     避免出现「选不中、却已经在里面」的不一致。
+     时机:back-layout.js 的 mount() 在 DOMContentLoaded 才渲染顶栏,
+           本函数先跑,顶栏随后读到的就是校正后的医院。 */
+  function syncCurrentHospital() {
+    var list = visibleHospitals();
+    var curId = BACK_DATA.getCurrentHospitalId();
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].id === curId) return;   /* 当前医院本来就可见,无需处理 */
+    }
+    if (!list.length) return;
+    var fallback = list[0];
+    var cur = BACK_DATA.hospital(curId);
+    BACK_DATA.setCurrentHospitalId(fallback.id);
+    Back.toast('原当前医院「' + ((cur && cur.name) || curId) + '」在本页不可选,已自动切换为「' + fallback.name + '」', 'warn');
+  }
+
+  syncCurrentHospital();
   renderGrid();
 
   /* 卡片点击 */

@@ -27,11 +27,12 @@
                 <div class="iu-main">
                   <div class="iu-btns">
                     <label class="btn btn-default btn-sm" for="hImgFile">上传图片</label>
-                    <button class="btn btn-default btn-sm" id="hImgDemo" type="button">使用演示图</button>
+                    <!-- 演示前隐藏:「使用演示图」是演示辅助按钮。恢复请删掉 display:none -->
+                    <button class="btn btn-default btn-sm" id="hImgDemo" type="button" style="display:none">使用演示图</button>
                     <button class="btn btn-text danger" id="hImgClear" type="button">移除</button>
                     <input id="hImgFile" type="file" accept="image/*">
                   </div>
-                  <div class="iu-hint">支持 jpg / png / webp / gif,≤ 2 MB。<b>DEMO 阶段</b>图片转 base64 存本地,不上传服务器。</div>
+                  <div class="iu-hint">支持 jpg / png / webp / gif,≤ 2 MB。</div>
                 </div>
               </div>
             </div>

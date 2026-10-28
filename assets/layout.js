@@ -20,11 +20,11 @@
   // 角色 -> { 主页面, 菜单项 }
   var ROLE_MAP = {
     index: {
-      label: '演示入口',
+      label: '角色入口',
       icon: 'icon-tab-home',
       home: 'index.html',
       pages: [
-        { name: '演示入口', icon: 'icon-tab-home', href: 'index.html' },
+        { name: '角色入口', icon: 'icon-tab-home', href: 'index.html' },
         { name: '角色切换', icon: 'icon-tab-switch', href: 'role-switch.html' }
       ]
     },
@@ -152,7 +152,7 @@
     html += '</a>';
     html += '<a href="index.html" class="preview-nav-item">';
     html += '<span class="preview-nav-icon">' + svgIcon('icon-tab-home') + '</span>';
-    html += '<span>演示入口</span>';
+    html += '<span>角色入口</span>';
     html += '</a>';
     /* PC 后台管理入口(独立于小程序端的 PC Web 系统) */
     html += '<a href="back-login.html" class="preview-nav-item">';
@@ -168,7 +168,7 @@
     var html = '<div class="preview-nav preview-nav-right">';
     html += '<div class="preview-nav-title">' + role.label + ' · 页面</div>';
     if (currentRole === 'index') {
-      html += '<div class="preview-nav-empty">演示入口页。点击左侧角色进入对应端。</div>';
+      html += '<div class="preview-nav-empty">角色入口页。点击左侧角色进入对应端。</div>';
     } else {
       role.pages.forEach(function (p) {
         var isCurrent = p.href === currentFile;
@@ -338,9 +338,9 @@
   // === 下方切换栏:按角色分组 ===
   function buildSwitchBar(currentRole) {
     var groups = [
-      { key: 'system',   title: '演示入口', cls: 'system',
+      { key: 'system',   title: '角色入口', cls: 'system',
         items: [
-          { name: '演示入口', icon: 'icon-tab-home',  href: 'index.html' },
+          { name: '角色入口', icon: 'icon-tab-home',  href: 'index.html' },
           { name: '角色切换', icon: 'icon-switch',   href: 'role-switch.html' }
         ]
       },
@@ -353,7 +353,7 @@
 
     var html = '<div class="preview-switch-bar">';
     html += '<div class="preview-switch-bar-header">';
-    html += '<span>页面跳转 · ' + (ROLE_MAP[currentRole] ? ROLE_MAP[currentRole].label : '演示入口') + '</span>';
+    html += '<span>页面跳转 · ' + (ROLE_MAP[currentRole] ? ROLE_MAP[currentRole].label : '角色入口') + '</span>';
     html += '<span class="hint">共 ' + groups.reduce(function (s, g) { return s + g.items.length; }, 0) + ' 个页面 · 当前页高亮</span>';
     html += '</div>';
 

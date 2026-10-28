@@ -2,17 +2,17 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, 1.0">
-  <title>关于本 Demo · 后台管理</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>关于本系统 · 后台管理</title>
   <link rel="stylesheet" href="assets/back.css">
 </head>
-<body data-page="dashboard" data-crumb='[{"name":"后台管理"},{"name":"关于本 Demo"}]'>
+<body data-page="dashboard" data-crumb='[{"name":"后台管理"},{"name":"关于本系统"}]'>
 
 <main class="back-main">
 
   <div class="page-head">
-    <h1>关于本 Demo</h1>
-    <div class="sub">后台管理系统 · Q1 产品原型</div>
+    <h1>关于本系统</h1>
+    <div class="sub">后台管理系统</div>
   </div>
 
   <div class="card">
@@ -28,28 +28,31 @@
   <div class="card">
     <div class="card-head"><h3>设计原则</h3></div>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
-      <div class="note note-info" style="margin:0"><img src="assets/icons-png/icon-info.png"><div>
+      <!-- 演示前隐藏:工程自述(本地 mock / 便于演示)。恢复请删掉 display:none -->
+      <div class="note note-info" style="display:none;margin:0"><img src="assets/icons-png/icon-info.png"><div>
         <b>0.0 可回放</b><br>所有数据存在浏览器本地 mock 里,<br>关页面即重置。便于演示。
       </div></div>
       <div class="note note-pass" style="margin:0"><img src="assets/icons-png/icon-check-circle.png"><div>
         <b>不写死</b><br>职位字典、组件字段、标准范围、组件图标,<br>全部可编辑。
       </div></div>
       <div class="note note-warn" style="margin:0"><img src="assets/icons-png/icon-warning.png"><div>
-        <b>不替医生决策</b><br>医生个体目标范围(L3)在医生小程序端设置,<br>后台只读,不替代。
+        <b>不替医生决策</b><br>医生个体目标范围在医生小程序端设置,<br>后台只读,不替代。
       </div></div>
       <div class="note note-block" style="margin:0"><img src="assets/icons-png/icon-warning.png"><div>
-        <b>不写处方</b><br>药品库只作字典(C1),<br>所有处方由 HIS 负责。
+        <b>不写处方</b><br>药品库只作字典,<br>所有处方由 HIS 负责。
       </div></div>
       <div class="note note-gray" style="margin:0"><img src="assets/icons-png/icon-info.png"><div>
         <b>只软删除</b><br>字典 / 组件 / 字段 全部停用,<br>不物理删除。
       </div></div>
-      <div class="note note-pass" style="margin:0"><img src="assets/icons-png/icon-check-circle.png"><div>
+      <!-- 演示前隐藏:工程自述(QA 验收口径)。恢复请删掉 display:none -->
+      <div class="note note-pass" style="display:none;margin:0"><img src="assets/icons-png/icon-check-circle.png"><div>
         <b>所有链接可点击</b><br>每个 href 真实存在一个 .html 文件,<br>走通完整流程。
       </div></div>
     </div>
   </div>
 
-  <div class="card">
+  <!-- 演示前隐藏:内部工程说明(范围清单 / 文件索引 / 数据文件 / 团队协作)。恢复请删掉 display:none -->
+  <div class="card" style="display:none">
     <div class="card-head"><h3>本期范围(Q1)做什么 / 不做什么</h3></div>
     <div class="two-col">
       <div>
@@ -61,7 +64,7 @@
           <li>二维码中心(医院邀请码 + 医生患者码)</li>
           <li>任务组件库(字段定义:字段名 / 字段类型 / 标准范围 / 是否必填)</li>
           <li>病患列表(归属 + 医生个体范围来源只读)</li>
-          <li>药品库(字典,不作处方依据,C1)</li>
+          <li>药品库(字典,不作处方依据)</li>
         </ul>
       </div>
       <div>
@@ -78,7 +81,8 @@
     </div>
   </div>
 
-  <div class="card">
+  <!-- 演示前隐藏:内部工程说明(范围清单 / 文件索引 / 数据文件 / 团队协作)。恢复请删掉 display:none -->
+  <div class="card" style="display:none">
     <div class="card-head"><h3>页面索引</h3></div>
     <div class="tbl-wrap">
       <table class="tbl">
@@ -108,7 +112,8 @@
     </div>
   </div>
 
-  <div class="card">
+  <!-- 演示前隐藏:内部工程说明(范围清单 / 文件索引 / 数据文件 / 团队协作)。恢复请删掉 display:none -->
+  <div class="card" style="display:none">
     <div class="card-head"><h3>数据存储</h3></div>
     <div class="text-2" style="line-height:1.85">
       演示数据落在 <code class="k">assets/back-data.js</code>,
@@ -126,7 +131,8 @@
     </div>
   </div>
 
-  <div class="card">
+  <!-- 演示前隐藏:内部工程说明(范围清单 / 文件索引 / 数据文件 / 团队协作)。恢复请删掉 display:none -->
+  <div class="card" style="display:none">
     <div class="card-head"><h3>反馈与协作</h3></div>
     <div class="note note-info">
       <img src="assets/icons-png/icon-info.png">

@@ -210,7 +210,7 @@ body {
   text-overflow: ellipsis;
 }
 .navbar .actions { display: flex; gap: 8px; align-items: center; }
-.navbar .actions button {
+.navbar .actions > button {
   background: var(--brand-light);
   border: 1px solid rgba(46, 125, 215, 0.18);
   font-size: 13px;
@@ -227,8 +227,8 @@ body {
   height: 30px;
   letter-spacing: 0.01em;
 }
-.navbar .actions button span { line-height: 1; }
-.navbar .actions button::before {
+.navbar .actions > button span { line-height: 1; }
+.navbar .actions > button::before {
   content: '';
   width: 14px; height: 14px;
   display: inline-block;
@@ -238,28 +238,28 @@ body {
   background-position: center;
   flex-shrink: 0;
 }
-.navbar .actions button:active {
+.navbar .actions > button:active {
   background: var(--brand);
   color: #fff;
   transform: scale(0.96);
   box-shadow: var(--shadow-brand);
 }
-.navbar .actions button:active::before {
+.navbar .actions > button:active::before {
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'><path d='M16 4h5v5'/><path d='M3 20l18-16'/><path d='M3 14v6h6'/><path d='M21 10V4'/></svg>");
 }
 
 /* 120 急救按钮特殊样式:红色实心 + 白字 + 心跳图标 */
-.navbar .actions button[onclick*="emergency"] {
+.navbar .actions > button[onclick*="emergency"] {
   background: linear-gradient(135deg, #E53935 0%, #C62828 100%);
   color: #fff;
   border: 1px solid rgba(198, 40, 40, 0.3);
   box-shadow: 0 3px 8px rgba(198, 40, 40, 0.25);
   padding: 4px 10px;
 }
-.navbar .actions button[onclick*="emergency"]::before {
+.navbar .actions > button[onclick*="emergency"]::before {
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'><path d='M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z'/></svg>");
 }
-.navbar .actions button[onclick*="emergency"]:active {
+.navbar .actions > button[onclick*="emergency"]:active {
   background: linear-gradient(135deg, #C62828 0%, #A32020 100%);
   transform: scale(0.96);
 }
@@ -267,13 +267,22 @@ body {
 /* 老年模式:navbar 字体放大,按钮更大 */
 .app.elder .navbar { height: 60px; }
 .app.elder .navbar .title { font-size: 21px; }
-.app.elder .navbar .actions button {
+.app.elder .navbar .actions > button {
   font-size: 16px;
   height: 38px;
   padding: 6px 16px 6px 14px;
 }
-.app.elder .navbar .actions button::before {
+.app.elder .navbar .actions > button::before {
   width: 18px; height: 18px;
+}
+
+/* 老年模式:字号切换按钮同样放大(但不加通用箭头图标) */
+.app.elder .navbar .font-toggle { height: 38px; }
+.app.elder .navbar .font-toggle button {
+  font-size: 15px;
+  height: 30px;
+  padding: 4px 10px;
+  min-width: 30px;
 }
 
 /* ============ 内容区 ============ */
@@ -1155,7 +1164,20 @@ body.preview-mode {
 }
 
 /* navbar 让出 notch 顶部空间 */
-.phone-screen .navbar { padding-top: 38px; }
+.phone-screen .navbar {
+  /* 状态栏 44px + 导航内容 52px。原规则只加 padding-top 不加 height,
+     border-box 下内容区被压成 14px,按钮溢出到刘海下面。 */
+  height: 96px;
+  padding-top: 44px;
+}
+/* 老年模式(.app.elder)与大字号模式会把 navbar 撑高,同样要让出状态栏。
+   选择器特异性必须高于 .app.elder .navbar / html.font-size-xl .navbar。 */
+.phone-screen .app.elder .navbar,
+html.font-size-xl .phone-screen .navbar,
+html.font-size-xl .phone-screen .app.elder .navbar {
+  height: 104px;
+  padding-top: 44px;
+}
 
 /* === 左右导航(深色底,贴合外框背景) ===
    桌面端 (>=1100):用绝对定位挂在手机两侧,不抢流
