@@ -347,11 +347,12 @@ var BACK_DATA = (function () {
    */
   var patients = [
     { id: 1, name: '陈丙英', sex: 'F', age: 81, inNo: '320***22', extraNurs: [], status: 'active',
+      /* ⚠️ 2026-10-29 用户拍板:删掉 PT1 名下的「365 天长周期管理」参与记录 ——
+       *    陈丙英是**真实档案实例**,不该在她名下挂一条为演示「多项目」而编造的参与关系。
+       *    「一个患者可参与多个项目」的能力演示由 PT2 陈明远承担(90 天管理 + 颈动脉斑块研究)。 */
       projs: [
         { projId: '90d_health', docId: 2, nurId: 6, coNurId: 0,
-          enrole: '2026-09-30', closedAt: '', closeReason: '', status: 'active' },
-        { projId: '365d_health', docId: 3, nurId: 7, coNurId: 0,
-          enrole: '2026-10-12', closedAt: '', closeReason: '', status: 'active' }
+          enrole: '2026-09-30', closedAt: '', closeReason: '', status: 'active' }
       ],
       base: { src: 'doctor', by: '医生甲', at: '2026-10-20' },
       fields: [
