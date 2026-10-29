@@ -48,9 +48,14 @@
   <script>
     /* 列表由后台「健康教育」栏目驱动:只展示已发布的内容 */
     (function () {
+      /* ⚠️ id 数值化:localStorage 读出来一定是字符串,可能还留着改造前的旧值('H1'),
+         统一转数字;转不出来的(旧值 / 脏值)一律回落第一家医院(1)。 */
       function currentHospitalId() {
-        try { return localStorage.getItem('emrs.currentHospitalId') || 'H1'; }
-        catch (e) { return 'H1'; }
+        var raw = null;
+        try { raw = localStorage.getItem('emrs.currentHospitalId'); } catch (e) { raw = null; }
+        var n = (raw === null || raw === '') ? NaN : Number(raw);
+        if (!isNaN(n) && n > 0) return n;
+        return 1;
       }
       function esc(s) {
         return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;')

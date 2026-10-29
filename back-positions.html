@@ -21,6 +21,13 @@
       职位只用于:① 人员归属 ② 病患归属筛选(按医生 / 按护士)③ 科室主任唯一性约束。</div>
   </div>
 
+  <!-- 数据来源说明:本页列表来自 GET /api/adm/v1/positions;写操作端点本轮未交付 -->
+  <div class="note note-gray">
+    <img src="assets/icons-png/icon-info.png">
+    <div><b>本页列表已接真后端</b>(<code>GET /api/adm/v1/positions</code>),职位名称 / 类别 / 角色位 / 在岗人数 / 来源都取自接口。
+      新增 / 编辑 / 停用 / 删除 / 排序等**写操作**依赖尚未交付的端点,点击会明确提示,不会假装成功。</div>
+  </div>
+
   <div class="filters">
     <div class="search-wrap">
       <img src="assets/icons-png/icon-search.png" alt="">
@@ -32,7 +39,7 @@
       <option value="title">技术职称</option>
       <option value="other">其他</option>
     </select>
-    <select class="sel" id="stSel"><option value="">状态:全部</option><option value="on">启用</option><option value="off">停用</option></select>
+    <select class="sel" id="stSel"><option value="">状态:全部</option><option value="1">启用</option><option value="0">停用</option></select>
     <span class="ml-auto"></span>
     <button class="btn btn-primary" id="newBtn"><img src="assets/icons-png/icon-plus.png" alt="">新增职位</button>
   </div>
@@ -72,7 +79,7 @@
       </div>
       <div class="fi mt-12">
         <label>状态</label>
-        <select class="sel" name="pStatus"><option value="on">启用</option><option value="off">停用</option></select>
+        <select class="sel" name="pStatus"><option value="1">启用</option><option value="0">停用</option></select>
         <span class="hint">停用后不在新建 / 编辑的下拉中,历史数据保留</span>
       </div>
     </div>
@@ -110,6 +117,7 @@
   </div>
 </div>
 
+<script src="assets/back-api.js"></script>
 <script src="assets/back-data.js"></script>
 <script src="assets/back-layout.js"></script>
 <script>
@@ -117,66 +125,132 @@
   var editingId = null;
   var pendingDel = null;
 
-  /* 角色位选项:统一取自 BACK_DATA.ROLE_SLOTS(主管医生 / 护士) */
+  /* ==========================================================
+   * 真后端数据层(GET /api/adm/v1/positions)
+   * ⚠️ 职位字典是**全局**的(不按医院过滤),但 staffCount 是**本院**的。
+   * ========================================================== */
+  var POSITIONS = [];
+  var LOADED = false;
+  var LOAD_ERROR = null;
+  var WRITE_API_TIP = '写操作接口本轮尚未交付(后端目前只有 GET /api/adm/v1/positions),该操作暂时无法落库。';
+
+  /* 类别标签兜底(接口正常时用接口返回的 categoryName) */
+  var CAT_NAME = { admin: '行政职务', title: '技术职称', other: '其他' };
+  /* 类别提示是**产品文案**,不是数据 —— 保留原有措辞 */
+  var CAT_HINT = {
+    admin: '如科室主任、护士长。一个科室有且只有一个科室主任。',
+    title: '如医师、主治医师、副主任医师、护士、护师。每个工作人员必填。',
+    other: '后台自定义,如科研助理、进修医师。'
+  };
+  /* 角色位枚举(接口 roleSlots 的取值范围就这两个) */
+  var ROLE_SLOTS = [{ key: 'doctor', label: '主管医生' }, { key: 'nurse', label: '护士' }];
+
+  /* 角色位选项 */
   (function () {
-    document.getElementById('pRoleWrap').innerHTML = BACK_DATA.ROLE_SLOTS.map(function (r) {
+    document.getElementById('pRoleWrap').innerHTML = ROLE_SLOTS.map(function (r) {
       return '<label class="chk"><input type="checkbox" name="pRole" value="' + r.key + '">' + r.label + '</label>';
     }).join('');
   })();
 
-  function countUsed(posId) {
-    return BACK_DATA.staff.filter(function (s) { return s.posId === posId && s.status === 'on'; }).length;
+  /* ---------- 取数 ---------- */
+  function load() {
+    LOAD_ERROR = null; LOADED = false;
+    render();
+    BackApi.listPositions().then(function (data) {
+      POSITIONS = ((data && data.items) ? data.items : []).map(function (p) {
+        return {
+          id: p.id, name: p.name,
+          cat: p.categoryCode,
+          catName: p.categoryName || CAT_NAME[p.categoryCode] || p.categoryCode,
+          roles: p.roleSlots || [],
+          /* ⚠️ 接口的 status 是 "on" / "off" 字符串(与 staff.status 的数字 5 值不同),
+           *    这里统一映射成 1 / 0,页面上的 <select> 与 Back.onOff 都按数字走。 */
+          status: p.status === 'on' ? 1 : 0,
+          order: p.sortOrder,
+          seeded: !!p.isSeeded,
+          isDeptDirector: !!p.isDeptDirector,
+          staffCount: p.staffCount || 0
+        };
+      }).sort(function (a, b) { return a.order - b.order; });
+      LOADED = true;
+      render();
+    }).catch(function (err) {
+      LOAD_ERROR = err; LOADED = true; POSITIONS = [];
+      render();
+    });
   }
+
+  function posById(id) {
+    for (var i = 0; i < POSITIONS.length; i++) {
+      if (BackApi.idEq(POSITIONS[i].id, id)) return POSITIONS[i];
+    }
+    return null;
+  }
+  /* 在岗人数:**接口直接给了** staffCount(本院在岗),不用前端数 */
+  function countOn(positionId) {
+    var p = posById(positionId);
+    return p ? p.staffCount : 0;
+  }
+  /* 全部引用数(含已停用 / 已归档):接口**没有**给 → 无法计算,
+   *    因此「彻底删除」这道闸只能由后端来兜,本轮一律拦住。 */
+  function countUsed() { return null; }
+
   /* 角色位单元格:主管医生 / 护士(可同时);都没有显示 — */
   function roleCell(p) {
-    var roles = BACK_DATA.rolesOf(p), out = [];
-    if (roles.indexOf('doctor') >= 0) out.push('<span class="badge badge-info">主管医生</span>');
-    if (roles.indexOf('nurse') >= 0) out.push('<span class="badge badge-info">护士</span>');
+    var out = [];
+    if (p.roles.indexOf('doctor') >= 0) out.push('<span class="badge badge-info">主管医生</span>');
+    if (p.roles.indexOf('nurse') >= 0) out.push('<span class="badge badge-info">护士</span>');
     return out.length ? out.join(' ') : '<span class="text-4">—</span>';
   }
-  function isDirectorPos(posId) {
-    var p = BACK_DATA.pos(posId);
-    return p && p.name === '科室主任';
-  }
-  function directorOf(deptId) {
-    var d = BACK_DATA.byId(BACK_DATA.departments, deptId);
-    return d && d.directorId ? BACK_DATA.member(d.directorId) : null;
+  /* 「科室责任人」徽标:接口的 isDeptDirector 字段(可被任命为科室主任候选) */
+  function isDirectorPos(positionId) {
+    var p = posById(positionId);
+    return !!(p && p.isDeptDirector);
   }
 
   function render() {
+    var wrap = document.getElementById('catWrap');
+    wrap.innerHTML = '';
+
+    /* ---- 三态:加载中 / 出错 / 数据 ---- */
+    if (LOAD_ERROR) {
+      wrap.innerHTML = '<div class="card flat"><div class="tbl-wrap">'
+        + BackApi.stateRow(8, BackApi.errorHtml(LOAD_ERROR)) + '</div></div>';
+      return;
+    }
+    if (!LOADED) {
+      wrap.innerHTML = '<div class="card flat"><div class="tbl-wrap">'
+        + BackApi.stateRow(8, BackApi.loadingHtml('/api/adm/v1/positions')) + '</div></div>';
+      return;
+    }
+
     var kw = document.getElementById('kw').value.trim();
     var cat = document.getElementById('catSel').value;
     var st = document.getElementById('stSel').value;
 
-    var wrap = document.getElementById('catWrap');
-    wrap.innerHTML = '';
-
     CAT_ORDER.forEach(function (c) {
       if (cat && c !== cat) return;
-      var meta = BACK_DATA.POS_CATS[c];
-      var rows = BACK_DATA.positions.filter(function (p) {
+      var meta = { label: CAT_NAME[c] || c, hint: CAT_HINT[c] || '' };
+      var rows = POSITIONS.filter(function (p) {
         if (p.cat !== c) return false;
         if (kw && p.name.indexOf(kw) < 0) return false;
-        if (st && p.status !== st) return false;
+        /* st 来自 <select>.value,是字符串 '1' / '0' → 必须 Number() 后再严格比较;
+         * 也不能用 truthy 判断 —— '0'(停用) 是 truthy 但 0 是 falsy。 */
+        if (st !== '' && p.status !== Number(st)) return false;
         return true;
-      }).sort(function (a, b) { return a.order - b.order; });
+      });
 
       var card = document.createElement('div');
       card.className = 'card flat';
 
       var hint = meta.hint;
-      if (c === 'admin') {
-        var dirs = BACK_DATA.departments.filter(function (d) { return d.directorId; });
-        hint += ' 当前已任命 <b>' + dirs.length + '</b> 个科室主任,待任命 <b>'
-          + (BACK_DATA.departments.filter(function (d) { return !d.directorId; }).length) + '</b> 个。';
-      }
       if (c === 'title') {
         hint += ' 每个工作人员<b>必填</b>一个技术职称。';
       }
 
       card.innerHTML =
         '<div class="card-head" style="padding:13px 16px 0;margin-bottom:0">'
-        + '<h3>' + meta.label + ' <span class="badge badge-outline">' + rows.length + '</span></h3>'
+        + '<h3>' + BackApi.esc(meta.label) + ' <span class="badge badge-outline">' + rows.length + '</span></h3>'
         + '<span class="ch-desc">' + hint + '</span>'
         + '<div class="ch-right"><button class="btn btn-sm btn-default" data-new="' + c + '">+ 在此类新增</button></div>'
         + '</div>'
@@ -187,15 +261,15 @@
         + '<th style="width:118px">来源</th><th class="col-act" style="width:150px">操作</th>'
         + '</tr></thead><tbody>'
         + (rows.length ? rows.map(function (p) {
-            var used = countUsed(p.id);
-            return '<tr' + (p.status === 'off' ? ' class="row-muted"' : '') + '>'
+            var used = countOn(p.id);
+            return '<tr' + (p.status === 0 ? ' class="row-muted"' : '') + '>'
             + '<td><div class="flex" style="gap:2px">'
             +   '<button class="btn btn-sm btn-default" data-move="up" data-id="' + p.id + '" style="padding:0 6px">↑</button>'
             +   '<button class="btn btn-sm btn-default" data-move="down" data-id="' + p.id + '" style="padding:0 6px">↓</button>'
             + '</div></td>'
-            + '<td><span class="cell-main">' + p.name + '</span>'
+            + '<td><span class="cell-main">' + BackApi.esc(p.name) + '</span>'
             +   (isDirectorPos(p.id) ? ' <span class="badge badge-brand">科室责任人</span>' : '') + '</td>'
-            + '<td><span class="badge badge-gray">' + meta.label + '</span></td>'
+            + '<td><span class="badge badge-gray">' + BackApi.esc(p.catName) + '</span></td>'
             + '<td>' + roleCell(p) + '</td>'
             + '<td class="num-cell">' + used + (used ? ' 人' : '') + '</td>'
             + '<td>' + Back.onOff(p.status) + '</td>'
@@ -203,7 +277,7 @@
                                    : '<span class="badge badge-info">后台自定义</span>') + '</td>'
             + '<td class="col-act">'
             +   '<a class="btn-text" data-edit="' + p.id + '">编辑</a>'
-            +   (p.status === 'on'
+            +   (p.status === 1
                   ? '<a class="btn-text danger" data-del="' + p.id + '">停用</a>'
                   : '<a class="btn-text" data-en="' + p.id + '">启用</a>')
             +   (used ? '' : '<a class="btn-text danger" data-hard="' + p.id + '">删除</a>')
@@ -228,19 +302,19 @@
     document.querySelector('#pDrawer .fi').classList.remove('has-err');
 
     if (id) {
-      var p = BACK_DATA.pos(id);
-      n.value = p.name; c.value = p.cat; s.value = p.status;
-      var curRoles = BACK_DATA.rolesOf(p);
-      roleBoxes.forEach(function (b) { b.checked = curRoles.indexOf(b.value) >= 0; });
+      var p = posById(id);
+      if (!p) { Back.toast('该职位已不在后端返回的列表里', 'warn'); return; }
+      n.value = p.name; c.value = p.cat; s.value = String(p.status);
+      roleBoxes.forEach(function (b) { b.checked = p.roles.indexOf(b.value) >= 0; });
       document.getElementById('pHint').className = 'note note-gray';
       document.getElementById('pHint').innerHTML =
-        '<img src="assets/icons-png/icon-info.png"><div>该职位在岗 <b>' + countUsed(id)
+        '<img src="assets/icons-png/icon-info.png"><div>该职位在岗 <b>' + countOn(id)
         + '</b> 人。修改名称不影响已有人员的历史显示。</div>';
       document.getElementById('pFootTip').textContent = '停用前需先转职或停用人员';
     } else {
-      n.value = ''; c.value = cat || 'title'; s.value = 'on';
+      n.value = ''; c.value = cat || 'title'; s.value = '1';
       roleBoxes.forEach(function (b) { b.checked = false; });
-      var meta = BACK_DATA.POS_CATS[c.value || 'title'];
+      var meta = { label: CAT_NAME[c.value || 'title'], hint: CAT_HINT[c.value || 'title'] };
       document.getElementById('pHint').className = 'note note-info';
       document.getElementById('pHint').innerHTML =
         '<img src="assets/icons-png/icon-info.png"><div><b>' + meta.label + '</b><br>' + meta.hint + '</div>';
@@ -258,19 +332,9 @@
     if (g('data-new')) return openDrawer(null, g('data-new'));
     if (g('data-edit')) return openDrawer(g('data-edit'));
 
-    if (g('data-en')) {
-      BACK_DATA.pos(g('data-en')).status = 'on';
-      render(); return Back.toast('已启用', 'ok');
-    }
-
-    if (g('data-move')) {
-      var pid = g('data-id'), dir = g('data-move') === 'up' ? -1 : 1;
-      var list = BACK_DATA.positions.slice().sort(function (a, b) { return a.order - b.order; });
-      var i = list.findIndex(function (x) { return x.id === pid; });
-      var j = i + dir;
-      if (j < 0 || j >= list.length) return Back.toast('已经在' + (dir < 0 ? '最前' : '最后') + '一位', 'warn');
-      var tmp = list[i].order; list[i].order = list[j].order; list[j].order = tmp;
-      render(); return;
+    /* ⚠️ 启用 / 排序 都是写操作 —— 本轮没有写端点,明确提示,不改本地数据 */
+    if (g('data-en') || g('data-move')) {
+      return Back.toast(WRITE_API_TIP, 'warn');
     }
 
     if (g('data-del')) { return askStop(g('data-del')); }
@@ -279,56 +343,46 @@
 
   /* ---------- 停用 ---------- */
   function askStop(pid) {
-    var p = BACK_DATA.pos(pid), used = countUsed(pid);
+    var p = posById(pid), used = countOn(pid);
     var blockers = [];
     if (used) blockers.push('该职位下仍有 <b>' + used + '</b> 名在岗人员,请先转职或停用人员');
-    if (p.name === '科室主任') {
-      var d = BACK_DATA.departments.filter(function (x) { return x.directorId; })
-        .map(function (x) { return directorOf(x.id); })
-        .filter(function (m) { return m && m.posId === pid; });
-      if (d.length) blockers.push('仍被 <b>' + d.map(function (m) { return m.name; }).join('、')
-        + '</b> 担任科室主任,请先在组织架构中更换责任人');
-    }
+    /* ⚠️ 本轮没有写端点 —— 这一条是硬阻塞,不是可忽略的提示 */
+    blockers.push(BackApi.esc(WRITE_API_TIP));
     pendingDel = { mode: 'stop', id: pid };
-    document.getElementById('delTitle').textContent = '停用职位「' + p.name + '」';
+    document.getElementById('delTitle').textContent = '停用职位「' + (p ? p.name : pid) + '」';
     document.getElementById('delBody').innerHTML = blockers.length
       ? '<div class="note note-block" style="margin:0"><img src="assets/icons-png/icon-warning.png"><div><b>无法停用</b><br>' + blockers.join(';') + '。</div></div>'
       : '<div>停用后该职位不再出现在新建 / 编辑的下拉中,<b>历史数据全部保留</b>,可随时启用。</div>';
-    document.getElementById('delOk').disabled = blockers.length > 0;
-    document.getElementById('delOk').textContent = blockers.length ? '存在阻塞项' : '确认停用';
+    document.getElementById('delOk').disabled = true;
+    document.getElementById('delOk').textContent = '接口未交付';
     Back.modal('delModal', true);
   }
 
   /* ---------- 彻底删除(仅无引用时) ---------- */
   function askDelete(pid) {
-    var p = BACK_DATA.pos(pid), used = countUsed(pid);
+    var p = posById(pid);
     pendingDel = { mode: 'del', id: pid };
-    document.getElementById('delTitle').textContent = '删除职位「' + p.name + '」';
-    document.getElementById('delBody').innerHTML = used
-      ? '<div class="note note-block" style="margin:0"><img src="assets/icons-png/icon-warning.png">'
-        + '<div>该职位下仍有 <b>' + used + '</b> 名人员,不可删除。请改用「停用」。</div></div>'
-      : '<div>该职位<b>从未被任何人员使用</b>,可以彻底删除。此操作不可撤销(演示环境仅影响本页)。</div>';
-    document.getElementById('delOk').disabled = used > 0;
-    document.getElementById('delOk').textContent = used ? '存在阻塞项' : '确认删除';
+    document.getElementById('delTitle').textContent = '删除职位「' + (p ? p.name : pid) + '」';
+    /* ⚠️ 「全部引用数(含已停用 / 已归档)」接口没有给,前端算不出来,
+     *    所以这道闸只能由后端兜 —— 本轮一律拦住,不做误删。 */
+    document.getElementById('delBody').innerHTML =
+      '<div class="note note-block" style="margin:0"><img src="assets/icons-png/icon-warning.png">'
+      + '<div><b>本轮无法删除</b><br>① ' + BackApi.esc(WRITE_API_TIP)
+      + '<br>② 「该职位被多少人引用(含已停用 / 已归档)」需要后端给全量计数,接口未提供,前端算不出。</div></div>';
+    document.getElementById('delOk').disabled = true;
+    document.getElementById('delOk').textContent = '接口未交付';
     Back.modal('delModal', true);
   }
 
   document.getElementById('delOk').addEventListener('click', function () {
     if (this.disabled || !pendingDel) return;
-    var p = BACK_DATA.pos(pendingDel.id);
-    if (pendingDel.mode === 'stop') {
-      p.status = 'off'; Back.toast('已停用:' + p.name, 'ok');
-    } else {
-      BACK_DATA.positions = BACK_DATA.positions.filter(function (x) { return x.id !== p.id; });
-      Back.toast('已删除:' + p.name, 'ok');
-    }
     Back.modal('delModal', false);
-    render();
+    Back.toast(WRITE_API_TIP, 'warn');
   });
 
   /* ---------- 保存 ---------- */
   document.querySelector('[name="pCat"]').addEventListener('change', function () {
-    var meta = BACK_DATA.POS_CATS[this.value];
+    var meta = { label: CAT_NAME[this.value], hint: CAT_HINT[this.value] };
     document.getElementById('pHint').className = 'note note-info';
     document.getElementById('pHint').innerHTML =
       '<img src="assets/icons-png/icon-info.png"><div><b>' + meta.label + '</b><br>' + meta.hint + '</div>';
@@ -336,49 +390,24 @@
 
   document.getElementById('pSave').addEventListener('click', function () {
     var n = document.querySelector('[name="pName"]');
-    var c = document.querySelector('[name="pCat"]').value;
-    var s = document.querySelector('[name="pStatus"]').value;
-    var roles = [];
-    document.querySelectorAll('[name="pRole"]').forEach(function (b) {
-      if (b.checked) roles.push(b.value);
-    });
     var v = n.value.trim();
 
+    /* 表单校验照旧(前端校验是体验,不代表能落库) */
     document.querySelector('#pDrawer .fi').classList.remove('has-err');
     var fi = n.closest('.fi');
     if (!v) { fi.classList.add('has-err'); fi.querySelector('.err-msg').textContent = '请输入职位名称'; return; }
     if (v.length < 2 || v.length > 20) {
       fi.classList.add('has-err'); fi.querySelector('.err-msg').textContent = '职位名称 2–20 字(当前 ' + v.length + ')'; return;
     }
-    var dup = BACK_DATA.positions.filter(function (p) { return p.name === v && p.id !== editingId; })[0];
+    var dup = POSITIONS.filter(function (p) { return p.name === v && !BackApi.idEq(p.id, editingId); })[0];
     if (dup) {
       fi.classList.add('has-err');
-      fi.querySelector('.err-msg').textContent = '职位名称已存在:' + dup.name + '(' + BACK_DATA.POS_CATS[dup.cat].label + ')';
+      fi.querySelector('.err-msg').textContent = '职位名称已存在:' + dup.name + '(' + (dup.catName || '') + ')';
       return;
     }
 
-    if (editingId) {
-      var p = BACK_DATA.pos(editingId);
-      var wasDir = isDirectorPos(editingId);
-      p.name = v; p.cat = c; p.status = s; p.roles = roles;
-      Back.toast('已保存', 'ok');
-      if (wasDir && v !== '科室主任') {
-        // 主任职位被改名 → 释放科室主任任命
-        var dirs = BACK_DATA.departments.filter(function (x) {
-          var m = directorOf(x.id); return m && m.posId === editingId;
-        });
-        dirs.forEach(function (x) { x.directorId = ''; });
-        Back.toast('职位已改名,已释放 ' + dirs.length + ' 个科室的主任任命', 'warn');
-      }
-    } else {
-      var maxOrder = Math.max.apply(null, BACK_DATA.positions.map(function (p) { return p.order; }).concat([0]));
-      BACK_DATA.positions.push({
-        id: 'P' + Date.now(), name: v, cat: c, roles: roles, status: s, order: maxOrder + 1, seeded: false
-      });
-      Back.toast('已新增职位:' + v, 'ok');
-    }
-    Back.drawer('pDrawer', false);
-    render();
+    /* ⚠️ 保存是写操作 —— 本轮没有写端点,明确告知,不动本地数据 */
+    Back.toast(WRITE_API_TIP, 'warn');
   });
 
   ['kw', 'catSel', 'stSel'].forEach(function (id) {
@@ -387,8 +416,13 @@
     el.addEventListener('change', render);
   });
 
-  if (Back.qs('new')) openDrawer(null, Back.qs('new'));
-  render();
+  /* ⚠️ 无令牌 → 跳登录页 */
+  if (!BackApi.requireAuth()) {
+    /* 跳转中,本页不再渲染 */
+  } else {
+    load();
+    if (Back.qs('new')) openDrawer(null, Back.qs('new'));
+  }
 </script>
 </body>
 </html>

@@ -49,7 +49,7 @@
         <img src="assets/icons-png/icon-search.png" alt="">
         <input class="ipt search-ipt" id="deptKw" placeholder="科室名称">
       </div>
-      <select class="sel" id="deptStatus"><option value="">状态:全部</option><option value="on">启用</option><option value="off">停用</option></select>
+      <select class="sel" id="deptStatus"><option value="">状态:全部</option><option value="1">启用</option><option value="0">停用</option></select>
       <span class="ml-auto"></span>
       <a class="btn btn-primary" href="back-org-edit.html?type=department"><img src="assets/icons-png/icon-plus.png" alt="">添加科室</a>
     </div>
@@ -141,8 +141,8 @@
     document.getElementById('hcEdit').href = 'back-org-edit.html?type=hospital&id=' + h.id;
     var tg = document.getElementById('hcToggle');
     if (tg) {
-      tg.textContent = h.status === 'on' ? '停用本院' : '启用本院';
-      tg.className = 'btn btn-text ' + (h.status === 'on' ? 'danger' : '');
+      tg.textContent = h.status === 1 ? '停用本院' : '启用本院';
+      tg.className = 'btn btn-text ' + (h.status === 1 ? 'danger' : '');
     }
   }
 
@@ -153,7 +153,9 @@
     var pool = Back.hospFilter(BACK_DATA.departments, 'depts');
     return pool.filter(function (d) {
       if (kw && d.name.indexOf(kw) < 0) return false;
-      if (st && d.status !== st) return false;
+      /* st 来自 <select>.value 是字符串 '1' / '0' → 必须 Number() 后严格比较;
+       * 也不能用 truthy 判断 —— '0'(停用) 是 truthy 但数字 0 是 falsy。 */
+      if (st !== '' && d.status !== Number(st)) return false;
       return true;
     });
   }
@@ -162,11 +164,13 @@
     document.getElementById('deptN').textContent = rows.length;
     tb.innerHTML = rows.map(function (d) {
       var dir = d.directorId ? BACK_DATA.member(d.directorId) : null;
+      /* ⚠️ staffWithRole 已保证 status === 1(在职)&& 已分科室 —— 待分配(status 2/3)
+       *    与已归档(status 4)的人不会算进科室人数 */
       var nDoc = BACK_DATA.staffWithRole('doctor').filter(function (s) {
-        return s.deptId === d.id;
+        return s.departmentId === d.id;
       }).length;
       var nNur = BACK_DATA.staffWithRole('nurse').filter(function (s) {
-        return s.deptId === d.id;
+        return s.departmentId === d.id;
       }).length;
       return '<tr>'
         + '<td><div class="cell-main">' + d.name + '</div>'
@@ -174,7 +178,7 @@
         + '<td>' + (dir
               ? '<div class="cell-user" style="cursor:pointer" data-dir="' + d.id + '" title="点击更换科室主任">'
                 + Back.staffAv(dir) + '<div><div class="cell-main">' + dir.name + '</div>'
-                + '<div class="cell-sub">' + ((BACK_DATA.pos(dir.posId) || {}).name || '') + '</div></div></div>'
+                + '<div class="cell-sub">' + ((BACK_DATA.pos(dir.positionId) || {}).name || '') + '</div></div></div>'
               : '<span class="btn-text" data-dir="' + d.id + '" style="font-size:12px">+ 指定科室主任</span>')
         + '</td>'
         + '<td class="fz-12 num-cell">主管医生 ' + nDoc + ' / 护士 ' + nNur + '</td>'
@@ -182,7 +186,7 @@
         + '<td class="col-act">'
         +   '<a class="btn-text" href="back-org-edit.html?type=department&amp;id=' + d.id + '">编辑</a>'
         +   '<a class="btn-text" href="back-staff.html?dept=' + d.id + '">人员</a>'
-        +   (d.status === 'on'
+        +   (d.status === 1
               ? '<a class="btn-text danger" data-off="department" data-id="' + d.id + '">停用</a>'
               : '<a class="btn-text" data-enable="department" data-id="' + d.id + '">启用</a>')
         + '</td></tr>';
@@ -205,10 +209,11 @@
       var name = obj.name;
       var blockers = [];
       if (off === 'hospital') {
-        var n = BACK_DATA.departments.filter(function (d) { return d.hospitalId === id && d.status === 'on'; }).length;
+        /* ⚠️ 容错比较:id 来自 data-id 属性(字符串),数据层是数字 */
+        var n = BACK_DATA.departments.filter(function (d) { return String(d.hospitalId) === String(id) && d.status === 1; }).length;
         if (n) blockers.push('下有 <b>' + n + '</b> 个启用中的科室,请先停用科室');
       } else {
-        var m = BACK_DATA.staff.filter(function (s) { return s.deptId === id && s.status === 'on'; }).length;
+        var m = BACK_DATA.staff.filter(function (s) { return String(s.departmentId) === String(id) && s.status === 1; }).length;
         if (m) blockers.push('下有 <b>' + m + '</b> 名在岗人员,请先转移人员');
       }
       document.getElementById('offTitle').textContent = '停用「' + name + '」';
@@ -221,7 +226,7 @@
       document.getElementById('offOk').textContent = blockers.length ? '存在阻塞项' : '确认停用';
       document.getElementById('offOk').onclick = function () {
         if (blockers.length) return;
-        obj.status = 'off'; Back.modal('offModal', false);
+        obj.status = 0; Back.modal('offModal', false);
         renderDept(); paintHospital(Back.currentHospital()); Back.toast('已停用:' + name, 'ok');
       };
       Back.modal('offModal', true);
@@ -229,7 +234,7 @@
     if (en) {
       var list = en === 'hospital' ? BACK_DATA.hospitals : BACK_DATA.departments;
       var o2 = BACK_DATA.byId(list, e.target.getAttribute('data-id'));
-      o2.status = 'on'; renderDept(); paintHospital(Back.currentHospital()); Back.toast('已启用:' + o2.name, 'ok');
+      o2.status = 1; renderDept(); paintHospital(Back.currentHospital()); Back.toast('已启用:' + o2.name, 'ok');
     }
   });
 
@@ -247,8 +252,9 @@
     var sel = document.getElementById('dirSel');
     sel.innerHTML = '<option value="">请选择…</option>';
     BACK_DATA.staff.forEach(function (s) {
-      if (s.status !== 'on') return;
-      var p = BACK_DATA.pos(s.posId);
+      /* 科室主任候选 = 在职(status = 1)且已分科室;待分配 / 已归档的人不出现 */
+      if (s.status !== 1 || !BACK_DATA.isAssigned(s)) return;
+      var p = BACK_DATA.pos(s.positionId);
       if (!p || p.name !== '科室主任') return;
       var otherDept = BACK_DATA.departments.filter(function (d) {
         return d.directorId === s.id && d.id !== curDept.id;
@@ -274,8 +280,8 @@
   /* ---------- 停用 / 启用 当前医院 ---------- */
   document.getElementById('hcToggle').addEventListener('click', function () {
     var h = Back.currentHospital(); if (!h) return;
-    if (h.status === 'on') {
-      var depts = Back.hospFilter(BACK_DATA.departments, 'depts').filter(function (d) { return d.status === 'on'; });
+    if (h.status === 1) {
+      var depts = Back.hospFilter(BACK_DATA.departments, 'depts').filter(function (d) { return d.status === 1; });
       document.getElementById('offTitle').textContent = '停用「' + h.name + '」';
       document.getElementById('offBody').innerHTML = depts.length
         ? '<div class="note note-block" style="margin:0 0 10px"><img src="assets/icons-png/icon-warning.png">'
@@ -287,13 +293,13 @@
       document.getElementById('offOk').textContent = depts.length ? '存在阻塞项' : '确认停用';
       document.getElementById('offOk').onclick = function () {
         if (depts.length) return;
-        h.status = 'off'; Back.modal('offModal', false);
+        h.status = 0; Back.modal('offModal', false);
         paintHospital(h); renderDept();
         Back.toast('已停用医院:' + h.name, 'warn');
       };
       Back.modal('offModal', true);
     } else {
-      h.status = 'on'; paintHospital(h); renderDept();
+      h.status = 1; paintHospital(h); renderDept();
       Back.toast('已启用医院:' + h.name, 'ok');
     }
   });

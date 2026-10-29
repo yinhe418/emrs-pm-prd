@@ -116,7 +116,7 @@
    * ✅ 以后要把「H 市中医医院」放回来:把下面这一项清空即可
    *      var HIDE_HOSPITAL_IDS = [];
    * ========================================================== */
-  var HIDE_HOSPITAL_IDS = ['H2'];
+  var HIDE_HOSPITAL_IDS = [2];
 
   /* 本页可见的医院列表(过滤掉隐藏项) */
   function visibleHospitals() {
@@ -129,8 +129,10 @@
     var list = visibleHospitals();
     var cards = list.map(function (h, i) {
       var ds = BACK_DATA.deptListByHospital(h.id);
+      /* ⚠️ 医护人数只算**已分科室**的人:待分配人员 departmentId = 0,
+       *    不属于任何科室 → 天然不计入(合并后仍成立) */
       var staff = BACK_DATA.staff.filter(function (s) {
-        return ds.some(function (d) { return d.id === s.deptId; });
+        return ds.some(function (d) { return d.id === s.departmentId; });
       }).length;
       return '<div class="hp-card" data-h="' + h.id + '">'
         +   '<div class="hp-cover">'
@@ -138,8 +140,8 @@
               ? '<img src="' + h.image + '" alt="">'
               : '<span>' + (h.short || h.name).charAt(0) + '</span>')
         +     '<span class="hp-tag">' + (h.level || '未定级') + '</span>'
-        +     '<span class="hp-online ' + (h.status === 'off' ? 'hp-off' : '') + '">'
-        +       (h.status === 'on' ? '运营中' : '已停用') + '</span>'
+        +     '<span class="hp-online ' + (h.status === 0 ? 'hp-off' : '') + '">'
+        +       (h.status === 1 ? '运营中' : '已停用') + '</span>'
         +   '</div>'
         +   '<div class="hp-body">'
         +     '<div class="hp-name">' + h.name + '</div>'
@@ -180,7 +182,7 @@
     var list = visibleHospitals();
     var curId = BACK_DATA.getCurrentHospitalId();
     for (var i = 0; i < list.length; i++) {
-      if (list[i].id === curId) return;   /* 当前医院本来就可见,无需处理 */
+      if (String(list[i].id) === String(curId)) return;   /* 当前医院本来就可见,无需处理 */
     }
     if (!list.length) return;
     var fallback = list[0];
@@ -237,7 +239,9 @@
     });
     if (!ok) return;
 
-    var id = 'H' + Date.now().toString().slice(-4);
+    /* ⚠️ id 数值化(AR 契约 §13):新医院用数字 id。
+     *    Date.now() 本身是数字,且不会与种子 id(1 / 2)相撞。 */
+    var id = Date.now();
     var h = {
       id: id,
       name: document.querySelector('[name="hName"]').value.trim(),
@@ -248,7 +252,7 @@
       area: document.querySelector('[name="hArea"]').value.trim(),
       intro: document.querySelector('[name="hIntro"]').value.trim(),
       image: pickedImage,
-      status: 'on',
+      status: 1,
       createdAt: new Date().toISOString().slice(0, 10)
     };
     BACK_DATA.hospitals.push(h);

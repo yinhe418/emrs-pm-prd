@@ -11,12 +11,14 @@ var EDU_DATA = (function () {
   'use strict';
 
   var KEY = 'emrs_eduArticles';
+  /* 持久化格式版本号 —— id 数值化后必须 +1,否则读到旧数据('E1' / 'H1')会全盘失配 */
+  var FORMAT_V = 2;
 
-  /* ---------- 种子数据(8 条:H1 六条 + H2 两条)---------- */
+  /* ---------- 种子数据(8 条:医院 1 六条 + 医院 2 两条)---------- */
   var SEED = [
     {
-      id: 'E1',
-      hospitalId: 'H1',
+      id: 1,
+      hospitalId: 1,
       title: '卒中再发警示(Fast)',
       subtitle: '口角歪斜/肢体无力/言语不清',
       icon: 'icon-alert.png',
@@ -31,8 +33,8 @@ var EDU_DATA = (function () {
       publishedAt: '2026-10-20 09:00'
     },
     {
-      id: 'E2',
-      hospitalId: 'H1',
+      id: 2,
+      hospitalId: 1,
       title: '出院用药须知',
       subtitle: '阿司匹林/他汀/抗凝药',
       icon: 'icon-tab-drugs.png',
@@ -47,8 +49,8 @@ var EDU_DATA = (function () {
       publishedAt: '2026-10-20 09:10'
     },
     {
-      id: 'E3',
-      hospitalId: 'H1',
+      id: 3,
+      hospitalId: 1,
       title: '血压 / 血脂管理',
       subtitle: '达标标准 · 测量方法',
       icon: 'icon-info.png',
@@ -63,8 +65,8 @@ var EDU_DATA = (function () {
       publishedAt: '2026-10-20 09:20'
     },
     {
-      id: 'E4',
-      hospitalId: 'H1',
+      id: 4,
+      hospitalId: 1,
       title: '戒烟 / 限酒',
       subtitle: '二级预防核心',
       icon: 'icon-no-smoke.png',
@@ -79,8 +81,8 @@ var EDU_DATA = (function () {
       publishedAt: '2026-10-20 09:30'
     },
     {
-      id: 'E5',
-      hospitalId: 'H1',
+      id: 5,
+      hospitalId: 1,
       title: '饮食指导',
       subtitle: '低盐低脂 · 营养均衡',
       icon: 'icon-utensils.png',
@@ -95,8 +97,8 @@ var EDU_DATA = (function () {
       publishedAt: '2026-10-20 09:40'
     },
     {
-      id: 'E6',
-      hospitalId: 'H1',
+      id: 6,
+      hospitalId: 1,
       title: '康复训练',
       subtitle: '被动运动 · 步行训练',
       icon: 'icon-transfer.png',
@@ -111,8 +113,8 @@ var EDU_DATA = (function () {
       publishedAt: ''
     },
     {
-      id: 'E7',
-      hospitalId: 'H2',
+      id: 7,
+      hospitalId: 2,
       title: '卒中后随访要点',
       subtitle: '定期复诊 · 指标监测',
       icon: 'icon-book.png',
@@ -127,8 +129,8 @@ var EDU_DATA = (function () {
       publishedAt: '2026-10-20 09:00'
     },
     {
-      id: 'E8',
-      hospitalId: 'H2',
+      id: 8,
+      hospitalId: 2,
       title: '家属照护提示',
       subtitle: '陪伴 · 提醒 · 记录',
       icon: 'icon-family.png',
@@ -170,7 +172,15 @@ var EDU_DATA = (function () {
     /* 没存过 → 用种子。存过但解析不了 → 也退回种子(数据损坏自愈) */
     if (raw === null || raw === '') return clone(SEED);
     try {
-      var arr = JSON.parse(raw);
+      var obj = JSON.parse(raw);
+      /* ⚠️ 2026-10-28 id 数值化:加了版本号。
+       *    浏览器里可能还留着**改造前**的数据(id 是 'E1'、hospitalId 是 'H1')。
+       *    改造后 filterHosp 拿数字 hospitalId 去比 'H1' 会**全部过滤空**,
+       *    教育文章列表直接消失。所以版本对不上就丢弃旧数据、回到种子 ——
+       *    健康教育本来就是演示态数据,「数据损坏自愈」是本文件既有约定。 */
+      if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return clone(SEED);
+      if (obj.v !== FORMAT_V) return clone(SEED);
+      var arr = obj.rows;
       if (!Array.isArray(arr)) return clone(SEED);
       /* 存的是空数组 → 就是「一篇都没了」,必须尊重,不能偷偷还原种子 */
       return arr;
@@ -180,7 +190,9 @@ var EDU_DATA = (function () {
   }
 
   function write(arr) {
-    try { localStorage.setItem(KEY, JSON.stringify(arr)); } catch (e) { /* 隐私模式忽略 */ }
+    try {
+      localStorage.setItem(KEY, JSON.stringify({ v: FORMAT_V, rows: arr }));
+    } catch (e) { /* 隐私模式忽略 */ }
     return arr;
   }
 
@@ -188,27 +200,30 @@ var EDU_DATA = (function () {
   function byOrder(arr) {
     return arr.slice().sort(function (a, b) {
       var x = Number(a.order) || 0, y = Number(b.order) || 0;
-      if (x === y) return String(a.id).localeCompare(String(b.id));
+      if (x === y) {
+        /* ⚠️ id 已是数字:不能再用 localeCompare —— '10' 会排在 '2' 前面 */
+        var ia = Number(a.id) || 0, ib = Number(b.id) || 0;
+        if (ia !== ib) return ia - ib;
+        return String(a.id).localeCompare(String(b.id));
+      }
       return x - y;
     });
   }
 
+  /* 按医院过滤(容错比较:hospitalId 可能来自 URL / localStorage 的字符串) */
   function filterHosp(arr, hospitalId) {
     if (!hospitalId) return arr;
-    return arr.filter(function (a) { return a.hospitalId === hospitalId; });
+    return arr.filter(function (a) { return String(a.hospitalId) === String(hospitalId); });
   }
 
-  /* 新 id:E<n>(n = 现存最大序号 + 1) */
+  /* 新 id = 现存最大数字 id + 1 */
   function nextId(arr) {
     var max = 0;
     arr.forEach(function (a) {
-      var m = /^E(\d+)$/.exec(String(a.id || ''));
-      if (m) {
-        var n = parseInt(m[1], 10);
-        if (n > max) max = n;
-      }
+      var n = Number(a.id);
+      if (!isNaN(n) && n > max) max = n;
     });
-    return 'E' + (max + 1);
+    return max + 1;
   }
 
   /* ---------- 对外 API ---------- */
@@ -223,12 +238,14 @@ var EDU_DATA = (function () {
     return list(hospitalId).filter(function (a) { return a.status === 'published'; });
   }
 
-  /* 单篇 */
+  /* 单篇
+   * ⚠️ 容错比较:id 是数字,URL 参数 / <select>.value 传进来的是字符串,
+   *    直接 `===` 会查不到(教育文章详情页直接空白)。 */
   function byId(id) {
-    if (!id) return null;
+    if (id === undefined || id === null || id === '') return null;
     var arr = read();
     for (var i = 0; i < arr.length; i++) {
-      if (arr[i].id === id) return clone(arr[i]);
+      if (String(arr[i].id) === String(id)) return clone(arr[i]);
     }
     return null;
   }
@@ -239,10 +256,13 @@ var EDU_DATA = (function () {
     var a = clone(article || {});
     var idx = -1, i;
     if (a.id) {
-      for (i = 0; i < arr.length; i++) { if (arr[i].id === a.id) { idx = i; break; } }
+      for (i = 0; i < arr.length; i++) { if (String(arr[i].id) === String(a.id)) { idx = i; break; } }
     }
 
     if (idx >= 0) {
+      /* ⚠️ id 统一成数字:编辑页传进来的是 URL 参数(字符串 '3'),
+       *    不转成数字会让同一篇文章出现「3」和 3 两条 */
+      a.id = Number(arr[idx].id);
       if (!a.publishedAt) a.publishedAt = arr[idx].publishedAt || '';
       if (a.status !== 'published') a.status = 'unpublished';
       if (typeof a.order !== 'number' || !a.order) a.order = arr[idx].order;
@@ -251,6 +271,7 @@ var EDU_DATA = (function () {
       arr[idx] = a;
     } else {
       if (!a.id) a.id = nextId(arr);
+      else a.id = Number(a.id);   /* id 统一成数字 */
       if (a.status !== 'published') a.status = 'unpublished';
       a.updatedAt = now();
       if (a.status === 'published' && !a.publishedAt) a.publishedAt = a.updatedAt;
@@ -274,7 +295,7 @@ var EDU_DATA = (function () {
     var arr = read();
     var out = [], removed = false;
     for (var i = 0; i < arr.length; i++) {
-      if (arr[i].id === id) { removed = true; continue; }
+      if (String(arr[i].id) === String(id)) { removed = true; continue; }
       out.push(arr[i]);
     }
     if (removed) write(out);
@@ -285,7 +306,7 @@ var EDU_DATA = (function () {
   function togglePublish(id) {
     var arr = read();
     for (var i = 0; i < arr.length; i++) {
-      if (arr[i].id !== id) continue;
+      if (String(arr[i].id) !== String(id)) continue;
       if (arr[i].status === 'published') {
         arr[i].status = 'unpublished';
       } else {
@@ -304,12 +325,12 @@ var EDU_DATA = (function () {
   function move(id, dir) {
     var arr = read();
     var target = null, i;
-    for (i = 0; i < arr.length; i++) { if (arr[i].id === id) { target = arr[i]; break; } }
+    for (i = 0; i < arr.length; i++) { if (String(arr[i].id) === String(id)) { target = arr[i]; break; } }
     if (!target) return false;
 
     var sibs = byOrder(filterHosp(arr, target.hospitalId));
     var at = -1;
-    for (i = 0; i < sibs.length; i++) { if (sibs[i].id === id) { at = i; break; } }
+    for (i = 0; i < sibs.length; i++) { if (String(sibs[i].id) === String(id)) { at = i; break; } }
     if (at < 0) return false;
 
     var to = at + (Number(dir) < 0 ? -1 : 1);
@@ -317,8 +338,8 @@ var EDU_DATA = (function () {
 
     var oa = sibs[at].order, ob = sibs[to].order;
     for (i = 0; i < arr.length; i++) {
-      if (arr[i].id === sibs[at].id) arr[i].order = ob;
-      else if (arr[i].id === sibs[to].id) arr[i].order = oa;
+      if (String(arr[i].id) === String(sibs[at].id)) arr[i].order = ob;
+      else if (String(arr[i].id) === String(sibs[to].id)) arr[i].order = oa;
     }
     write(arr);
     return true;

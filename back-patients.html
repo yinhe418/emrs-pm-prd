@@ -545,8 +545,10 @@
 
     var pjName = BACK_DATA.projName(r.projId);
     var oldDoc = r.docId, oldNur = r.nurId;
-    r.docId = newDocId;
-    r.nurId = newNurId;
+    /* ⚠️ id 数值化:<select>.value 是字符串,写回参与记录前必须转数字,
+     *    否则 docId/nurId 会变成 '3' 这种字符串,与库里其他数字 id 比对时失配。 */
+    r.docId = Number(newDocId);
+    r.nurId = newNurId ? Number(newNurId) : 0;
 
     // 换医生 → 个体基线挂起,需新医生确认
     if (oldDoc !== r.docId && cur.base.src === 'doctor') cur.base.pendingConfirm = true;

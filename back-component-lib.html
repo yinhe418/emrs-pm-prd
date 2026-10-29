@@ -82,6 +82,12 @@
   Back.bindTabs('[data-tab-group="c"]');
   var tab = '';
 
+  /* ⚠️ id 数值化:组件 id 已是数字(原 'T1' / 'T2' → 1 / 2)。
+   *    「被几个任务模板引用」的口径写死在前两个组件上,这里做容错比较。 */
+  function isCoreComponent(c) {
+    return String(c.id) === '1' || String(c.id) === '2';
+  }
+
   (function () {
     var s = document.getElementById('fDept');
     BACK_DATA.departments.forEach(function (d) {
@@ -96,9 +102,12 @@
     var fd = document.getElementById('fDept').value;
     return Back.hospFilter(BACK_DATA.components, 'components').filter(function (c) {
       if (kw && c.name.indexOf(kw) < 0) return false;
-      if (fd && c.deptId !== fd) return false;
-      if (tab === 'off' && c.status !== 'off') return false;
-      if (tab !== 'off' && c.status === 'off') return false;
+      /* ⚠️ id 数值化:<select>.value 是字符串,departmentId 是数字,必须容错比较 */
+      if (fd && String(c.departmentId) !== String(fd)) return false;
+      /* ⚠️ tab === 'off' 是 **Tab 标签 id**(data-tab="off"),不是 status —— 别一起改掉;
+       *    status 才是数字:1 启用 / 0 停用 */
+      if (tab === 'off' && c.status !== 0) return false;
+      if (tab !== 'off' && c.status === 0) return false;
       return true;
     });
   }
@@ -108,15 +117,15 @@
     var rows = filtered();
     document.getElementById('n').textContent = rows.length;
     document.getElementById('cntAll').textContent =
-      pool.filter(function (c) { return c.status === 'on'; }).length;
+      pool.filter(function (c) { return c.status === 1; }).length;
     document.getElementById('cntOff').textContent =
-      pool.filter(function (c) { return c.status === 'off'; }).length;
+      pool.filter(function (c) { return c.status === 0; }).length;
 
     document.getElementById('body').innerHTML = rows.length ? rows.map(function (c) {
       var req = c.fields.filter(function (f) { return f.req === 'required'; }).length;
-      var d = BACK_DATA.dept(c.deptId);
-      var refs = c.id === 'T1' || c.id === 'T2' ? 2 : 1;
-      return '<tr' + (c.status === 'off' ? ' class="row-muted"' : '') + '>'
+      var d = BACK_DATA.dept(c.departmentId);
+      var refs = isCoreComponent(c) ? 2 : 1;
+      return '<tr' + (c.status === 0 ? ' class="row-muted"' : '') + '>'
         + '<td><div class="cell-user"><span class="av-xs" style="background:var(--brand-light)">'
         +   '<img src="' + (c.iconImg || 'assets/icons-png/' + c.icon + '.png') + '" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover"></span>'
         +   '<div><div class="cell-main">' + c.name + '</div></div></div></td>'
@@ -128,7 +137,7 @@
         + '<td>' + Back.onOff(c.status) + '</td>'
         + '<td class="col-act">'
         +   '<a class="btn-text" href="back-component-edit.html?id=' + c.id + '">编辑</a>'
-        +   (c.status === 'on'
+        +   (c.status === 1
               ? '<a class="btn-text danger" data-stop="' + c.id + '">停用</a>'
               : '<a class="btn-text" data-en="' + c.id + '">启用</a>')
         + '</td></tr>';
@@ -147,7 +156,7 @@
   document.body.addEventListener('click', function (e) {
     var g = function (a) { return e.target.getAttribute && e.target.getAttribute(a); };
     if (g('data-en')) {
-      BACK_DATA.byId(BACK_DATA.components, g('data-en')).status = 'on';
+      BACK_DATA.byId(BACK_DATA.components, g('data-en')).status = 1;
       render(); return Back.toast('已启用组件', 'ok');
     }
     if (g('data-stop')) {
@@ -158,10 +167,10 @@
         + '<li><b>已下发未完成</b>的任务保留,字段标记「已停用」只读</li>'
         + '<li>历史数据<b>全部保留</b>,不物理删除</li></ul>'
         + '<div class="note note-warn" style="margin-top:10px"><img src="assets/icons-png/icon-warning.png">'
-        + '<div>该组件被 <b>' + (c.id === 'T1' || c.id === 'T2' ? 2 : 1)
+        + '<div>该组件被 <b>' + (isCoreComponent(c) ? 2 : 1)
         + '</b> 个任务模板引用,<b>仍有进行中的任务</b>。停用后这些任务需要先解除引用,或接受任务被保留为只读。</div></div>';
       document.getElementById('stopOk').onclick = function () {
-        c.status = 'off'; Back.modal('stopModal', false); render();
+        c.status = 0; Back.modal('stopModal', false); render();
         Back.toast('已停用:' + c.name, 'warn');
       };
       Back.modal('stopModal', true);

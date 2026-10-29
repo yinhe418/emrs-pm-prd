@@ -12,12 +12,12 @@
    *    / lead_doctor_staff_id / summary / description / icon / status
    * ⚠️ `duration`('90 天')与 `priceLabel`('¥ 100')是**展示派生值**,不是 DB 列,
    *    真实列是 `durationDays` 与 `price`。
-   * ⚠️ `status` 对外用字符串 'on' / 'off'(DB 存 1 / 0,API 层转字符串)。
+   * ⚠️ `status` 与全站其他实体一致,用**数字** 1 / 0(DB TINYINT,API 层原样透传)。
    */
   var PROJECTS = [
     {
       id: '90d_health',
-      hospitalId: 'H1',
+      hospitalId: 1,
       name: '90 天卒中连续健康管理',
       durationDays: 90,
       duration: '90 天',
@@ -26,8 +26,8 @@
       tag: '管理',
       startDate: '2026-09-01',
       endDate: '2026-11-30',
-      leadDoctorId: 'S2',
-      status: 'on',
+      leadDoctorId: 2,
+      status: 1,
       icon: 'assets/icons-png/icon-tab-projects.png',
       summary: '出院后 90 天随访管理',
       description:
@@ -36,7 +36,7 @@
     },
     {
       id: 'carotid',
-      hospitalId: 'H1',
+      hospitalId: 1,
       name: '颈动脉斑块管理研究',
       durationDays: 365,
       duration: '365 天',
@@ -45,8 +45,8 @@
       tag: '研究',
       startDate: '2026-01-01',
       endDate: '2026-12-31',
-      leadDoctorId: 'S3',
-      status: 'on',
+      leadDoctorId: 3,
+      status: 1,
       icon: 'assets/icons-png/icon-microscope.png',
       summary: '12 月 LDL-C 跟踪 · 需研究者确认',
       description:
@@ -55,7 +55,7 @@
     },
     {
       id: '365d_health',
-      hospitalId: 'H1',
+      hospitalId: 1,
       name: '365 天长周期管理',
       durationDays: 365,
       duration: '365 天',
@@ -64,8 +64,8 @@
       tag: '管理',
       startDate: '2026-01-01',
       endDate: '2026-12-31',
-      leadDoctorId: 'S4',
-      status: 'on',
+      leadDoctorId: 4,
+      status: 1,
       icon: 'assets/icons-png/icon-calendar.png',
       summary: '1 年长周期 · 高复发风险患者',
       description:
@@ -80,7 +80,8 @@
   function getProject(id) {
     if (!id) return null;
     for (var i = 0; i < PROJECTS.length; i++) {
-      if (PROJECTS[i].id === id) return PROJECTS[i];
+      /* 容错比较:id 虽是 slug(不变),但 URL 参数传进来是字符串 */
+      if (String(PROJECTS[i].id) === String(id)) return PROJECTS[i];
     }
     return null;
   }

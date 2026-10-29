@@ -173,15 +173,20 @@
 <script>
   Back.bindTabs('[data-tab-group="d"]');
   var s = BACK_DATA.member(Back.qs('id')) || BACK_DATA.staff[1];
+  /* ⚠️ 待分配人员(status 2/3)也在 staff 表里,id 能查到 —— 但他们还没科室 / 职称,
+   *    不该打开「人员详情」。直接跳到「认领设置」页。 */
+  if (BACK_DATA.isPendingStaff(s)) {
+    location.replace('back-staff-pending-detail.html?id=' + s.id);
+  }
   var dis = (s.diseases || []).slice();
   var DIS_POOL = ['脑梗死', '脑出血', '蛛网膜下腔出血', 'TIA', '颈动脉狭窄', '房颤卒中',
                   '卒中后康复', '卒中后抑郁', '血管性痴呆', '帕金森病'];
   document.title = s.name + ' · 人员详情';
   document.querySelector('[data-crumb]');
 
-  var dept = BACK_DATA.dept(s.deptId);
+  var dept = BACK_DATA.dept(s.departmentId);
   var hosp = dept ? BACK_DATA.hospital(dept.hospitalId) : null;
-  var pos = BACK_DATA.pos(s.posId);
+  var pos = BACK_DATA.pos(s.positionId);
   var score = BACK_DATA.bioScore(s);
   document.getElementById('cntBio').textContent = score + '%';
 
@@ -190,8 +195,8 @@
     '<div class="page-head"><div class="flex" style="gap:14px">'
     + Back.staffAv(s).replace('class="av-sm"', 'class="av-sm" style="width:54px;height:54px;font-size:20px"')
     + '<div><h1>' + s.name
-    + (s.avatar === 'override' ? ' <span class="badge badge-pass">头像已替换</span>' : '')
-    + (s.status === 'off' ? ' <span class="badge badge-gray">已停用</span>' : '')
+    + (s.avatarSource === 'override' ? ' <span class="badge badge-pass">头像已替换</span>' : '')
+    + (s.status === 0 ? ' <span class="badge badge-gray">已停用</span>' : '')
     + '</h1><div class="sub">' + (hosp ? hosp.name : '') + (dept ? ' · ' + dept.name : '') + ' · '
     + (pos ? pos.name : '未设职称') + '</div></div>'
     + '<span class="ml-auto"></span>'
@@ -210,7 +215,10 @@
   }
   document.getElementById('tBasic').innerHTML =
       row('姓名', s.name)
-    + row('手机号', '<span class="mono">' + BACK_DATA.maskPhone(s.phone) + '</span>')
+    + row('手机号', '<span class="mono">' + BACK_DATA.phoneText(s.phone) + '</span>')
+    + row('微信绑定', s.wechatBound
+        ? '<span class="badge badge-pass">已绑定</span> <span class="mono fz-12">' + s.openIdMasked + '</span>'
+        : '<span class="badge badge-gray">未绑定</span>')
     + row('所属医院', hosp ? hosp.name : '')
     + row('所属科室', dept ? dept.name : '')
     + row('技术职称 / 行政职务', pos
@@ -221,8 +229,8 @@
     + row('可承担角色位', pos ? roleBadges(pos) : '<span class="text-4">—</span>')
     + row('是否为科室主任', dept && dept.directorId === s.id
         ? '<span class="badge badge-brand">是 · ' + dept.name + '</span>' : '否')
-    + row('状态', s.status === 'on' ? '<span class="badge badge-pass">在职</span>' : '<span class="badge badge-gray">已停用</span>')
-    + row('停用原因', s.status === 'off' ? s.offReason : '');
+    + row('状态', Back.staffStatus(s.status))
+    + row('停用原因', s.status === 0 ? s.offReason : '');
 
   document.getElementById('tInternal').innerHTML =
       row('执业证号', s.license ? '<span class="mono">' + s.license + '</span>' : '')
@@ -345,7 +353,7 @@
   document.getElementById('logBox').innerHTML = [
       ['2026-09-02 10:12', '后台管理员', '设置人员', '扫码登记 → ' + (hosp ? hosp.name : '') + ' · ' + (dept ? dept.name : '') + ' · ' + (pos ? pos.name : ''), true],
       ['2026-09-20 15:40', '后台管理员', '完善简介', '专业擅长 / 擅长病种 / 门诊时间 已补齐', false],
-      (s.avatar === 'override' ? ['2026-10-18 09:05', '后台管理员', '替换头像', '微信头像 → 后台上传头像', false] : null),
+      (s.avatarSource === 'override' ? ['2026-10-18 09:05', '后台管理员', '替换头像', '微信头像 → 后台上传头像', false] : null),
       ['2026-10-21 09:00', '系统', '登录后台', '本次会话开始', false]
     ].filter(Boolean).map(function (x) {
       return '<div class="tl-item' + (x[4] ? ' hi' : '') + '"><div class="tl-t">' + x[0] + ' · ' + x[1] + '</div>'

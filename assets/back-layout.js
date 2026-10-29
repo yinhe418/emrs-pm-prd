@@ -227,17 +227,31 @@
     return new URLSearchParams(location.search).get(k) || '';
   };
 
-  /* --- 状态色辅助 --- */
+  /* --- 状态色辅助 ---
+   * ⚠️ status 已数值化(DB TINYINT):1 启用 / 0 停用。
+   *    不要写 `s === 'on'`;也不要用 truthy 判断 —— 0(停用)是 falsy。
+   */
   Back.onOff = function (s) {
-    return s === 'on'
+    return s === 1
       ? '<span class="badge badge-pass">启用</span>'
       : '<span class="badge badge-gray">停用</span>';
   };
+  /* staff.status 5 值 → 文案 / 样式(1 在职 / 0 停用 / 2 待认领 / 3 处理中 / 4 已归档) */
+  Back.staffStatus = function (s) {
+    if (s === 1) return '<span class="badge badge-pass">在职</span>';
+    if (s === 0) return '<span class="badge badge-gray">已停用</span>';
+    if (s === 2) return '<span class="badge badge-block">待认领</span>';
+    if (s === 3) return '<span class="badge badge-info">处理中</span>';
+    if (s === 4) return '<span class="badge badge-gray">已归档</span>';
+    return '<span class="text-4">—</span>';
+  };
   Back.staffAv = function (s, size) {
     var sizeCls = size === 'xs' ? 'av-xs' : 'av-sm';
-    var ch = (s.name || '?').charAt(0);
-    var bg = s.avatar === 'override' ? '#2E7DD7' : BACK_DATA.avatarColor(s.name);
-    var mark = s.avatar === 'override' ? '<i class="av-replaced">✓</i>' : '';
+    /* 待分配的人 name 为空,取微信昵称首字(avatarText 同口径) */
+    var dispName = s.name || s.nickName || '?';
+    var ch = (s.avatarText || dispName).charAt(0);
+    var bg = s.avatarSource === 'override' ? '#2E7DD7' : BACK_DATA.avatarColor(dispName);
+    var mark = s.avatarSource === 'override' ? '<i class="av-replaced">✓</i>' : '';
     return '<span class="' + sizeCls + '" style="background:' + bg + '">' + ch + mark + '</span>';
   };
   Back.staffName = function (id) {
@@ -267,24 +281,36 @@
   };
 
   /* 按当前医院过滤数据集。
-     kind ∈ depts | staff | patients | drugs | components | pending */
+     kind ∈ depts | staff | patients | drugs | components | pending
+     ⚠️ id 数值化后,凡是比较 hospitalId / departmentId 的地方都用**容错比较** ——
+     *    当前医院 id 可能来自 localStorage(字符串),直接 `===` 会把整院数据筛空。 */
   Back.hospFilter = function (items, kind) {
     var h = Back.currentHospital();
     if (!h) return [];
     var cds = BACK_DATA.deptListByHospital(h.id).map(function (d) { return d.id; });
-    if (kind === 'depts') return items.filter(function (x) { return x.hospitalId === h.id; });
-    if (kind === 'staff') return items.filter(function (x) { return cds.indexOf(x.deptId) >= 0; });
+    var sameHosp = function (x) { return String(x.hospitalId) === String(h.id); };
+    if (kind === 'depts') return items.filter(sameHosp);
+    /* ⚠️ staff 口径:按 staff 自己的 hospital_id 列过滤(2026-10-28 起每行都带 hospitalId)。
+     *    合并前 pending 行没有 hospitalId,老写法 `x.hospitalId == null` 恒真 →
+     *    待分配 Tab 会显示别院的人。现在每行都有 hospitalId,这个洞自动消失。
+     *    ⚠️ 待分配 / 已归档的人也在本院范围内 —— 是否属于某个 Tab 由 status 决定,
+     *    「选人」下拉另由 staffWithRole(status === 1 && 已分科室)把关。 */
+    if (kind === 'staff') return items.filter(sameHosp);
     if (kind === 'patients') return items.filter(function (x) {
       /* ⚠️ 2026-10-26:主管医生已下沉到「患者-项目参与」维度,
        *    科室按**主项目**(第一条在管参与记录)下的主管医生推导。 */
       var mp = BACK_DATA.mainProj(x);
       var mem = mp && mp.docId ? BACK_DATA.member(mp.docId) : null;
-      var d = mem ? BACK_DATA.dept(mem.deptId) : null;
-      return !!(d && d.hospitalId === h.id);
+      var d = mem ? BACK_DATA.dept(mem.departmentId) : null;
+      return !!(d && String(d.hospitalId) === String(h.id));
     });
-    if (kind === 'drugs') return items.filter(function (x) { return x.hospitalId === h.id; });
-    if (kind === 'components') return items.filter(function (x) { return cds.indexOf(x.deptId) >= 0; });
-    if (kind === 'pending') return items.filter(function (x) { return x.hospitalId == null || x.hospitalId === h.id; });
+    if (kind === 'drugs') return items.filter(sameHosp);
+    if (kind === 'components') return items.filter(function (x) {
+      return cds.some(function (cid) { return String(cid) === String(x.departmentId); });
+    });
+    if (kind === 'pending') return items.filter(function (x) {
+      return x.hospitalId == null || String(x.hospitalId) === String(h.id);
+    });
     return items;
   };
 

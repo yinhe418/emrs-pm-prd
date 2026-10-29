@@ -28,7 +28,8 @@
           <span class="av-sm" id="pAv" style="width:48px;height:48px;font-size:18px;background:#8A94A6">—</span>
           <div>
             <div style="font-size:15px;font-weight:600" id="pNick">—</div>
-            <div class="fz-12 text-3" id="pOpenid">微信标识:wx_****（脱敏）</div>
+            <div class="fz-12 text-3" id="pOpenid">微信标识:—</div>
+          <div class="fz-12 text-3" id="pWechat">微信绑定:—</div>
           </div>
         </div>
 
@@ -164,25 +165,38 @@
 <script src="assets/back-data.js"></script>
 <script src="assets/back-layout.js"></script>
 <script>
-  var w = BACK_DATA.byId(BACK_DATA.pending, Back.qs('id')) || BACK_DATA.pending[0];
+  /* ⚠️ 待分配人员现在是 staff 表里 departmentId === 0 的行,不再是独立数组。
+   *    按 id 从 staff 表里取(转正后此人仍在 staff 表,id 不变),取不到再退回队首。 */
+  var w = BACK_DATA.member(Back.qs('id')) || BACK_DATA.pendingStaff()[0];
   var avatarMode = 'wechat';
   var pickedPos = '';
   var pickedAdmin = '';
 
   /* 回填左栏 */
-  document.getElementById('pNick').textContent = w.nick;
+  document.getElementById('pNick').textContent = w.nickName;
   document.getElementById('pAv').textContent = w.avatarText;
   document.getElementById('avPrev').textContent = w.avatarText;
-  document.getElementById('pScan').textContent = w.scanAt;
-  document.getElementById('pDays').innerHTML = '<span class="' + (w.days > 3 ? 'text-red fw-5' : 'text-orange') + '">'
-    + w.days + ' 天</span>（超过 7 天将自动归档）';
-  document.getElementById('pSrc').textContent = w.source;
-  document.getElementById('pClaim').innerHTML = w.claimedBy
-    ? '<span class="badge badge-info">' + w.claimedBy + '</span>' : '<span class="badge badge-block">未认领</span>';
-  document.getElementById('pClaimAt').textContent = w.claimAt || '—';
-  document.getElementById('tl1').textContent = w.scanAt;
-  if (w.claimedBy) {
-    document.getElementById('tl2').textContent = w.claimAt;
+  /* ⚠️ 时间在契约里是 RFC3339,展示层再格式化成 'YYYY-MM-DD HH:mm' */
+  function fmtTime(iso) { return iso ? iso.slice(0, 10) + ' ' + iso.slice(11, 16) : '—'; }
+  /* days 是派生值,由 scannedAt 现算(不入库) */
+  var days = BACK_DATA.daysSince(w.scannedAt);
+  document.getElementById('pScan').textContent = fmtTime(w.scannedAt);
+  document.getElementById('pDays').innerHTML = '<span class="' + (days > 3 ? 'text-red fw-5' : 'text-orange') + '">'
+    + days + ' 天</span>（超过 7 天将自动归档）';
+  /* 来源医院:staff.hospitalId(合并后每行都带) */
+  document.getElementById('pSrc').textContent = (BACK_DATA.hospital(w.hospitalId) || {}).name || '—';
+  document.getElementById('pOpenid').textContent = '微信标识:' + (w.openIdMasked || '—');
+  document.getElementById('pWechat').innerHTML = w.wechatBound
+    ? '微信绑定:<span class="badge badge-pass">已绑定</span>'
+    : '微信绑定:<span class="badge badge-gray">未绑定</span>';
+  /* 认领人存 id,显示时现取名字 */
+  var claimer = BACK_DATA.claimedByName(w);
+  document.getElementById('pClaim').innerHTML = claimer
+    ? '<span class="badge badge-info">' + claimer + '</span>' : '<span class="badge badge-block">未认领</span>';
+  document.getElementById('pClaimAt').textContent = fmtTime(w.claimedAt);
+  document.getElementById('tl1').textContent = fmtTime(w.scannedAt);
+  if (claimer) {
+    document.getElementById('tl2').textContent = fmtTime(w.claimedAt);
     document.getElementById('tl2row').classList.add('hi');
   } else {
     document.getElementById('tl2row').style.opacity = '.5';
@@ -200,7 +214,7 @@
   }, 1000);
 
   /* 表单默认 */
-  document.querySelector('[name="sName"]').value = w.nick.replace('**', '');
+  document.querySelector('[name="sName"]').value = w.nickName.replace('**', '');
   /* 人员来自本院邀请码,自动归入当前医院,不需要再选 */
   var curH = Back.currentHospital();
   var hSel = { value: curH ? curH.id : '' };
@@ -210,7 +224,7 @@
     var dSel = document.querySelector('[name="sDept"]');
     dSel.innerHTML = '<option value="">请选择科室</option>';
     Back.hospFilter(BACK_DATA.departments, 'depts')
-      .filter(function (x) { return x.status === 'on'; })
+      .filter(function (x) { return x.status === 1; })
       .forEach(function (x) { dSel.insertAdjacentHTML('beforeend', '<option value="' + x.id + '">' + x.name + '</option>'); });
   }
 
@@ -223,9 +237,10 @@
       var group = document.createElement('div');
       group.style.cssText = 'display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:6px';
       group.innerHTML = '<span class="fz-11 text-3" style="width:66px">' + meta.label + '</span>';
-      BACK_DATA.positions.filter(function (p) { return p.cat === cat && p.status === 'on'; })
+      BACK_DATA.positions.filter(function (p) { return p.cat === cat && p.status === 1; })
         .forEach(function (p) {
-          var checked = cat === 'title' ? pickedPos === p.id : pickedAdmin === p.id;
+          /* ⚠️ 容错比较:pickedPos 来自 radio.value(字符串),p.id 是数字 */
+          var checked = cat === 'title' ? String(pickedPos) === String(p.id) : String(pickedAdmin) === String(p.id);
           var rl = BACK_DATA.rolesOf(p);
           var roleTxt = rl.map(function (r) { return r === 'doctor' ? '主管医生' : '护士'; }).join(' / ');
           var lbl = '<label class="chk" style="border:1px solid ' + (checked ? 'var(--brand)' : 'var(--line)')
@@ -240,7 +255,7 @@
     });
     box.querySelectorAll('input').forEach(function (r) {
       r.addEventListener('change', function () {
-        if (r.getAttribute('data-adm')) pickedAdmin = r.value; else pickedPos = r.value;
+        if (r.getAttribute('data-adm')) pickedAdmin = r.value; else pickedPos = r.value;   /* 字符串,写回时再转数字 */
         renderPos();
       });
     });
@@ -290,17 +305,43 @@
     return ok;
   }
 
+  /* ---------- 转正(完成设置)----------
+   * ⚠️ 2026-10-28 修掉既有 bug:原来只改了队列状态,**没有**把这个人
+   *    加进 BACK_DATA.staff,所以转正后「已设置」Tab 里根本看不到他。
+   *    现在 staff / pending 已合并为一张表 —— 直接改**同一个对象**即可:
+   *    departmentId / positionId / name / status 一起改成已设置的值,
+   *    这个人自动从「待分配科室」消失、出现在「已设置」Tab,不需要在两个数组之间搬。
+   */
   document.getElementById('saveBtn').addEventListener('click', function () {
     var v = collect();
     if (!validate(v)) return;
-    w.state = 'done'; w.claimedBy = w.claimedBy || '后台管理员';
+    /* ⚠️ <select>.value / radio.value 都是字符串 —— 写回前转数字,数据层 id 一律是数字 */
+    w.departmentId = v.sDept ? Number(v.sDept) : 0;   /* 有科室 → 不再是「待分配」 */
+    w.positionId = pickedPos ? Number(pickedPos) : 0; /* 技术职称(必填);行政职务走「组织架构 → 科室主任」任命流程 */
+    w.name = v.sName;                  /* 管理员填的姓名 */
+    w.phone = v.sPhone;
+    w.status = 1;                      /* 1 = 在职 */
+    w.avatarSource = avatarMode;       /* avatar_source:wechat | override | default */
+    /* 认领人存 id(claimedByStaffId),显示时现取名字 */
+    w.claimedByStaffId = w.claimedByStaffId || BACK_DATA.ADMIN_STAFF_ID;
+    w.claimExpiresAt = '';             /* 已转正 → 不再有认领有效期 */
+    w.archiveReason = '';
+    w.archivedAt = '';
+    w.archivedByStaffId = null;        /* 契约里「无」是 null,不是空串 */
+    w.offReason = '';                  /* 非停用状态,停用原因必须为空(DB 双向 CHECK) */
+    BACK_DATA.saveStaff();             /* 落盘:跳转回「已设置」Tab 后仍能看到他 */
     Back.toast('已设置:' + v.sName + ' · ' + BACK_DATA.dept(v.sDept).name
       + ' · ' + BACK_DATA.pos(pickedPos).name + ',对方立即可用', 'ok');
     setTimeout(function () { location.href = 'back-staff.html?tab=set'; }, 1100);
   });
 
+  /* 保存并稍后处理:保留认领,人还在待分配队列里(status = 3 已认领) */
   document.getElementById('saveLater').addEventListener('click', function () {
-    w.state = 'claimed'; w.claimedBy = '后台管理员'; w.claimAt = '2026-10-21 09:20';
+    w.status = 3;
+    w.claimedByStaffId = BACK_DATA.ADMIN_STAFF_ID;
+    w.claimedAt = BACK_DATA.NOW_ISO;
+    w.claimExpiresAt = '2026-10-29T10:00:00+08:00';   /* 24 小时有效期 */
+    BACK_DATA.saveStaff();
     Back.toast('已保留认领,24 小时内可回来继续', 'warn');
     setTimeout(function () { location.href = 'back-staff.html?tab=pending'; }, 900);
   });
@@ -313,7 +354,10 @@
   document.getElementById('archOk').addEventListener('click', function () {
     var r = document.getElementById('archReason').value;
     if (!r) { document.querySelector('#archModal .fi').classList.add('has-err'); return; }
-    w.state = 'archived'; w.archivedReason = r;
+    w.status = 4; w.archiveReason = r;
+    w.archivedAt = BACK_DATA.NOW_ISO;
+    w.archivedByStaffId = BACK_DATA.ADMIN_STAFF_ID;
+    BACK_DATA.saveStaff();
     Back.modal('archModal', false);
     Back.toast('已归档,可在「已归档」Tab 恢复', 'warn');
     setTimeout(function () { location.href = 'back-staff.html?tab=archived'; }, 900);

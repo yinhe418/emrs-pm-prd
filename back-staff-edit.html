@@ -35,7 +35,7 @@
               </div>
               <div class="fi">
                 <label><span class="req">*</span>状态</label>
-                <select class="sel" name="sStatus"><option value="on">在职</option><option value="off">停用(离职)</option></select>
+                <select class="sel" name="sStatus"><option value="1">在职</option><option value="0">停用(离职)</option></select>
               </div>
               <div class="fi full" id="offReasonFi" style="display:none">
                 <label><span class="req">*</span>停用原因</label>
@@ -244,7 +244,8 @@
   var id = Back.qs('id');
   var isEdit = !!id;
   var s = isEdit ? BACK_DATA.member(id) : null;
-  var avatarMode = s ? s.avatar : 'wechat';
+  /* avatarSource = 头像来源枚举(wechat | override | default);avatar_url 不入 mock */
+  var avatarMode = s ? s.avatarSource : 'wechat';
   var dis = s && s.diseases ? s.diseases.slice() : [];
   var DIS_POOL = ['脑梗死', '脑出血', '蛛网膜下腔出血', 'TIA', '颈动脉狭窄', '房颤卒中',
                   '卒中后康复', '卒中后抑郁', '血管性痴呆', '帕金森病'];
@@ -262,7 +263,7 @@
   hSel.disabled = true;
   var pSel = document.querySelector('[name="sPos"]');
   var aSel = document.querySelector('[name="sAdmin"]');
-  BACK_DATA.positions.filter(function (x) { return x.status === 'on'; }).forEach(function (x) {
+  BACK_DATA.positions.filter(function (x) { return x.status === 1; }).forEach(function (x) {
     var o = '<option value="' + x.id + '">' + x.name + '</option>';
     if (x.cat === 'title') pSel.insertAdjacentHTML('beforeend', o);
     if (x.cat === 'admin') aSel.insertAdjacentHTML('beforeend', o);
@@ -272,7 +273,7 @@
     var dSel = document.querySelector('[name="sDept"]');
     dSel.innerHTML = '<option value="">请选择科室</option>';
     Back.hospFilter(BACK_DATA.departments, 'depts')
-      .filter(function (x) { return x.status === 'on'; })
+      .filter(function (x) { return x.status === 1; })
       .forEach(function (x) {
         dSel.insertAdjacentHTML('beforeend', '<option value="' + x.id + '">' + x.name + '</option>');
       });
@@ -282,19 +283,19 @@
   /* 编辑回填 */
   if (s) {
     var set = function (n, v) { var e = document.querySelector('[name="' + n + '"]'); if (e) e.value = v == null ? '' : v; };
-    set('sName', s.name); set('sPhone', s.phone); set('sStatus', s.status);
+    set('sName', s.name); set('sPhone', s.phone); set('sStatus', String(s.status));
     set('sGrad', s.gradSchool); set('sFirst', s.firstPractice); set('sYears', s.years);
     set('sPro', s.pro); set('sAca', s.academic); set('sClinicT', s.clinicTime); set('sClinicP', s.clinicPlace);
     set('sIntro', s.intro); set('sLic', s.license); set('sPhoneW', s.phoneWork);
     set('sEmail', s.email); set('sAcc', s.accepting);
     set('sOffReason', s.offReason || '');
-    hSel.value = (s.deptId ? BACK_DATA.dept(s.deptId).hospitalId : 'H1');
+    hSel.value = (s.departmentId ? BACK_DATA.dept(s.departmentId).hospitalId : 1);
     fillDept();
-    document.querySelector('[name="sDept"]').value = s.deptId || '';
-    var p = BACK_DATA.pos(s.posId);
-    pSel.value = p && p.cat === 'title' ? s.posId : (pSel.options.length > 1 ? pSel.options[1].value : '');
-    aSel.value = p && p.cat === 'admin' ? s.posId : '';
-    document.getElementById('offReasonFi').style.display = s.status === 'off' ? 'flex' : 'none';
+    document.querySelector('[name="sDept"]').value = s.departmentId || '';
+    var p = BACK_DATA.pos(s.positionId);
+    pSel.value = p && p.cat === 'title' ? s.positionId : (pSel.options.length > 1 ? pSel.options[1].value : '');
+    aSel.value = p && p.cat === 'admin' ? s.positionId : '';
+    document.getElementById('offReasonFi').style.display = s.status === 0 ? 'flex' : 'none';
   } else {
     fillDept();
   }
@@ -333,7 +334,8 @@
 
   /* 状态切换 */
   document.querySelector('[name="sStatus"]').addEventListener('change', function () {
-    document.getElementById('offReasonFi').style.display = this.value === 'off' ? 'flex' : 'none';
+    /* this.value 是字符串 '0' —— status 数值化后没有 'off' 字面量了 */
+    document.getElementById('offReasonFi').style.display = this.value === '0' ? 'flex' : 'none';
   });
 
   /* 头像 */
@@ -420,13 +422,63 @@
       sYears: { pattern: /^\d{1,2}$/, msg: '从业年限 0–60' },
       sEmail: { pattern: /^[^@\s]+@[^@\s]+\.[^@\s]+$/, msg: '邮箱格式不正确' }
     };
-    if (stt === 'off') rules.sOffReason = { required: true, minLen: 10, maxLen: 100, msg: '停用原因 10–100 字' };
+    /* stt 是 <select>.value 的字符串:'1' 在职 / '0' 停用 */
+    if (stt === '0') rules.sOffReason = { required: true, minLen: 10, maxLen: 100, msg: '停用原因 10–100 字' };
     if (!Back.validate(f, rules)) return;
 
     if (!dis.length) { Back.toast('请至少选择 1 个擅长病种(必填)', 'err'); return; }
 
+    /* ---------- 写回 BACK_DATA ----------
+     * ⚠️ 2026-10-28 修掉既有 bug:原来保存只弹了个 toast,**没有**写数据层,
+     *    编辑完姓名 / 状态回到列表页看到的还是老值。
+     *    这次同时落实两条 DB 约束:
+     *    · status 是数字(1 在职 / 0 停用)
+     *    · offReason 只在 status === 0 时有意义,其余状态必须清空(双向 CHECK)
+     */
+    var v = function (n) { var e = document.querySelector('[name="' + n + '"]'); return e ? (e.value || '').trim() : ''; };
+    var newStatus = Number(stt);                    /* '1' / '0' → 1 / 0 */
+    /* ⚠️ <select>.value 永远是字符串 —— 必须转数字,数据层 id 一律是数字 */
+    var deptId = v('sDept') ? Number(v('sDept')) : 0;
+    var posIdRaw = v('sPos') || v('sAdmin');
+    var posId = posIdRaw ? Number(posIdRaw) : 0;
+    var target = s;
+    if (!target) {
+      target = {
+        /* ⚠️ id 数值化(AR 契约 §13):数字 id。
+         *    staff.length + 1 = 17,不会与 1–11(已设置)/ 12–16(待分配)相撞 */
+        id: BACK_DATA.staff.length + 1,
+        name: '', nickName: '', phone: '',
+        hospitalId: (BACK_DATA.hospital(v('sHosp')) || {}).id || (BACK_DATA.hospital(1) || {}).id || 1,
+        departmentId: 0, positionId: 0, status: 2,
+        avatarSource: 'default', scannedAt: BACK_DATA.NOW_ISO,
+        claimedByStaffId: null, claimedAt: '', claimExpiresAt: '',
+        archiveReason: '', archivedAt: '', archivedByStaffId: null,
+        offReason: '', openId: null, openIdMasked: '', wechatBound: false,
+        license: '', gradSchool: '', years: '', firstPractice: '', pro: '',
+        diseases: [], academic: '', clinicTime: '', clinicPlace: '', intro: '',
+        photos: 0, bio: 0, phoneWork: '', email: '', accepting: 'no'
+      };
+      BACK_DATA.staff.push(target);
+    }
+    target.name = v('sName');
+    target.phone = v('sPhone');
+    target.departmentId = deptId || target.departmentId;
+    target.positionId = posId || target.positionId;
+    target.status = newStatus;
+    target.offReason = newStatus === 0 ? v('sOffReason') : '';   /* 双向 CHECK */
+    target.avatarSource = avatarMode;
+    target.gradSchool = v('sGrad'); target.firstPractice = v('sFirst');
+    target.years = v('sYears'); target.pro = v('sPro'); target.academic = v('sAca');
+    target.clinicTime = v('sClinicT'); target.clinicPlace = v('sClinicP');
+    target.intro = v('sIntro'); target.license = v('sLic');
+    target.phoneWork = v('sPhoneW'); target.email = v('sEmail');
+    target.accepting = v('sAcc') || 'no';
+    target.diseases = dis.slice();
+    target.avatarText = (target.nickName || target.name || '?').charAt(0);
+    BACK_DATA.saveStaff();             /* 落盘:回到列表页能看到改动 */
+
     Back.toast(isEdit ? '已保存' : '已新增人员', 'ok');
-    setTimeout(function () { location.href = isEdit ? 'back-staff-detail.html?id=' + id : 'back-staff.html'; }, 800);
+    setTimeout(function () { location.href = isEdit ? 'back-staff-detail.html?id=' + target.id : 'back-staff.html'; }, 800);
   });
 
   refreshAv(); refresh();

@@ -15,6 +15,14 @@
     <div class="sub">Tab 1「已设置」= 已有科室 + 职称,正常工作;Tab 2「待分配科室」= 已扫码但尚未设置科室与职称,无法使用小程序。</div>
   </div>
 
+  <!-- 数据来源说明:本页已接真后端,哪些字段是接口给的、哪些还没端点,写清楚,免得把「—」当成真数据 -->
+  <div class="note note-info">
+    <img src="assets/icons-png/icon-info.png">
+    <div><b>本页已接真后端</b>(<code>GET /api/adm/v1/staff</code>,三个 Tab 按 <code>status</code> 分别取数)。
+      科室名称 / 简介完整度 / 下属病患 / 认领归档等**写操作**依赖尚未交付的端点,页面上以「—」占位;
+      「详情 / 编辑」页本轮未接后端,仍是演示态。</div>
+  </div>
+
   <div id="scopeStrip"></div>
 
   <div class="tabs" data-tab-group="staff" data-scope="staffScope">
@@ -37,11 +45,12 @@
         <select class="sel" id="fBio"><option value="">简介:全部</option><option value="todo">待完善</option><option value="done">已完整</option></select>
         <div class="seg" id="fStatus">
           <button data-v="" class="active">全部</button>
-          <button data-v="on">在职</button>
-          <button data-v="off">已停用</button>
+          <button data-v="1">在职</button>
+          <button data-v="0">已停用</button>
         </div>
         <span class="ml-auto"></span>
         <a class="btn btn-primary" href="back-staff-edit.html"><img src="assets/icons-png/icon-plus.png" alt="">新增人员</a>
+        <a class="btn-text muted fz-12" href="back-staff.html" title="重新向后端拉取人员列表">刷新</a>
       </div>
 
       <div class="card flat">
@@ -53,6 +62,7 @@
                 <th style="width:150px">科室</th>
                 <th style="width:118px">职位</th>
                 <th style="width:118px">手机号</th>
+                <th style="width:130px">微信绑定</th>
                 <th style="width:118px">简介完整度</th>
                 <th style="width:130px">下属病患</th>
                 <th style="width:78px">状态</th>
@@ -64,7 +74,7 @@
         </div>
         <div class="pager">
           <span>共 <b id="setN">0</b> 条</span>
-          <span class="pg-right">每页 20 条</span>
+          <span class="pg-right" id="setTot">后端共 0 条</span>
         </div>
       </div>
     </section>
@@ -96,8 +106,8 @@
         </div>
         <div class="kpi green">
           <div class="k-lab">今日新扫码</div>
-          <div class="k-val">1</div>
-          <div class="k-sub">近 7 日累计 6 人</div>
+          <div class="k-val" id="kToday">—</div>
+          <div class="k-sub">近 7 日累计 <span id="kLast7">—</span> 人</div>
         </div>
       </div>
 
@@ -108,8 +118,8 @@
         </div>
         <div class="seg" id="pState">
           <button data-v="" class="active">全部</button>
-          <button data-v="pending">待认领</button>
-          <button data-v="claimed">已认领未完成</button>
+          <button data-v="2">待认领</button>
+          <button data-v="3">已认领未完成</button>
         </div>
         <span class="ml-auto"></span>
         <span class="fz-12 text-3">默认按停留时长倒序 · 超时 7 天自动归档</span>
@@ -126,6 +136,7 @@
                 <th style="width:150px">科室</th>
                 <th style="width:118px">职称</th>
                 <th style="width:130px">认领人</th>
+                <th style="width:130px">微信绑定</th>
                 <th class="col-act" style="width:150px">操作</th>
               </tr>
             </thead>
@@ -134,7 +145,7 @@
         </div>
         <div class="pager">
           <span>共 <b id="pendN">0</b> 条</span>
-          <span class="pg-right">每页 20 条</span>
+          <span class="pg-right" id="pendTot">后端共 0 条</span>
         </div>
       </div>
     </section>
@@ -182,233 +193,432 @@
   </div>
 </div>
 
+<script src="assets/back-api.js"></script>
 <script src="assets/back-data.js"></script>
 <script src="assets/back-layout.js"></script>
 <script>
   var fStatus = '', pState = '';
 
-  /* 下拉数据 */
-  (function () {
-    var d = document.getElementById('fDept');
-    BACK_DATA.hospitals.forEach(function (h) {
-      BACK_DATA.departments.filter(function (x) { return x.hospitalId === h.id; })
-        .forEach(function (x) {
-          d.insertAdjacentHTML('beforeend', '<option value="' + x.id + '">' + h.short + ' · ' + x.name + '</option>');
-        });
-    });
-    var p = document.getElementById('fPos');
-    ['admin', 'title', 'other'].forEach(function (c) {
-      BACK_DATA.positions.filter(function (x) { return x.cat === c && x.status === 'on'; })
-        .forEach(function (x) {
-          p.insertAdjacentHTML('beforeend', '<option value="' + x.id + '">' + x.name + '</option>');
-        });
-    });
-  })();
+  /* ==========================================================
+   * 真后端数据层
+   * ----------------------------------------------------------
+   * ⚠️ 三个 Tab 各对应一次 GET /api/adm/v1/staff?status=…(架构文档 §13.4 的取数口径):
+   *    已设置 = status∈{0,1} / 待分配 = status∈{2,3} / 已归档 = status=4
+   *    必须用 status **正向**表达,不要用 departmentId 反推。
+   * ⚠️ 医院范围**不由前端决定** —— 后端按登录会话里的医院自动过滤,
+   *    前端不传、也不能传 hospitalId(传了会被判跨租户 40301)。
+   * ========================================================== */
+  var TABS = {
+    set:      { status: '0,1', rows: [], total: 0, loaded: false, error: null },
+    pending:  { status: '2,3', rows: [], total: 0, loaded: false, error: null },
+    archived: { status: '4',   rows: [], total: 0, loaded: false, error: null }
+  };
+  /* GET /api/adm/v1/positions —— 职位字典(全局,不按医院过滤) */
+  var POSITIONS = [];
+  var POS_ERROR = null;
 
+  /* 本轮后端只交付了 GET 列表接口,没有写接口 —— 写操作一律提示,不假装成功 */
+  var WRITE_API_TIP = '写操作接口本轮尚未交付(后端目前只有 GET /api/adm/v1/staff),该操作暂时无法落库。';
+
+  /* ---------- 加载 ---------- */
+  function loadTab(key) {
+    var t = TABS[key];
+    t.error = null; t.loaded = false; t.rows = []; t.total = 0;
+    renderAll();
+    BackApi.listStaff(t.status, 1, 100).then(function (data) {
+      t.rows = (data && data.items) ? data.items : [];
+      t.total = (data && typeof data.total === 'number') ? data.total : t.rows.length;
+      t.loaded = true;
+      fillFilters();
+      renderAll();
+    }).catch(function (err) {
+      t.error = err; t.loaded = true;
+      renderAll();
+    });
+  }
+
+  function loadPositions() {
+    POS_ERROR = null;
+    BackApi.listPositions().then(function (data) {
+      POSITIONS = ((data && data.items) ? data.items : []).map(function (p) {
+        return {
+          id: p.id, name: p.name,
+          cat: p.categoryCode, catName: p.categoryName,
+          roles: p.roleSlots || [],
+          status: p.status === 'on' ? 1 : 0,
+          order: p.sortOrder,
+          seeded: !!p.isSeeded,
+          isDeptDirector: !!p.isDeptDirector,
+          staffCount: p.staffCount || 0
+        };
+      });
+      fillFilters();
+      renderAll();
+    }).catch(function (err) {
+      POS_ERROR = err; POSITIONS = [];
+      fillFilters();
+      renderAll();
+    });
+  }
+
+  /* ---------- 下拉数据(全部来自接口) ---------- */
+  function fillFilters() {
+    /* 科室下拉:后端本轮**没有**科室列表端点,人员接口只给 departmentId,
+       所以选项用接口里真实出现过的科室 id 生成(不编科室名)。 */
+    var d = document.getElementById('fDept');
+    var dv = d.value;
+    var seen = {}, ids = [];
+    ['set', 'pending', 'archived'].forEach(function (k) {
+      TABS[k].rows.forEach(function (s) {
+        var id = s.departmentId;
+        if (!id || String(id) === '0') return;
+        if (seen[String(id)]) return;
+        seen[String(id)] = 1; ids.push(id);
+      });
+    });
+    ids.sort(function (a, b) { return a - b; });
+    d.innerHTML = '<option value="">科室:全部</option>';
+    ids.forEach(function (id) {
+      d.insertAdjacentHTML('beforeend',
+        '<option value="' + id + '" title="科室名称需要 /api/adm/v1/departments 端点(本轮未交付)">#' + id + ' 科室</option>');
+    });
+    if (dv && ids.some(function (id) { return String(id) === String(dv); })) d.value = dv;
+
+    /* 职位下拉:来自 GET /api/adm/v1/positions */
+    var p = document.getElementById('fPos');
+    var pv = p.value;
+    p.innerHTML = '<option value="">职位:全部</option>';
+    POSITIONS.filter(function (x) { return x.status === 1; }).forEach(function (x) {
+      p.insertAdjacentHTML('beforeend', '<option value="' + x.id + '">' + BackApi.esc(x.name) + '</option>');
+    });
+    if (pv) p.value = pv;
+  }
+
+  /* ---------- 展示辅助 ---------- */
+  function posById(id) {
+    for (var i = 0; i < POSITIONS.length; i++) {
+      if (BackApi.idEq(POSITIONS[i].id, id)) return POSITIONS[i];
+    }
+    return null;
+  }
+  function staffById(id) {
+    var found = null;
+    ['set', 'pending', 'archived'].some(function (k) {
+      return TABS[k].rows.some(function (r) {
+        if (BackApi.idEq(r.id, id)) { found = r; return true; }
+        return false;
+      });
+    });
+    return found;
+  }
+  /* 科室名:后端只给 departmentId(科室列表端点未交付)→ 显示 id,不编名字 */
   function deptName(id) {
-    var d = BACK_DATA.dept(id);
-    if (!d) return '';
-    var h = BACK_DATA.hospital(d.hospitalId);
-    return (h ? h.short + ' · ' : '') + d.name;
+    if (!id || String(id) === '0') return '<span class="text-4 fz-12">— 未设置 —</span>';
+    return '<span class="text-4 fz-12" title="科室名称需要 /api/adm/v1/departments 端点(本轮未交付)">#'
+      + BackApi.esc(id) + '</span>';
   }
   function posName(id) {
-    var p = BACK_DATA.pos(id);
-    if (!p) return '';
-    var badge = p.cat === 'admin' ? '<span class="badge badge-brand">' + p.name + '</span>'
-              : p.cat === 'title' ? '<span class="badge badge-info">' + p.name + '</span>'
-              : '<span class="badge badge-gray">' + p.name + '</span>';
-    /* 职位徽章旁补「可承担角色位」:角色位取自该人员职位的 roles(不新增列) */
-    var roles = BACK_DATA.rolesOf(p), rs = [];
-    if (roles.indexOf('doctor') >= 0) rs.push('<span class="badge badge-outline">主管医生</span>');
-    if (roles.indexOf('nurse') >= 0) rs.push('<span class="badge badge-outline">护士</span>');
+    if (!id || String(id) === '0') return '<span class="text-4 fz-12">— 未设置 —</span>';
+    var p = posById(id);
+    if (!p) return '<span class="text-4 fz-12" title="职位字典未加载或该职位已删除">#' + BackApi.esc(id) + '</span>';
+    var badge = p.cat === 'admin' ? '<span class="badge badge-brand">' + BackApi.esc(p.name) + '</span>'
+              : p.cat === 'title' ? '<span class="badge badge-info">' + BackApi.esc(p.name) + '</span>'
+              : '<span class="badge badge-gray">' + BackApi.esc(p.name) + '</span>';
+    /* 职位徽章旁补「可承担角色位」(接口字段 roleSlots) */
+    var rs = [];
+    if (p.roles.indexOf('doctor') >= 0) rs.push('<span class="badge badge-outline">主管医生</span>');
+    if (p.roles.indexOf('nurse') >= 0) rs.push('<span class="badge badge-outline">护士</span>');
     return badge + (rs.length ? '<span style="margin-left:6px">' + rs.join(' ') + '</span>' : '');
   }
-  /* 主管患者数:该员工在**任一项目下**担任主管医生 / 主管护士的患者数(按患者去重)
-   * ⚠️ 2026-10-26:主管医生 / 主管护士已下沉到「患者-项目参与」维度 */
-  function patCount(id) {
-    var d = BACK_DATA.patients.filter(function (p) {
-      return BACK_DATA.hasProjDoc(p, id) || BACK_DATA.hasProjNur(p, id);
-    }).length;
-    return d;
+  /* 认领人姓名:认领人也是 staff 行,在三个 Tab 里查得到 */
+  function claimedByName(s) {
+    if (!s || !s.claimedByStaffId) return '';
+    var m = staffById(s.claimedByStaffId);
+    return m ? (m.name || m.nickName || '') : '';
   }
-  function emptyRow(cols, t, d) {
-    return '<tr><td colspan="' + cols + '"><div class="empty"><img src="assets/icons-png/icon-empty-box.png" alt="">'
-      + '<div class="e-t">' + t + '</div><div class="e-d">' + d + '</div></div></td></tr>';
+  function sessionHospitalName() {
+    var s = BackApi.getSession();
+    return (s && s.hospital && s.hospital.name) ? s.hospital.name : '本院';
   }
+  /* 头像占位:接口不返回 avatarText,前端按姓名 / 昵称首字现算 */
+  function avatarCell(s, fixedBg) {
+    var disp = s.name || s.nickName || '?';
+    var bg = fixedBg || (s.avatarSource === 'override' ? '#2E7DD7' : BackApi.avatarColor(disp));
+    var mark = s.avatarSource === 'override' ? '<i class="av-replaced">✓</i>' : '';
+    return '<span class="av-sm" style="background:' + bg + '">' + BackApi.esc(BackApi.avatarText(s)) + mark + '</span>';
+  }
+  /* 微信绑定状态 —— 已设置 / 待分配 两个列表同源,都必须显示 */
+  function wechatCell(s) {
+    return s.wechatBound
+      ? '<span class="badge badge-pass">已绑定</span><div class="cell-sub mono">' + BackApi.esc(s.openIdMasked || '') + '</div>'
+      : '<span class="badge badge-gray">未绑定</span>';
+  }
+  function isToday(iso) {
+    if (!iso) return false;
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) return false;
+    var n = new Date();
+    return d.getFullYear() === n.getFullYear() && d.getMonth() === n.getMonth() && d.getDate() === n.getDate();
+  }
+  /* 作用域提示:医院来自登录会话(后端按会话过滤,前端不传医院 id) */
+  function scopeStripHtml() {
+    var s = BackApi.getSession();
+    var h = (s && s.hospital) || null;
+    var name = h ? h.name : '当前医院';
+    var lv = (h && h.level) ? '(' + h.level + ')' : '';
+    return '<div class="hp-scope"><img src="assets/icons-png/icon-info.png">'
+      +   '<div><b>当前作用域:' + BackApi.esc(name) + '</b>' + BackApi.esc(lv) + '。'
+      +   '人员列表由后端按登录会话的医院自动过滤,前端不传医院 id'
+      +   '<span style="margin-left:8px">'
+      +   '<a href="back-hospital-pick.html" style="color:var(--brand);text-decoration:underline">切换医院</a>'
+      +   '</span></div></div>';
+  }
+
+  /* ---- 三个 Tab 的数据口径(全站唯一,用 **status 正向表达**)---- */
+  /* 已设置:status ∈ {0 停用, 1 在职} */
+  function setPool() { return TABS.set.rows; }
+  /* 待分配科室:status ∈ {2 待认领, 3 已认领待处理} */
+  function pendPool() { return TABS.pending.rows; }
+  /* 已归档:status === 4 */
+  function archPool() { return TABS.archived.rows; }
 
   /* ---------- 已设置 ---------- */
   function renderSet() {
+    var t = TABS.set;
+    var body = document.getElementById('setBody');
+    var cntEl = document.getElementById('cntSet');
+    var nEl = document.getElementById('setN');
+    var totEl = document.getElementById('setTot');
+
+    if (t.error) {
+      cntEl.textContent = '—'; nEl.textContent = '—'; totEl.textContent = '接口失败';
+      body.innerHTML = BackApi.stateRow(9, BackApi.errorHtml(t.error));
+      return;
+    }
+    if (!t.loaded) {
+      cntEl.textContent = '…'; nEl.textContent = '…'; totEl.textContent = '加载中…';
+      body.innerHTML = BackApi.stateRow(9, BackApi.loadingHtml('/api/adm/v1/staff?status=' + t.status));
+      return;
+    }
+
     var kw = document.getElementById('kw').value.trim();
     var fd = document.getElementById('fDept').value;
     var fp = document.getElementById('fPos').value;
-    var fb = document.getElementById('fBio').value;
-    var rows = Back.hospFilter(BACK_DATA.staff, 'staff').filter(function (s) {
-      if (kw && s.name.indexOf(kw) < 0) return false;
-      if (fd && s.deptId !== fd) return false;
-      if (fp && s.posId !== fp) return false;
-      if (fStatus && s.status !== fStatus) return false;
-      var sc = BACK_DATA.bioScore(s);
-      if (fb === 'todo' && sc >= 100) return false;
-      if (fb === 'done' && sc < 100) return false;
+    var rows = setPool().filter(function (s) {
+      if (kw && (s.name || '').indexOf(kw) < 0) return false;
+      /* ⚠️ 容错比较:<select>.value 是字符串,数据层 id 是数字,
+       *    直接 !== 会把每一行都过滤掉(筛选一选就「查无此人」) */
+      if (fd && !BackApi.idEq(s.departmentId, fd)) return false;
+      if (fp && !BackApi.idEq(s.positionId, fp)) return false;
+      /* ⚠️ fStatus 是数字(0 / 1),不能用 truthy 判断 —— 0(已停用)是 falsy */
+      if (fStatus !== '' && s.status !== fStatus) return false;
       return true;
     });
-    document.getElementById('setN').textContent = rows.length;
-    document.getElementById('cntSet').textContent =
-      Back.hospFilter(BACK_DATA.staff, 'staff').filter(function (s) { return s.status === 'on'; }).length;
 
-    document.getElementById('setBody').innerHTML = rows.length ? rows.map(function (s) {
-      var sc = BACK_DATA.bioScore(s);
-      return '<tr' + (s.status === 'off' ? ' class="row-muted"' : '') + '>'
-        + '<td><div class="cell-user">' + Back.staffAv(s)
-        +   '<div><div class="cell-main">' + s.name + '</div>'
-        +   '<div class="cell-sub">' + (s.posId === 'P1' ? '科室责任人' : (BACK_DATA.pos(s.posId) || {}).name || '—') + '</div></div></div></td>'
-        + '<td class="fz-12">' + deptName(s.deptId) + '</td>'
-        + '<td>' + posName(s.posId) + '</td>'
-        + '<td class="fz-12 mono">' + BACK_DATA.maskPhone(s.phone) + '</td>'
-        + '<td><div class="prog-wrap"><span class="prog' + (sc === 100 ? ' full' : '') + '">'
-        +   '<i style="width:' + sc + '%"></i></span><span>' + sc + '%</span></div></td>'
-        + '<td class="num-cell">' + patCount(s.id) + ' 例</td>'
-        + '<td>' + Back.onOff(s.status) + '</td>'
+    document.getElementById('setN').textContent = rows.length;
+    /* Tab 计数 = 服务端 total(权威值,不是当前筛选后的行数) */
+    cntEl.textContent = t.total;
+    totEl.textContent = '后端共 ' + t.total + ' 条'
+      + (t.total > t.rows.length ? '(已加载 ' + t.rows.length + ' 条)' : '');
+
+    body.innerHTML = rows.length ? rows.map(function (s) {
+      var p = posById(s.positionId);
+      var sub = (p && p.isDeptDirector) ? '科室责任人' : (p ? p.name : '—');
+      return '<tr' + (s.status === 0 ? ' class="row-muted"' : '') + '>'
+        + '<td><div class="cell-user">' + avatarCell(s)
+        +   '<div><div class="cell-main">' + BackApi.esc(s.name || s.nickName || '—') + '</div>'
+        +   '<div class="cell-sub">' + BackApi.esc(sub) + '</div></div></div></td>'
+        + '<td class="fz-12">' + deptName(s.departmentId) + '</td>'
+        + '<td>' + posName(s.positionId) + '</td>'
+        + '<td class="fz-12 mono">' + BackApi.esc(s.phoneMasked || s.phone || '—') + '</td>'
+        + '<td>' + wechatCell(s) + '</td>'
+        /* 简介完整度 / 下属病患:依赖尚未交付的字段与端点 —— 显式占位,不用假数据填 */
+        + '<td><span class="text-4" title="简介字段接口未交付">—</span></td>'
+        + '<td class="num-cell"><span class="text-4" title="病患归属接口未交付">—</span></td>'
+        + '<td>' + Back.staffStatus(s.status) + '</td>'
         + '<td class="col-act">'
         +   '<a class="btn-text" href="back-staff-detail.html?id=' + s.id + '">详情</a>'
         +   '<a class="btn-text" href="back-staff-edit.html?id=' + s.id + '">编辑</a>'
-        +   (s.status === 'on'
+        +   (s.status === 1
               ? '<a class="btn-text danger" data-off="' + s.id + '">停用</a>'
               : '<a class="btn-text" data-en="' + s.id + '">恢复</a>')
         + '</td></tr>';
-    }).join('') : emptyRow(9,
-        (kw || fd || fp || fb || fStatus) ? '没有符合条件的工作人员' : '还没有工作人员',
-        (kw || fd || fp || fb || fStatus) ? '试试调整筛选条件,或清空筛选' : '点右上角「新增人员」,或让同事扫描邀请码登记');
+    }).join('') : BackApi.stateRow(9, BackApi.emptyHtml(
+        (kw || fd || fp || fStatus !== '') ? '没有符合条件的工作人员' : '还没有工作人员',
+        (kw || fd || fp || fStatus !== '') ? '试试调整筛选条件,或清空筛选' : '后端 /api/adm/v1/staff 返回了空列表'));
   }
 
   /* ---------- 待分配科室 ---------- */
   function renderPend() {
+    var t = TABS.pending;
+    var body = document.getElementById('pendBody');
+    var cntEl = document.getElementById('cntPend');
+    var nEl = document.getElementById('pendN');
+    var totEl = document.getElementById('pendTot');
+
+    if (t.error) {
+      cntEl.textContent = '—'; nEl.textContent = '—'; totEl.textContent = '接口失败';
+      document.getElementById('kNoClaim').textContent = '—';
+      document.getElementById('kClaimed').textContent = '—';
+      document.getElementById('kLong').textContent = '—';
+      document.getElementById('kToday').textContent = '—';
+      document.getElementById('kLast7').textContent = '—';
+      body.innerHTML = BackApi.stateRow(8, BackApi.errorHtml(t.error));
+      return;
+    }
+    if (!t.loaded) {
+      cntEl.textContent = '…'; nEl.textContent = '…'; totEl.textContent = '加载中…';
+      body.innerHTML = BackApi.stateRow(8, BackApi.loadingHtml('/api/adm/v1/staff?status=' + t.status));
+      return;
+    }
+
     var kw = document.getElementById('pkw').value.trim();
-    var rows = BACK_DATA.pending.filter(function (p) {
-      if (p.state === 'archived') return false;
-      if (kw && p.nick.indexOf(kw) < 0) return false;
-      if (pState && p.state !== pState) return false;
+    var pool = pendPool();
+    var rows = pool.filter(function (p) {
+      if (kw && (p.nickName || '').indexOf(kw) < 0) return false;
+      /* pState 是数字(2 待认领 / 3 已认领),不能用 truthy 判断 */
+      if (pState !== '' && p.status !== pState) return false;
       return true;
-    }).sort(function (a, b) { return b.days - a.days; });
+    }).sort(function (a, b) { return BackApi.daysSince(b.scannedAt) - BackApi.daysSince(a.scannedAt); });
 
-    document.getElementById('pendN').textContent = rows.length;
-    document.getElementById('cntPend').textContent =
-      BACK_DATA.pending.filter(function (p) { return p.state !== 'archived'; }).length;
+    nEl.textContent = rows.length;
+    /* Tab 计数 = 服务端 total */
+    cntEl.textContent = t.total;
+    totEl.textContent = '后端共 ' + t.total + ' 条';
+    /* KPI 三张卡同口径:都取**全队列**,不随搜索 / 分段筛选变化 */
     document.getElementById('kNoClaim').textContent =
-      BACK_DATA.pending.filter(function (p) { return p.state === 'pending'; }).length;
+      pool.filter(function (p) { return p.status === 2; }).length;
     document.getElementById('kClaimed').textContent =
-      BACK_DATA.pending.filter(function (p) { return p.state === 'claimed'; }).length;
-    document.getElementById('kLong').textContent = rows.filter(function (p) { return p.days > 3; }).length;
+      pool.filter(function (p) { return p.status === 3; }).length;
+    document.getElementById('kLong').textContent =
+      pool.filter(function (p) { return BackApi.daysSince(p.scannedAt) > 3; }).length;
+    document.getElementById('kToday').textContent =
+      pool.filter(function (p) { return isToday(p.scannedAt); }).length;
+    document.getElementById('kLast7').textContent =
+      pool.filter(function (p) { return BackApi.daysSince(p.scannedAt) <= 7; }).length;
 
-    document.getElementById('pendBody').innerHTML = rows.length ? rows.map(function (p) {
-      var durCls = p.days > 3 ? 'text-red fw-5' : p.days > 1 ? 'text-orange' : 'text-green';
-      var dur = p.days + ' 天';
-      return '<tr class="' + (p.days > 7 ? 'row-danger' : p.days > 3 ? 'row-warn' : '') + '">'
-        + '<td><div class="cell-user"><span class="av-sm" style="background:#8A94A6">' + p.avatarText + '</span>'
-        +   '<div><div class="cell-main">' + p.nick + '</div>'
-        +   '<div class="cell-sub">微信昵称 · 来源 ' + p.source + '</div></div></div></td>'
-        + '<td class="mono fz-12">' + p.scanAt + '</td>'
+    body.innerHTML = rows.length ? rows.map(function (p) {
+      /* days 是派生值,由 scannedAt 现算(恢复归档的人天数继续累加) */
+      var days = BackApi.daysSince(p.scannedAt);
+      var durCls = days > 3 ? 'text-red fw-5' : days > 1 ? 'text-orange' : 'text-green';
+      var dur = days + ' 天';
+      var claimer = claimedByName(p);
+      return '<tr class="' + (days > 7 ? 'row-danger' : days > 3 ? 'row-warn' : '') + '">'
+        + '<td><div class="cell-user"><span class="av-sm" style="background:#8A94A6">'
+        +   BackApi.esc(BackApi.avatarText(p)) + '</span>'
+        +   '<div><div class="cell-main">' + BackApi.esc(p.nickName || '—') + '</div>'
+        +   '<div class="cell-sub">微信昵称 · 来源 ' + BackApi.esc(sessionHospitalName()) + '</div></div></div></td>'
+        + '<td class="mono fz-12">' + BackApi.fmtTime(p.scannedAt) + '</td>'
         + '<td class="' + durCls + '">' + dur + '</td>'
         + '<td><span class="text-4 fz-12">— 未设置 —</span></td>'
         + '<td><span class="text-4 fz-12">— 未设置 —</span></td>'
-        + '<td class="fz-12">' + (p.claimedBy
-              ? '<span class="badge badge-info">' + p.claimedBy + '</span><div class="cell-sub">' + p.claimAt.slice(11) + ' 认领</div>'
+        + '<td class="fz-12">' + (claimer
+              ? '<span class="badge badge-info">' + BackApi.esc(claimer) + '</span><div class="cell-sub">' + BackApi.fmtTimeHM(p.claimedAt) + ' 认领</div>'
               : '<span class="badge badge-block">未认领</span>') + '</td>'
+        + '<td>' + wechatCell(p) + '</td>'
         + '<td class="col-act">'
-        +   (p.state === 'claimed'
-              ? '<span class="fz-12 text-orange fw-5">' + p.claimedBy + ' 处理中</span>'
+        +   (p.status === 3
+              ? '<span class="fz-12 text-orange fw-5">' + BackApi.esc(claimer || '处理中') + ' 处理中</span>'
               : '<a class="btn-text" href="back-staff-pending-detail.html?id=' + p.id + '">认领并设置</a>')
         +   '<a class="btn-text muted" data-claim="' + p.id + '">认领</a>'
         +   '<a class="btn-text danger" data-arch="' + p.id + '">归档</a>'
         + '</td></tr>';
-    }).join('') : emptyRow(7, '待分配队列已清空', '所有扫码人员都已设置科室与职称');
+    }).join('') : BackApi.stateRow(8, BackApi.emptyHtml('待分配队列已清空', '所有扫码人员都已设置科室与职称'));
   }
 
   /* ---------- 已归档 ---------- */
   function renderArch() {
-    var rows = BACK_DATA.pending.filter(function (p) { return p.state === 'archived'; });
-    document.getElementById('cntArch').textContent = rows.length;
-    document.getElementById('archBody').innerHTML = rows.length ? rows.map(function (p) {
+    var t = TABS.archived;
+    var body = document.getElementById('archBody');
+    var cntEl = document.getElementById('cntArch');
+
+    if (t.error) {
+      cntEl.textContent = '—';
+      body.innerHTML = BackApi.stateRow(5, BackApi.errorHtml(t.error));
+      return;
+    }
+    if (!t.loaded) {
+      cntEl.textContent = '…';
+      body.innerHTML = BackApi.stateRow(5, BackApi.loadingHtml('/api/adm/v1/staff?status=' + t.status));
+      return;
+    }
+
+    var rows = archPool();
+    cntEl.textContent = t.total;
+    body.innerHTML = rows.length ? rows.map(function (p) {
       return '<tr class="row-muted">'
-        + '<td><div class="cell-user"><span class="av-sm" style="background:#B0B7C3">' + p.avatarText + '</span>'
-        +   '<span class="cell-main">' + p.nick + '</span></div></td>'
-        + '<td class="mono fz-12">' + p.scanAt + '</td>'
-        + '<td>' + p.days + ' 天</td>'
-        + '<td class="fz-12 text-3">' + p.archivedReason + '</td>'
+        + '<td><div class="cell-user"><span class="av-sm" style="background:#B0B7C3">'
+        +   BackApi.esc(BackApi.avatarText(p)) + '</span>'
+        +   '<span class="cell-main">' + BackApi.esc(p.nickName || '—') + '</span></div></td>'
+        + '<td class="mono fz-12">' + BackApi.fmtTime(p.scannedAt) + '</td>'
+        + '<td>' + BackApi.daysSince(p.scannedAt) + ' 天</td>'
+        + '<td class="fz-12 text-3">' + BackApi.esc(p.archiveReason || '—') + '</td>'
         + '<td class="col-act"><a class="btn-text" data-restore="' + p.id + '">恢复并设置</a></td>'
         + '</tr>';
-    }).join('') : emptyRow(5, '没有归档记录', '扫码超 7 天未认领或手动归档的记录会出现在这里');
+    }).join('') : BackApi.stateRow(5, BackApi.emptyHtml('没有归档记录', '扫码超 7 天未认领或手动归档的记录会出现在这里'));
+  }
+
+  function renderAll() {
+    renderSet(); renderPend(); renderArch();
   }
 
   /* ---------- 分段筛选 ---------- */
+  /* ⚠️ data-v 存的是**数字** status(1 在职 / 0 已停用 / 2 待认领 / 3 已认领),
+   *    这里要转成 Number 再存 —— 字符串 '0' 与数字 0 比较会静默失配。 */
   document.getElementById('fStatus').addEventListener('click', function (e) {
     var b = e.target.closest('[data-v]'); if (!b) return;
-    fStatus = b.getAttribute('data-v');
+    var v = b.getAttribute('data-v');
+    fStatus = v === '' ? '' : Number(v);
     this.querySelectorAll('button').forEach(function (x) { x.classList.toggle('active', x === b); });
     renderSet();
   });
   document.getElementById('pState').addEventListener('click', function (e) {
     var b = e.target.closest('[data-v]'); if (!b) return;
-    pState = b.getAttribute('data-v');
+    var v = b.getAttribute('data-v');
+    pState = v === '' ? '' : Number(v);
     this.querySelectorAll('button').forEach(function (x) { x.classList.toggle('active', x === b); });
     renderPend();
   });
 
-  /* ---------- 操作 ---------- */
+  /* ---------- 操作 ----------
+   * ⚠️ 本轮后端只交付了 **GET** 列表接口(GET /api/adm/v1/staff),
+   *    认领 / 归档 / 停用 / 恢复 都没有写端点。
+   *    所以这里**不再改本地数据**(改了也是假数据,刷新就没了),
+   *    改成明确提示「接口未交付」—— 不假装操作成功。 */
   document.body.addEventListener('click', function (e) {
     var t = e.target, g = function (a) { return t.getAttribute && t.getAttribute(a); };
 
-    if (g('data-en')) {
-      var s = BACK_DATA.member(g('data-en'));
-      s.status = 'on'; renderSet(); return Back.toast('已恢复:' + s.name, 'ok');
-    }
-
-    if (g('data-claim')) {
-      var w = BACK_DATA.byId(BACK_DATA.pending, g('data-claim'));
-      w.state = 'claimed'; w.claimedBy = '后台管理员'; w.claimAt = '2026-10-21 09:20';
-      renderPend(); Back.toast('已认领 ' + w.nick + ',请在 24 小时内完成设置', 'ok');
-      return;
-    }
-
-    if (g('data-restore')) {
-      var w2 = BACK_DATA.byId(BACK_DATA.pending, g('data-restore'));
-      w2.state = 'pending'; w2.archivedReason = '';
-      renderPend(); renderArch();
-      Back.toast('已恢复 ' + w2.nick + ' 到待分配队列', 'ok');
-      return;
-    }
-
-    if (g('data-arch')) {
-      var w3 = BACK_DATA.byId(BACK_DATA.pending, g('data-arch'));
-      w3.state = 'archived'; w3.archivedReason = '管理员手动归档(演示)';
-      renderPend(); renderArch(); Back.toast('已归档 ' + w3.nick + '(数据保留 180 天)', 'ok');
-      return;
+    if (g('data-en') || g('data-claim') || g('data-restore') || g('data-arch')) {
+      return Back.toast(WRITE_API_TIP, 'warn');
     }
 
     if (g('data-off')) {
-      var st = BACK_DATA.member(g('data-off'));
-      var n = patCount(st.id);
-      document.getElementById('offTitle').textContent = '停用「' + st.name + '」';
+      var st = staffById(g('data-off'));
+      var nm = st ? (st.name || st.nickName || '') : '';
+      document.getElementById('offTitle').textContent = '停用「' + nm + '」';
       document.getElementById('offBody').innerHTML =
         '<div>停用后该人员<b>无法再登录小程序</b>,历史数据保留。停用必须填原因。</div>'
-        + (n ? '<div class="note note-warn" style="margin-top:10px"><img src="assets/icons-png/icon-warning.png">'
-              + '<div>该人员名下有 <b>' + n + '</b> 例病患,停用后需重新指派主管医生 / 护士,'
-              + '否则患者端将失去对接人。</div></div>' : '');
+        + '<div class="note note-warn" style="margin-top:10px"><img src="assets/icons-png/icon-warning.png">'
+        + '<div><b>本轮无法执行</b><br>' + BackApi.esc(WRITE_API_TIP) + '</div></div>';
       document.getElementById('offOk').onclick = function () {
-        st.status = 'off';
-        st.offReason = '离职 / 停用(演示)';
-        Back.modal('offModal', false); renderSet();
-        Back.toast('已停用:' + st.name + (n ? ',名下 ' + n + ' 例病患待移交' : ''), n ? 'warn' : 'ok');
+        Back.modal('offModal', false);
+        Back.toast(WRITE_API_TIP, 'warn');
       };
       Back.modal('offModal', true);
     }
   });
 
-  ['kw', 'fDept', 'fPos', 'fBio', 'pkw'].forEach(function (id) {
+  ['kw', 'fDept', 'fPos', 'pkw'].forEach(function (id) {
     var el = document.getElementById(id);
     el.addEventListener('input', function () { renderSet(); renderPend(); });
     el.addEventListener('change', function () { renderSet(); renderPend(); });
   });
+
+  /* 简介完整度筛选依赖 bio 字段接口(本轮未交付)→ 禁用,不假装能筛 */
+  (function () {
+    var b = document.getElementById('fBio');
+    if (b) { b.disabled = true; b.title = '简介字段接口未交付,暂不可筛'; }
+  })();
 
   /* URL 参数 */
   var t = Back.qs('tab');
@@ -416,14 +626,18 @@
   if (t === 'archived') document.querySelector('[data-tab="archived"]').click();
   if (Back.qs('dept')) {
     document.getElementById('fDept').value = Back.qs('dept');
-    renderSet();
   }
 
-  if (!Back.requireHospitalAndApply()) { document.querySelector('.back-main').innerHTML = ''; }
-  else {
-    document.getElementById('scopeStrip').innerHTML = Back.scopeStrip('工作人员列表已按本院过滤');
+  /* ⚠️ 无令牌 → 跳登录页(令牌存 sessionStorage,见 assets/back-api.js) */
+  if (!BackApi.requireAuth()) {
+    /* 跳转中,本页不再渲染 */
+  } else {
+    document.getElementById('scopeStrip').innerHTML = scopeStripHtml();
+    loadPositions();
+    loadTab('set');
+    loadTab('pending');
+    loadTab('archived');
   }
-  renderSet(); renderPend(); renderArch();
 </script>
 </body>
 </html>

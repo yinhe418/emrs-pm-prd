@@ -184,7 +184,7 @@
 
   var cur = {
     id: art ? art.id : '',
-    hospitalId: art ? art.hospitalId : (hosp ? hosp.id : 'H1'),
+    hospitalId: art ? art.hospitalId : (hosp ? hosp.id : 1),
     title: art ? art.title : '',
     subtitle: art ? art.subtitle : '',
     icon: art ? art.icon : 'icon-document.png',
@@ -196,7 +196,8 @@
   };
 
   document.getElementById('ttl').textContent = isEdit ? ('编辑文章 · ' + cur.title) : '新建文章';
-  document.getElementById('hospName').textContent = hosp ? hosp.name : (cur.hospitalId === 'H1' ? 'H 市第一医院' : cur.hospitalId);
+  /* ⚠️ id 数值化:医院 id 是数字(原 'H1' → 1) */
+  document.getElementById('hospName').textContent = hosp ? hosp.name : (String(cur.hospitalId) === '1' ? 'H 市第一医院' : cur.hospitalId);
   document.querySelector('[name="title"]').value = cur.title;
   document.querySelector('[name="subtitle"]').value = cur.subtitle;
 

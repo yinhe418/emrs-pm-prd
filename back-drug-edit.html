@@ -55,7 +55,7 @@
       </div>
       <div class="fi">
         <label>状态</label>
-        <select class="sel" name="status"><option value="on">启用</option><option value="off">停用</option></select>
+        <select class="sel" name="status"><option value="1">启用</option><option value="0">停用</option></select>
       </div>
       <div class="fi">
         <label>OTC / Rx</label>
@@ -136,17 +136,20 @@
   var isEdit = !!d;
 
   /* 新建:带上当前医院(否则 hospFilter 会把它过滤掉,新建完列表里看不到),
-     id 也要唯一,不能所有新药都叫 MNEW */
+     id 也要唯一,不能让所有新药撞同一个 id */
+  /* ⚠️ id 数值化:药品 id 已是数字(原 'M1'–'M11' → 1–11),
+     不能再用 /^M(\d+)$/ 正则取号(永远取不到 → 新药 id 一直是 M1 → 撞号)。
+     改为在现有 id 上取最大数字 + 1。 */
   function nextDrugId() {
     var max = 0;
     BACK_DATA.drugs.forEach(function (x) {
-      var m = /^M(\d+)$/.exec(x.id || '');
-      if (m) max = Math.max(max, parseInt(m[1], 10));
+      var n = Number(x.id);
+      if (!isNaN(n) && n > max) max = n;
     });
-    return 'M' + (max + 1);
+    return max + 1;
   }
-  if (!d) d = { id: nextDrugId(), hospitalId: (Back.currentHospital() || {}).id || 'H1',
-                name: '', generic: '', cat: '其他', spec: '', form: '片剂', status: 'on', otc: 'rx',
+  if (!d) d = { id: nextDrugId(), hospitalId: (Back.currentHospital() || {}).id || 1,
+                name: '', generic: '', cat: '其他', spec: '', form: '片剂', status: 1, otc: 'rx',
                 photoUrl: '', usage: '', ind: '', adr: '', contra: '', inter: '' };
 
   var v = BACK_DATA.drugView(d);
@@ -176,7 +179,7 @@
   document.querySelector('[name="cat"]').value  = v.cat;
   document.querySelector('[name="spec"]').value = v.spec;
   document.querySelector('[name="form"]').value = v.form;
-  document.querySelector('[name="status"]').value = v.status;
+  document.querySelector('[name="status"]').value = String(v.status);
   document.querySelector('[name="otc"]').value  = v.otc;
   document.querySelector('[name="photoUrl"]').value = v.photoUrl;
   document.querySelector('[name="dose"]').value  = v.dose;
@@ -220,7 +223,7 @@
       cat: document.querySelector('[name="cat"]').value,
       spec: document.querySelector('[name="spec"]').value.trim(),
       form: document.querySelector('[name="form"]').value,
-      status: document.querySelector('[name="status"]').value,
+      status: Number(document.querySelector('[name="status"]').value),
       otc: document.querySelector('[name="otc"]').value,
       photoUrl: document.querySelector('[name="photoUrl"]').value.trim(),
       dose: document.querySelector('[name="dose"]').value.trim(),

@@ -149,7 +149,8 @@
 <script>
   var cid = Back.qs('c'), fid = Back.qs('f');
   var c = BACK_DATA.byId(BACK_DATA.components, cid);
-  var f = c ? c.fields.filter(function (x) { return x.id === fid; })[0] : null;
+  /* ⚠️ id 数值化:字段 id 是数字,URL 参数是字符串,必须容错比较 */
+  var f = c ? c.fields.filter(function (x) { return String(x.id) === String(fid); })[0] : null;
   var editUrl = 'back-component-edit.html?id=' + cid;
   document.getElementById('backBtn').href = editUrl;
 

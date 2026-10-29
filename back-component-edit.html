@@ -56,7 +56,7 @@
       </div>
       <div class="fi">
         <label>状态</label>
-        <select class="sel" name="cStatus"><option value="on">启用</option><option value="off">停用</option></select>
+        <select class="sel" name="cStatus"><option value="1">启用</option><option value="0">停用</option></select>
       </div>
       <div class="fi full">
         <label>说明</label>
@@ -168,8 +168,10 @@
   if (!c) {
     /* 组件不再维护 scope:适用范围改由小程序「下发任务」时选(医生 / 护士 / 病患),
        后台组件库列表页也不再展示该列,故此处不保留该字段。*/
-    c = { id: 'TNEW', name: '', icon: 'icon-bp', iconImg: '', deptId: 'D1',
-          desc: '', status: 'on', order: 9, fields: [] };
+    /* ⚠️ id 数值化:组件 id 与种子(1–8)同属一个数字空间,
+       新建用 Date.now()(毫秒时间戳),保证数字且不与种子冲突。 */
+    c = { id: Date.now(), name: '', icon: 'icon-bp', iconImg: '', departmentId: 1,
+          desc: '', status: 1, order: 9, fields: [] };
   }
   var fields = c.fields.map(function (f) { return JSON.parse(JSON.stringify(f)); });
   var delTarget = null;
@@ -209,7 +211,7 @@
   (function () {
     var set = function (n, v) { document.querySelector('[name="' + n + '"]').value = v == null ? '' : v; };
     set('cName', c.name); set('cDesc', c.desc);
-    set('cStatus', c.status);
+    set('cStatus', String(c.status));
     document.getElementById('nDesc').textContent = (c.desc || '').length;
 
     /* 归属科室:只列科室名,不重复显示医院(当前医院见顶栏徽章)。
@@ -217,12 +219,12 @@
     var curH = Back.currentHospital();
     var d = document.getElementById('cDept');
     var dlist = curH ? BACK_DATA.deptListByHospital(curH.id) : BACK_DATA.departments;
-    if (curH && !BACK_DATA.dept(c.deptId)) dlist = dlist.concat([BACK_DATA.dept(c.deptId)].filter(Boolean));
+    if (curH && !BACK_DATA.dept(c.departmentId)) dlist = dlist.concat([BACK_DATA.dept(c.departmentId)].filter(Boolean));
     d.innerHTML = '';
     dlist.forEach(function (x) {
       d.insertAdjacentHTML('beforeend', '<option value="' + x.id + '">' + x.name + '</option>');
     });
-    d.value = c.deptId;
+    d.value = c.departmentId;
     document.getElementById('cDeptHint').textContent = curH
       ? '只列「' + curH.short + '」的科室,不再重复显示医院(医院见顶栏徽章)'
       : '只列科室,不再重复显示医院(当前医院见顶栏徽章)';
@@ -339,7 +341,7 @@
     if (n.length < 2 || n.length > 20) { Back.toast('字段名 2–20 字', 'err'); return; }
     if (fields.some(function (f) { return f.name === n; })) { Back.toast('该字段已存在:' + n, 'err'); return; }
 
-    var f = { id: 'C' + Date.now(), name: n, type: type, req: req, custom: true,
+    var f = { id: Date.now(), name: n, type: type, req: req, custom: true,
               validMin: null, validMax: null, rangeMin: null, rangeMax: null,
               unit: '', step: 1 };
 
@@ -424,9 +426,10 @@
     c.name = name;
     c.icon = document.querySelector('#iconPick input:checked').value;
     c.iconImg = pickedIcon || '';
-    c.deptId = document.querySelector('[name="cDept"]').value;
+    /* ⚠️ id 数值化:<select>.value 是字符串,写回前转数字(空值 → 0 表示未归属) */
+    c.departmentId = Number(document.querySelector('[name="cDept"]').value) || 0;
     c.desc = document.querySelector('[name="cDesc"]').value.trim();
-    c.status = document.querySelector('[name="cStatus"]').value;
+    c.status = Number(document.querySelector('[name="cStatus"]').value);
     c.fields = fields;
 
     if (!isEdit) BACK_DATA.components.push(c);

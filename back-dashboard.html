@@ -12,7 +12,20 @@
 
   <div class="page-head">
     <h1>工作台</h1>
-    <div class="sub">H 市第一医院 · 神经内科　|　后台登录后默认落地页</div>
+    <div class="sub" id="dashSub">后台登录后默认落地页</div>
+  </div>
+
+  <!-- 数据来源说明:哪几块是真后端、哪几块还是演示态,写清楚 -->
+  <div class="note note-info">
+    <img src="assets/icons-png/icon-info.png">
+    <div><b>顶栏的登录用户 / 当前医院,以及「待分配科室」人数来自真实后端</b>(登录会话 + <code>GET /api/adm/v1/staff</code>)。
+      「组件字段待补全」「病患待分配护士」「最近配置变更」依赖尚未交付的端点,仍是演示态。</div>
+  </div>
+
+  <!-- 接口出错时的横幅(后端未连接 / 业务错误)—— 出错才显示,不占版面 -->
+  <div class="note note-block" id="dashErr" style="display:none;margin-bottom:14px">
+    <img src="assets/icons-png/icon-warning.png">
+    <div id="dashErrBody"></div>
   </div>
 
   <!-- ============ KPI ============ -->
@@ -66,10 +79,10 @@
           <tr class="row-danger">
             <td><span class="badge badge-block">人员</span></td>
             <td>
-              <div class="cell-main">6 人扫码后未设置科室 / 职称</div>
-              <div class="cell-sub">最早一人停留 10 天 · 扫码人仍无法使用小程序</div>
+              <div class="cell-main"><span id="todoPendN">0</span> 人扫码后未设置科室 / 职称</div>
+              <div class="cell-sub">最早一人停留 <span id="todoPendDays">0</span> 天 · 扫码人仍无法使用小程序</div>
             </td>
-            <td class="fz-12 text-3">阻塞 6 人使用</td>
+            <td class="fz-12 text-3">阻塞 <span id="todoPendN2">0</span> 人使用</td>
             <td><span class="badge badge-block">待处理</span></td>
             <td class="col-act"><a class="btn-text" href="back-staff.html?tab=pending">去处理</a></td>
           </tr>
@@ -170,10 +183,93 @@
   </div>
 </div>
 
+<script src="assets/back-api.js"></script>
 <script src="assets/back-data.js"></script>
 <script src="assets/back-layout.js"></script>
 <script>
-  document.getElementById('kpiPending').textContent = BACK_DATA.pendingCount;
+  /* ==========================================================
+   * 顶栏:把「当前登录用户」/「当前医院」换成**真实登录会话**里的信息
+   * ⚠️ back-layout.js 在 DOMContentLoaded 时才注入外壳,
+   *    它的监听器注册在前 → 本监听器后触发 → 外壳已存在,可以直接改。
+   *    只改**本页**,不动 back-layout.js —— 其它后台页面本轮不碰。
+   * ========================================================== */
+  function patchShell() {
+    var s = BackApi.getSession();
+    if (!s) return;
+
+    var tu = document.querySelector('.top-user');
+    if (tu) {
+      var name = s.displayName || '后台用户';
+      tu.innerHTML = '<div class="tu-av">' + BackApi.esc(name.charAt(0)) + '</div>'
+        + '<span>' + BackApi.esc(name) + '</span>'
+        + '<span style="margin:0 6px;color:var(--line)">|</span>'
+        + '<a class="btn-text" href="#" data-action="logout">退出</a>';
+    }
+
+    var th = document.querySelector('.top-hospital');
+    if (th && s.hospital) {
+      var short = s.hospital.shortName || s.hospital.name || '?';
+      th.className = 'top-hospital';
+      th.title = '当前医院(由登录会话决定,后端按它过滤数据)';
+      th.innerHTML = '<span class="th-mark">' + BackApi.esc(short.charAt(0)) + '</span>'
+        + '<span class="th-text"><b>' + BackApi.esc(s.hospital.name) + '</b>'
+        + '<span class="th-sub">' + BackApi.esc(s.hospital.level || '') + ' · 登录会话</span></span>'
+        + '<a class="th-switch" href="back-hospital-pick.html" data-action="switch-hospital">切换</a>';
+    }
+
+    /* 副标题里的医院名 → 真实医院 */
+    var sub = document.getElementById('dashSub');
+    if (sub && s.hospital) {
+      sub.textContent = s.hospital.name + (s.hospital.level ? ' · ' + s.hospital.level : '')
+        + '　|　后台登录后默认落地页';
+    }
+  }
+  document.addEventListener('DOMContentLoaded', patchShell);
+
+  /* 退出:清掉 sessionStorage 里的令牌与会话,回登录页 */
+  document.addEventListener('click', function (e) {
+    var t = e.target;
+    if (t.getAttribute && t.getAttribute('data-action') === 'logout') {
+      e.preventDefault();
+      BackApi.clearSession();
+      location.href = 'back-login.html';
+    }
+  });
+
+  /* ---------- 待分配人数:真后端(GET /api/adm/v1/staff?status=2,3) ---------- */
+  function loadPending() {
+    BackApi.listStaff('2,3', 1, 100).then(function (data) {
+      var rows = (data && data.items) ? data.items : [];
+      var total = (data && typeof data.total === 'number') ? data.total : rows.length;
+      /* 「停留 N 天」跟着真实队列走,不要写死数字 */
+      var maxDays = rows.reduce(function (mx, p) {
+        return Math.max(mx, BackApi.daysSince(p.scannedAt));
+      }, 0);
+      document.getElementById('kpiPending').textContent = total;
+      ['todoPendN', 'todoPendN2'].forEach(function (id) {
+        var el = document.getElementById(id); if (el) el.textContent = total;
+      });
+      var d = document.getElementById('todoPendDays'); if (d) d.textContent = maxDays;
+    }).catch(function (err) {
+      var el = document.getElementById('kpiPending');
+      if (el) { el.textContent = '—'; el.title = BackApi.errorText(err); }
+      ['todoPendN', 'todoPendN2', 'todoPendDays'].forEach(function (id) {
+        var e2 = document.getElementById(id); if (e2) e2.textContent = '—';
+      });
+      /* 出错也要**看得见**:横幅显示错误码 + 文案 + 请求 ID,不静默降级成空白 */
+      var box = document.getElementById('dashErr');
+      var body = document.getElementById('dashErrBody');
+      if (box && body) {
+        body.innerHTML = '<b>' + BackApi.esc(BackApi.errorText(err)) + '</b>'
+          + (err && err.unreachable
+              ? '<br>请确认本地静态服务器(serve.py)与后端 admin-api 都在运行。'
+              : (err && err.requestId ? '<br>请求 ID:' + BackApi.esc(err.requestId) : ''));
+        box.style.display = 'block';
+      }
+    });
+  }
+
+  /* ⚠️ 组件字段待补全:依赖 /api/adm/v1/components —— 本轮未交付,仍是演示态 */
   (function () {
     var n = BACK_DATA.components.reduce(function (acc, c) {
       return acc + c.fields.filter(function (f) {
@@ -204,6 +300,13 @@
     auditBadge.addEventListener('click', function () {
       Back.drawer('auditDrawer', true);
     });
+  }
+
+  /* ⚠️ 无令牌 → 跳登录页(令牌存 sessionStorage,见 assets/back-api.js) */
+  if (!BackApi.requireAuth()) {
+    /* 跳转中,本页不再拉数据 */
+  } else {
+    loadPending();
   }
 </script>
 </body>

@@ -80,7 +80,7 @@
                 </div>
                 <div class="fi">
                   <label>状态</label>
-                  <select class="sel" name="hStatus"><option value="on">启用</option><option value="off">停用</option></select>
+                  <select class="sel" name="hStatus"><option value="1">启用</option><option value="0">停用</option></select>
                 </div>
                 <div class="fi full">
                   <label>医院简介</label>
@@ -115,7 +115,7 @@
                 </div>
                 <div class="fi">
                   <label>状态</label>
-                  <select class="sel" name="dStatus"><option value="on">启用</option><option value="off">停用</option></select>
+                  <select class="sel" name="dStatus"><option value="1">启用</option><option value="0">停用</option></select>
                 </div>
                 <div class="fi full">
                   <label>科室简介</label>
@@ -219,14 +219,15 @@
   /* 下拉数据 —— 科室的「所属医院」固定为当前医院(登录时已选定,不再让用户重复选) */
   var hSel = document.querySelector('[name="dHosp"]');
   var curH = Back.currentHospital();
-  if (curH && curH.status === 'on') {
+  if (curH && curH.status === 1) {
     hSel.innerHTML = '<option value="' + curH.id + '">' + curH.name + '</option>';
     hSel.value = curH.id;
   }
   hSel.disabled = true;
   var dirSel = document.querySelector('[name="dDir"]');
   BACK_DATA.staff.forEach(function (s) {
-    if (s.status === 'on' && BACK_DATA.pos(s.posId) && BACK_DATA.pos(s.posId).name === '科室主任') {
+    /* 科室主任候选 = 在职(status = 1)且已分科室;待分配 / 已归档的人不出现 */
+    if (s.status === 1 && BACK_DATA.isAssigned(s) && BACK_DATA.pos(s.positionId) && BACK_DATA.pos(s.positionId).name === '科室主任') {
       dirSel.insertAdjacentHTML('beforeend', '<option value="' + s.id + '">' + s.name + '</option>');
     }
   });
@@ -282,7 +283,8 @@
     if (type === 'hospital') {
       var nm = document.querySelector('[name="hName"]').value.trim();
       var dup = BACK_DATA.hospitals.filter(function (h) {
-        return h.name === nm && h.id !== id;
+        /* ⚠️ 容错比较:id 是数字,URL 参数是字符串,直接 !== 会把「自己」也当成重复 */
+        return h.name === nm && String(h.id) !== String(id);
       })[0];
       if (dup) {
         var fi = document.querySelector('[name="hName"]').closest('.fi');
@@ -294,7 +296,7 @@
       var dn = document.querySelector('[name="dName"]').value.trim();
       var hh = document.querySelector('[name="dHosp"]').value;
       var dupd = BACK_DATA.departments.filter(function (d) {
-        return d.name === dn && d.hospitalId === hh && d.id !== id;
+        return d.name === dn && String(d.hospitalId) === String(hh) && String(d.id) !== String(id);
       })[0];
       if (dupd) {
         var fi2 = document.querySelector('[name="dName"]').closest('.fi');
@@ -304,7 +306,8 @@
       }
       var did = document.querySelector('[name="dDir"]').value;
       var busy = BACK_DATA.departments.filter(function (d) {
-        return d.directorId === did && d.id !== id;
+        /* ⚠️ 容错比较:did 来自 <select>.value(字符串),d.directorId 是数字 */
+        return String(d.directorId) === String(did) && String(d.id) !== String(id);
       })[0];
       if (busy) {
         var fi3 = document.querySelector('[name="dDir"]').closest('.fi');
@@ -321,7 +324,8 @@
       var hName = document.querySelector('[name="hName"]').value.trim();
       var hShort = document.querySelector('[name="hShort"]').value.trim();
       if (!h) {
-        h = { id: 'H' + Date.now().toString().slice(-4), image: '', createdAt: new Date().toISOString().slice(0, 10) };
+        /* ⚠️ id 数值化(AR 契约 §13):数字 id,Date.now() 不会与种子 id(1 / 2)相撞 */
+        h = { id: Date.now(), image: '', createdAt: new Date().toISOString().slice(0, 10) };
         BACK_DATA.hospitals.push(h);
       }
       h.name = hName;
@@ -333,19 +337,22 @@
       h.beds = parseInt(document.querySelector('[name="hBeds"]').value, 10) || null;
       h.intro = document.querySelector('[name="hIntro"]').value.trim();
       h.image = hImg;
-      h.status = document.querySelector('[name="hStatus"]').value;
+      h.status = Number(document.querySelector('[name="hStatus"]').value);
       Back.toast('已保存医院档案:' + h.name, 'ok');
     } else {
       var d = id ? BACK_DATA.byId(BACK_DATA.departments, id) : null;
       var dName = document.querySelector('[name="dName"]').value.trim();
       if (!d) {
-        d = { id: 'D' + Date.now().toString().slice(-4) };
+        /* ⚠️ id 数值化:数字 id,不会与种子科室 id(1–5)相撞 */
+        d = { id: Date.now() };
         BACK_DATA.departments.push(d);
       }
-      d.hospitalId = document.querySelector('[name="dHosp"]').value;
+      /* ⚠️ <select>.value 永远是字符串,必须转数字 —— 数据层 id 一律是数字 */
+      d.hospitalId = Number(document.querySelector('[name="dHosp"]').value) || 0;
       d.name = dName;
-      d.directorId = document.querySelector('[name="dDir"]').value;
-      d.status = document.querySelector('[name="dStatus"]').value;
+      var ddir = document.querySelector('[name="dDir"]').value;
+      d.directorId = ddir ? Number(ddir) : 0;   /* 未指定主任 = 0 */
+      d.status = Number(document.querySelector('[name="dStatus"]').value);
       d.intro = document.querySelector('[name="dIntro"]').value.trim();
       Back.toast('已保存科室:' + d.name, 'ok');
     }

@@ -49,16 +49,22 @@
         <div class="note note-block" style="margin:0" id="errBox"></div>
       </div>
 
-      <label class="chk mb-12"><input type="checkbox" checked> 记住我(7 天内免登录)</label>
+      <!-- ⚠️ 「记住我」当前**没有实现**:令牌存 sessionStorage,关掉标签页即失效。
+           后端只给了 expiresIn,没有给 refresh_token / 持久化会话接口,
+           所以这个勾选框暂时不改变任何行为 —— 不假装它是生效的。 -->
+      <label class="chk mb-12" title="本轮令牌存 sessionStorage(关掉标签页即失效);后端尚未提供刷新令牌 / 持久化会话接口,此勾选暂不改变行为">
+        <input type="checkbox" checked> 记住我(7 天内免登录)
+      </label>
 
       <button class="btn btn-primary" id="loginBtn" type="submit" form="loginForm">登 录</button>
 
       <!-- Demo 提示:演示时隐藏。需要演示异常态时,删掉下面这行 style="display:none" 即可。
-           (异常态触发词:账号或密码填 error → 账号或密码不正确;账号填 locked → 账号已临时锁定) -->
+           ⚠️ 登录已接真后端(POST /api/adm/v1/auth/login),账号由后端 mkadmin 工具创建,
+              这里不再写死口令 —— 演示前请用真实账号登录。 -->
       <div class="login-demo" style="display:none">
         <b>Demo 提示</b><br>
-        账号 <code class="k">admin</code> · 密码 <code class="k">123456</code>(任意非空账号密码均可进入)<br>
-        输入 <code class="k">error</code> 可查看「账号或密码不正确」异常态
+        账号 <code class="k">admin</code> · 口令由后端 <code class="k">mkadmin</code> 工具创建<br>
+        连错 5 次会锁定账号(错误码 <code class="k">40103</code>),这是后端的真实行为
       </div>
 
       <div class="divider"></div>
@@ -70,10 +76,12 @@
     </div>
   </div>
 
+  <script src="assets/back-api.js"></script>
   <script>
     (function () {
       var errBox = document.getElementById('errBox');
       var fiErr = document.getElementById('fi-err');
+      var btn = document.getElementById('loginBtn');
 
       function showErr(sel, msg) {
         var fi = document.querySelector(sel);
@@ -84,28 +92,39 @@
         document.querySelectorAll('.fi').forEach(function (f) { f.classList.remove('has-err'); });
         fiErr.style.display = 'none';
       }
+      /* 后端错误展示:把 §13.3 的错误码与文案都摆出来,便于对着后端日志查 */
+      function showApiErr(err) {
+        var html = '<b>' + BackApi.esc(BackApi.errorText(err)) + '</b>';
+        if (err && err.unreachable) {
+          html += '<br>请确认本地静态服务器(serve.py)与后端 admin-api 都在运行。';
+        } else if (err && err.requestId) {
+          html += '<br>请求 ID:' + BackApi.esc(err.requestId);
+        }
+        fiErr.style.display = 'block';
+        errBox.innerHTML = html;
+      }
 
       function doLogin() {
         clearErr();
         var u = document.getElementById('u').value.trim();
-        var p = document.getElementById('p').value.trim();
+        var p = document.getElementById('p').value;
         if (!u) { showErr('#fi-user', '请输入账号'); return; }
         if (!p) { showErr('#fi-pwd', '请输入密码'); return; }
 
-        // Demo:error 触发异常态
-        if (u === 'error' || p === 'error') {
-          fiErr.style.display = 'block';
-          errBox.innerHTML = '⚠️ <b>账号或密码不正确</b><br>为防止账号枚举,不区分是账号还是密码错误。'
-            + '连续 5 次错误将锁定 15 分钟。';
-          return;
-        }
-        // Demo:locked 触发锁定态
-        if (u === 'locked') {
-          fiErr.style.display = 'block';
-          errBox.innerHTML = '🔒 <b>账号已临时锁定</b><br>连续 5 次密码错误,已锁定 15 分钟,请稍后再试。';
-          return;
-        }
-        location.href = 'back-hospital-pick.html';
+        /* loading 态:按钮置灰,避免重复提交 */
+        btn.disabled = true;
+        btn.textContent = '登录中…';
+
+        /* ⚠️ 走真实后端 POST /api/adm/v1/auth/login(经 serve.py 反代)。
+         *    成功后把令牌 + 用户信息存 sessionStorage,再跳工作台。 */
+        BackApi.login(u, p).then(function (data) {
+          BackApi.saveSession(data);
+          location.href = 'back-dashboard.html';
+        }).catch(function (err) {
+          btn.disabled = false;
+          btn.textContent = '登 录';
+          showApiErr(err);
+        });
       }
 
       /* 走 form 的 submit 事件(回车 = 浏览器隐式提交),不再绑 click,避免重复执行 */
@@ -115,9 +134,8 @@
         doLogin();
       });
 
-      // 默认填充 Demo 账号,方便点击验收
+      /* 默认填账号(口令由后端 mkadmin 创建,不预填) */
       document.getElementById('u').value = 'admin';
-      document.getElementById('p').value = '123456';
     })();
   </script>
 </body>

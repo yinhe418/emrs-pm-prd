@@ -179,8 +179,9 @@
     var tb = document.getElementById('hBody');
     if (!h) { tb.innerHTML = ''; document.getElementById('hN').textContent = 0; return; }
     var ds = Back.hospFilter(BACK_DATA.departments, 'depts');
-    var scans = h.id === 'H1' ? 14 : 2;
-    var pend = BACK_DATA.pending.filter(function (p) { return p.state !== 'archived'; }).length;
+    var scans = h.id === 1 ? 14 : 2;
+    /* 待分配人数 = status ∈ {2 待认领, 3 已认领待处理}(与「待分配」Tab 同一口径) */
+    var pend = BACK_DATA.pendingCount;
     document.getElementById('hN').textContent = 1;
     tb.innerHTML = '<tr>'
       + '<td><div class="cell-user">'
@@ -192,11 +193,11 @@
       + '<td><div class="qr-box sm"><div class="qr-fake"></div></div></td>'
       + '<td class="num-cell">' + ds.length + '</td>'
       + '<td class="num-cell">' + scans + '</td>'
-      + '<td class="fz-12 mono">' + (h.id === 'H1' ? '2026-10-21 08:40' : '2026-10-19 14:10') + '</td>'
+      + '<td class="fz-12 mono">' + (h.id === 1 ? '2026-10-21 08:40' : '2026-10-19 14:10') + '</td>'
       + '<td>' + (pend
           ? '<a class="badge badge-block" href="back-staff.html?tab=pending">' + pend + ' 人待分配</a>'
           : '<span class="text-4 fz-12">0</span>') + '</td>'
-      + '<td>' + (h.status === 'on'
+      + '<td>' + (h.status === 1
           ? '<span class="badge badge-pass">生效中</span>'
           : '<span class="badge badge-gray">已停用</span>') + '</td>'
       + '<td class="col-act">'
@@ -207,9 +208,13 @@
       + '</td></tr>';
   }
 
-  /* ---------- Tab 2 · 医生 ---------- */
+  /* ---------- Tab 2 · 医生 ----------
+   * ⚠️ 2026-10-28:选人列表必须排除**待分配与已归档**的人:
+   *    status === 1(在职)&& 已分科室 && 角色位含 doctor。
+   *    status 数值化后不能再拿字符串去比(恒不成立 → 列表全空)。
+   */
   function isDoctor(s) {
-    return s.status === 'on' && BACK_DATA.rolesOf(s, 'doctor');
+    return s.status === 1 && BACK_DATA.isAssigned(s) && BACK_DATA.rolesOf(s, 'doctor');
   }
   function renderD() {
     var kw = document.getElementById('dKw').value.trim();
@@ -217,12 +222,13 @@
     var rows = Back.hospFilter(BACK_DATA.staff, 'staff').filter(function (s) {
       if (!isDoctor(s)) return false;
       if (kw && s.name.indexOf(kw) < 0) return false;
-      if (dp && s.deptId !== dp) return false;
+      /* ⚠️ id 数值化:<select>.value 是字符串,departmentId 是数字,必须容错比较 */
+      if (dp && String(s.departmentId) !== String(dp)) return false;
       return true;
     });
     document.getElementById('dN').textContent = rows.length;
     document.getElementById('dBody').innerHTML = rows.length ? rows.map(function (s) {
-      var d = BACK_DATA.dept(s.deptId), p = BACK_DATA.pos(s.posId);
+      var d = BACK_DATA.dept(s.departmentId), p = BACK_DATA.pos(s.positionId);
       /* 该医生名下的患者 = 在**某个项目下**由他担任主管医生的患者(按患者去重) */
       var pts = BACK_DATA.patients.filter(function (x) { return BACK_DATA.hasProjDoc(x, s.id); });
       var firstEnrol = '';
@@ -232,7 +238,7 @@
       }
       return '<tr>'
         + '<td><div class="cell-user">' + Back.staffAv(s) + '<div><div class="cell-main">' + s.name
-        +   '</div><div class="cell-sub">' + (BACK_DATA.pos(s.posId) || {}).name + '</div></div></div></td>'
+        +   '</div><div class="cell-sub">' + (BACK_DATA.pos(s.positionId) || {}).name + '</div></div></div></td>'
         + '<td class="fz-12">' + (d ? d.name : '—') + '</td>'
         + '<td><span class="badge badge-info">' + p.name + '</span></td>'
         + '<td><div class="qr-box sm"><div class="qr-fake"></div></div></td>'
@@ -264,13 +270,20 @@
         + '扫码后进入「待分配科室」队列,需管理员设置科室与职位后方可使用<br>'
         + '建议张贴:<b>科室门口白板 / 护士站</b>';
       document.getElementById('qRecDesc').textContent = '扫码后进入待分配队列的人员';
-      var pend = BACK_DATA.pending.filter(function (p) { return p.state !== 'archived'; });
-      recs = pend.map(function (p) {
-        return { t: p.scanAt, who: p.nick, st: p.state, reason: p.claimedBy };
+      /* 待分配队列(status ∈ {2,3})+ 已归档(status = 4)—— 合并后同源 */
+      var pend = Back.hospFilter(BACK_DATA.staff, 'staff').filter(function (p) {
+        return BACK_DATA.isPendingStaff(p) || BACK_DATA.isArchived(p);
       });
-      recs.push({ t: '2026-10-11 08:40', who: '赵**', st: 'archived', reason: '超时未认领(7 天)' });
+      recs = pend.map(function (p) {
+        return {
+          t: p.scannedAt, who: p.nickName,
+          /* 展示层状态:2 待认领 / 3 已认领未完成 / 4 已归档 */
+          st: p.status === 2 ? 'pending' : p.status === 3 ? 'claimed' : 'archived',
+          reason: BACK_DATA.claimedByName(p) || p.archiveReason || ''
+        };
+      });
     } else {
-      var s = BACK_DATA.member(id), d = BACK_DATA.dept(s.deptId);
+      var s = BACK_DATA.member(id), d = BACK_DATA.dept(s.departmentId);
       cur = { kind: kind, id: id, name: s.name };
       document.getElementById('qTitle').textContent = '医生患者码 · ' + s.name;
       document.getElementById('qName').textContent = s.name + ' · ' + (d ? d.name : '');
@@ -284,7 +297,8 @@
       recs = [];
       BACK_DATA.patients.forEach(function (x) {
         BACK_DATA.projsOf(x).forEach(function (r) {
-          if (r.docId !== id) return;
+          /* ⚠️ id 数值化:id 来自 URL 参数 / data 属性(字符串),docId 是数字 */
+          if (String(r.docId) !== String(id)) return;
           recs.push({
             t: r.enrole,
             who: x.name,

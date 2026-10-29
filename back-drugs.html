@@ -126,8 +126,10 @@
       if (kw && (v.gn + ' ' + v.en).indexOf(kw) < 0) return false;
       if (cat && v.cat !== cat) return false;
       if (form && v.form !== form) return false;
-      if (tab === 'on' && v.status !== 'on') return false;
-      if (tab === 'off' && v.status !== 'off') return false;
+      /* ⚠️ tab === 'on' / 'off' 是 **Tab 标签 id**(data-tab="on"),不是 status;
+       *    status 才是数字:1 启用 / 0 停用 */
+      if (tab === 'on' && v.status !== 1) return false;
+      if (tab === 'off' && v.status !== 0) return false;
       if (tab === 'nophoto' && v.photoUrl) return false;
       return true;
     });
@@ -139,17 +141,17 @@
     var views = pool.map(function (x) { return BACK_DATA.drugView(x); });
     document.getElementById('n').textContent = rows.length;
     document.getElementById('kAll').textContent = pool.length;
-    document.getElementById('kOn').textContent = views.filter(function (v) { return v.status === 'on'; }).length;
-    document.getElementById('kOff').textContent = views.filter(function (v) { return v.status === 'off'; }).length;
+    document.getElementById('kOn').textContent = views.filter(function (v) { return v.status === 1; }).length;
+    document.getElementById('kOff').textContent = views.filter(function (v) { return v.status === 0; }).length;
     document.getElementById('kNoPhoto').textContent = views.filter(function (v) { return !v.photoUrl; }).length;
     document.getElementById('cntAll').textContent = pool.length;
-    document.getElementById('cntOn').textContent = views.filter(function (v) { return v.status === 'on'; }).length;
-    document.getElementById('cntOff').textContent = views.filter(function (v) { return v.status === 'off'; }).length;
+    document.getElementById('cntOn').textContent = views.filter(function (v) { return v.status === 1; }).length;
+    document.getElementById('cntOff').textContent = views.filter(function (v) { return v.status === 0; }).length;
     document.getElementById('cntNP').textContent = views.filter(function (v) { return !v.photoUrl; }).length;
 
     document.getElementById('body').innerHTML = rows.length ? rows.map(function (d) {
       var v = BACK_DATA.drugView(d);
-      var bg = v.status === 'off' ? 'row-muted' : '';
+      var bg = v.status === 0 ? 'row-muted' : '';
       return '<tr class="' + bg + '">'
         + '<td><div class="cell-user">'
         +   (v.photoUrl
@@ -168,7 +170,7 @@
         + '<td>' + Back.onOff(v.status) + '</td>'
         + '<td class="col-act">'
         +   '<a class="btn-text" href="back-drug-edit.html?id=' + esc(v.id) + '">编辑</a>'
-        +   (v.status === 'on'
+        +   (v.status === 1
             ? '<a class="btn-text danger" data-stop="' + esc(v.id) + '">停用</a>'
             : '<a class="btn-text" data-en="' + esc(v.id) + '">启用</a>')
         + '</td></tr>';
@@ -186,7 +188,7 @@
   document.body.addEventListener('click', function (e) {
     var t = e.target, g = function (a) { return t.getAttribute && t.getAttribute(a); };
     if (g('data-en')) {
-      BACK_DATA.byId(BACK_DATA.drugs, g('data-en')).status = 'on';
+      BACK_DATA.byId(BACK_DATA.drugs, g('data-en')).status = 1;
       render(); return Back.toast('已启用药品', 'ok');
     }
     if (g('data-stop')) {
@@ -196,11 +198,12 @@
         '<div>停用「' + esc(dn) + '」后:</div>'
         + '<ul><li>医生录入时<b>检索不到</b>该药品(药品库入口被隐藏)</li>'
         + '<li>已开处方和已记录服药反馈<b>保留</b>,历史数据只读</li>'
-        + '<li>该药仍在被 <b>' + (d.id === 'M1' ? 8 : 2) + '</b> 个现役处方引用 —— 该处方已固化无法切换,直到处方终止</li></ul>'
+        /* ⚠️ id 数值化:药品 id 是数字(原 'M1' → 1) */
+        + '<li>该药仍在被 <b>' + (String(d.id) === '1' ? 8 : 2) + '</b> 个现役处方引用 —— 该处方已固化无法切换,直到处方终止</li></ul>'
         + '<div class="note note-warn" style="margin-top:10px"><img src="assets/icons-png/icon-warning.png">'
         + '<div><b>建议先</b>在 HIS 侧发停药通知,再在 EMRS 停用字典。</div></div>';
       document.getElementById('stopOk').onclick = function () {
-        d.status = 'off'; Back.modal('stopModal', false); render();
+        d.status = 0; Back.modal('stopModal', false); render();
         Back.toast('已停用药品:' + dn, 'warn');
       };
       Back.modal('stopModal', true);
