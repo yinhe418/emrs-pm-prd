@@ -31,7 +31,7 @@
     <div style="display:flex;flex-direction:column;gap:7px">
       <a class="btn btn-default btn-sm" href="back-org-edit.html?type=hospital" id="hcEdit">管理医院档案</a>
       <a class="btn btn-default btn-sm" href="back-qrcode.html?tab=hospital" id="hcQR">医院邀请码</a>
-      <a class="btn btn-default btn-sm" href="back-hospital-pick.html">切换医院</a>
+      <a class="btn btn-default btn-sm" href="back-hospital-pick.html" id="hcSwitch">切换当前医院</a>
       <button class="btn btn-text danger" id="hcToggle" type="button">停用本院</button>
     </div>
   </div>
@@ -122,6 +122,7 @@
   </div>
 </div>
 
+<script src="assets/back-api.js"></script>
 <script src="assets/back-data.js"></script>
 <script src="assets/back-layout.js"></script>
 <script>
@@ -315,6 +316,9 @@
   else {
     paintHospital(Back.currentHospital());
     document.getElementById('scopeStrip').innerHTML = Back.scopeStrip('科室列表只显示本院,不再需要「所属医院」筛选');
+    /* ⛔「切换当前医院」入口**只有平台超管**有(院管只属于一家医院,切不了) */
+    var hcSwitch = document.getElementById('hcSwitch');
+    if (hcSwitch && !(window.BackApi && BackApi.isPlatformAdmin())) hcSwitch.style.display = 'none';
   }
 
   renderDept();

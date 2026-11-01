@@ -88,8 +88,8 @@
       <table class="tbl">
         <thead><tr><th style="width:200px">页面</th><th>说明</th></tr></thead>
         <tbody>
-          <tr><td><a href="back-login.html">back-login</a></td><td>登录(医院管理员 / 科室主任 / 受权普通账号)</td></tr>
-          <tr><td><a href="back-hospital-pick.html">back-hospital-pick</a></td><td><b>登录后第一站:</b>选择 / 添加医院;新医院支持上传图片;选定后顶栏持续显示该医院徽章,所有列表自动按本院过滤</td></tr>
+          <tr><td><a href="back-login.html">back-login</a></td><td>登录(两级管理员:<b>平台超级管理员</b> / <b>医院管理员</b>);表单只有账号 + 密码 +「记住我(7 天免登录)」;<b>没有医院字段</b>;登录后按响应里的作用域分流:院管进工作台,超管进选院页</td></tr>
+          <tr><td><a href="back-hospital-pick.html">back-hospital-pick</a></td><td><b>平台超级管理员的选院 / 切院页</b>(首次选院与切院是同一个页面、同一个动作);数据源 <code class="k">GET /platform/hospitals</code>;选定后换发带该院作用域的令牌;停用医院不可选;「添加新医院」抽屉<b>仅超管可见</b>(院管访问本页会跳回工作台)</td></tr>
           <tr><td><a href="back-dashboard.html">back-dashboard</a></td><td>工作台:4 KPI + 待处理 + 快捷入口 + 最近变更</td></tr>
           <tr><td><a href="back-org.html">back-org</a></td><td>科室管理(单视图;只显示当前医院,已无「医院」Tab 和「所属医院」筛选)</td></tr>
           <tr><td><a href="back-org-edit.html">back-org-edit</a></td><td>科室 / 医院档案编辑(新建 / 改名 / 改主任 / 换医院图)</td></tr>
@@ -146,6 +146,7 @@
   </div>
 </main>
 
+<script src="assets/back-api.js"></script>
 <script src="assets/back-data.js"></script>
 <script src="assets/back-layout.js"></script>
 </body>

@@ -123,7 +123,7 @@
     <div class="card">
       <div class="card-head"><h3>快捷入口</h3></div>
       <div class="two-col" style="gap:9px">
-        <a class="btn btn-default" href="back-hospital-pick.html">+ 添加 / 切换医院</a>
+        <a class="btn btn-default" href="back-hospital-pick.html" id="quickHospital">+ 添加 / 切换医院</a>
         <a class="btn btn-default" href="back-org-edit.html?type=department">+ 添加科室</a>
         <a class="btn btn-default" href="back-positions.html?new=1">+ 新增职位</a>
         <a class="btn btn-default" href="back-staff-edit.html">+ 新增人员</a>
@@ -189,52 +189,23 @@
 <script>
   /* ==========================================================
    * 顶栏:把「当前登录用户」/「当前医院」换成**真实登录会话**里的信息
-   * ⚠️ back-layout.js 在 DOMContentLoaded 时才注入外壳,
-   *    它的监听器注册在前 → 本监听器后触发 → 外壳已存在,可以直接改。
-   *    只改**本页**,不动 back-layout.js —— 其它后台页面本轮不碰。
+   * ⚠️ 顶栏的渲染在 assets/back-layout.js 里(全站统一):会话摘要 → 当前医院徽章、
+   *    「切换当前医院」入口(⛔ 仅平台超管可见)、顶栏用户显示名。
+   *    本页只补一句副标题(医院名)。
    * ========================================================== */
-  function patchShell() {
+  function patchSub() {
     var s = BackApi.getSession();
     if (!s) return;
-
-    var tu = document.querySelector('.top-user');
-    if (tu) {
-      var name = s.displayName || '后台用户';
-      tu.innerHTML = '<div class="tu-av">' + BackApi.esc(name.charAt(0)) + '</div>'
-        + '<span>' + BackApi.esc(name) + '</span>'
-        + '<span style="margin:0 6px;color:var(--line)">|</span>'
-        + '<a class="btn-text" href="#" data-action="logout">退出</a>';
-    }
-
-    var th = document.querySelector('.top-hospital');
-    if (th && s.hospital) {
-      var short = s.hospital.shortName || s.hospital.name || '?';
-      th.className = 'top-hospital';
-      th.title = '当前医院(由登录会话决定,后端按它过滤数据)';
-      th.innerHTML = '<span class="th-mark">' + BackApi.esc(short.charAt(0)) + '</span>'
-        + '<span class="th-text"><b>' + BackApi.esc(s.hospital.name) + '</b>'
-        + '<span class="th-sub">' + BackApi.esc(s.hospital.level || '') + ' · 登录会话</span></span>'
-        + '<a class="th-switch" href="back-hospital-pick.html" data-action="switch-hospital">切换</a>';
-    }
-
-    /* 副标题里的医院名 → 真实医院 */
     var sub = document.getElementById('dashSub');
     if (sub && s.hospital) {
       sub.textContent = s.hospital.name + (s.hospital.level ? ' · ' + s.hospital.level : '')
         + '　|　后台登录后默认落地页';
     }
   }
-  document.addEventListener('DOMContentLoaded', patchShell);
+  document.addEventListener('DOMContentLoaded', patchSub);
 
-  /* 退出:清掉 sessionStorage 里的令牌与会话,回登录页 */
-  document.addEventListener('click', function (e) {
-    var t = e.target;
-    if (t.getAttribute && t.getAttribute('data-action') === 'logout') {
-      e.preventDefault();
-      BackApi.clearSession();
-      location.href = 'back-login.html';
-    }
-  });
+  /* ⚠️ 「退出」的全站处理器在 assets/back-layout.js(POST /auth/logout + 清两种存储)——
+     本页不再重复绑,避免一次点击发两次登出。 */
 
   /* ---------- 待分配人数:真后端(GET /api/adm/v1/staff?status=2,3) ---------- */
   function loadPending() {
@@ -302,12 +273,31 @@
     });
   }
 
-  /* ⚠️ 无令牌 → 跳登录页(令牌存 sessionStorage,见 assets/back-api.js) */
-  if (!BackApi.requireAuth()) {
-    /* 跳转中,本页不再拉数据 */
-  } else {
+  /* ⚠️ 入口守卫(契约 x-frontend-routes 的 /dashboard entryGuard):
+   *    1. 没有令牌 ⇒ 跳 /login(有长效凭据时先静默刷新一次)
+   *    2. scope = platform(超管)**且还没有「当前医院」**⇒ 跳 /hospital-pick
+   *    3. scope = hospital ⇒ 进后台
+   * ⚠️ 新模型(2026-10-30 用户拍板):切院**不换令牌** ⇒ 超管选完院之后
+   *    scope **仍然是 'platform'** ⇒ 判据必须看「当前医院」(前端上下文),
+   *    ⛔ 不能只看 scope(旧模型里切院会把 scope 换成 hospital)。 */
+  BackApi.ensureSession().then(function (s) {
+    if (!s) { location.href = 'back-login.html'; return; }
+    if (s.scope === 'hospital') {
+      /* 院管:「当前医院」= **身份所属医院**(契约 entryGuard 第 3 条)
+       *    ⇒ 新标签页 / 刷新后按它重建(本地没存过才补,不覆盖已选的)。 */
+      if (s.hospital && s.hospital.id && !BackApi.getCurrentHospitalId()) {
+        BackApi.setCurrentHospitalId(String(s.hospital.id));
+        if (window.BACK_DATA) BACK_DATA.setCurrentHospitalId(s.hospital.id);
+      }
+    } else if (s.scope === 'platform' && !BackApi.getCurrentHospitalId()) {
+      /* 超管还没选院 ⇒ 去选院页 */
+      location.href = 'back-hospital-pick.html'; return;
+    }
+    /* 「添加 / 切换医院」快捷入口:**只有平台超管有**(院管既不能建院也不能切院) */
+    var q = document.getElementById('quickHospital');
+    if (q && !BackApi.isPlatformAdmin()) q.style.display = 'none';
     loadPending();
-  }
+  });
 </script>
 </body>
 </html>

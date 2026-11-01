@@ -11,18 +11,35 @@
 <main class="back-main">
 
   <div style="text-align:center;padding:38px 0 16px">
-    <h1 style="font-size:24px;letter-spacing:-.4px">选择医院</h1>
+    <h1 id="pageTitle" style="font-size:24px;letter-spacing:-.4px">选择医院</h1>
   </div>
 
   <div style="max-width:960px;margin:0 auto">
+
+    <!-- 作用域说明:「首次选院」与「切院」是**同一个页面、同一个动作**(契约 x-frontend-routes)
+         ⇒ 这里不区分场景,只回显当前作用域状态。 -->
+    <div class="hp-scope" id="scopeTip">
+      <img src="assets/icons-png/icon-info.png">
+      <div><b id="scopeTitle">平台视图</b><span id="scopeBody"></span></div>
+    </div>
+
+    <!-- 错误横幅(接口出错才显示) -->
+    <div class="note note-block" id="pickErr" style="display:none;margin-bottom:14px">
+      <img src="assets/icons-png/icon-warning.png">
+      <div id="pickErrBody"></div>
+    </div>
 
     <div class="hp-grid" id="grid"></div>
 
     <div class="card" style="margin-top:20px">
       <div class="card-head"><h3>说明</h3></div>
-      <div class="text-2" style="line-height:1.85;font-size:12.5px">
+      <div class="text-2" id="pageDesc" style="line-height:1.85;font-size:12.5px">
+        · <b>本页的两种用法是同一个动作:</b>平台超管登录后第一次进(还没选院),
+        与已经进了某家院之后想换一家 —— <b>都不调后端、也不换令牌</b>:
+        只把「当前医院」写进<b>本地上下文</b>(只存 id),之后每个医院作用域请求带
+        <code class="k">X-Target-Hospital-Id</code> 请求头,由服务端逐请求判定。<br>
         · <b>可配置字段:</b>图片 / 名称 / 简称 / 级别 / 床位 / 联系电话 / 简介;<br>
-        · <b>当前限制:</b>后台暂不实施基于角色的自动匹配;当前以<b>手动选择</b>为入口。<br>
+        · <b>停用的医院不可选</b>:标「已停用」,点了会提示并且**不跳转**。<br>
         · <b>软删除约定:</b>医院只停用、不物理删除,与组件 / 药品字典一致。<br>
         · <b>图片用途:</b>展示在顶栏当前医院徽章和选医院卡片上,不用于临床匹配。
       </div>
@@ -72,10 +89,11 @@
         </div>
         <div class="fi">
           <label>级别</label>
+          <!-- ⚠️ 选项**照契约枚举**来(三级甲等 / 三级乙等 / 二级甲等 / 二级乙等 / 未定级);
+               契约外的等级服务端会判 40001。 -->
           <select class="sel" name="hLevel">
-            <option>三级甲等</option><option>三级乙等</option>
-            <option>三级丙等</option><option>二级甲等</option>
-            <option>二级乙等</option><option>一级</option>
+            <option>三级甲等</option><option>三级乙等</option><option>二级甲等</option>
+            <option>二级乙等</option><option>未定级</option>
           </select>
         </div>
         <div class="fi">
@@ -98,6 +116,20 @@
         </div>
       </div>
     </div>
+
+    <!-- ⚠️ 登录名全平台唯一(2026-10-30 用户拍板)的**提示**:
+         登录名唯一键从「院内唯一」换成「全平台唯一」⇒ 每家医院的账号名**互相不能重名**,
+         不能再家家都叫 admin。契约 §13.11.2.4 给了运维口径建议(见下),但**不是唯一方案**。 -->
+    <div class="note note-info">
+      <img src="assets/icons-png/icon-info.png">
+      <div><b>新院的后台登录名必须全平台唯一</b><br>
+        · 登录名唯一键已从「院内唯一」改成 <b>全平台唯一</b> ⇒ 新院的账号名<b>不能</b>和已有账号重名
+        (不能再直接用 <code class="k">admin</code>),得起一个<b>全局不撞名</b>的登录名。<br>
+        · 建议口径:<code class="k">&lt;医院短名拼音&gt;_admin</code>(如 <code class="k">hsyy_admin</code>)
+          —— 这是契约 §13.11.2.4 的**建议**,不是唯一方案;实际以运维规范为准。<br>
+        · 本页只建「医院」这一条档案,<b>不建管理员账号</b> —— 账号由运维用
+          <code class="k">mkadmin</code> 工具按上面那个登录名创建(且该工具按登录名 upsert,不会建出同名第二个人)。</div>
+    </div>
   </div>
   <div class="drawer-foot">
     <button class="btn btn-default" onclick="Back.drawer('newDrawer',false)">取消</button>
@@ -106,100 +138,170 @@
   </div>
 </div>
 
+<script src="assets/back-api.js"></script>
 <script src="assets/back-data.js"></script>
 <script src="assets/back-layout.js"></script>
 <script>
   /* ==========================================================
-   * 演示期临时隐藏:不在本页展示的医院 id。
-   * ⚠️ 只做「本页过滤」,不改 assets/back-data.js 里的原始数据 ——
-   *    H2 仍被组织架构 / 医护 / 科室 / 项目等页面引用,删数据会连环坏掉。
-   * ✅ 以后要把「H 市中医医院」放回来:把下面这一项清空即可
-   *      var HIDE_HOSPITAL_IDS = [];
+   * 平台超管的「选院 / 切院」页(2026-10-30 用户拍板后重写)
+   * ----------------------------------------------------------
+   * ⛔ **没有 scene 参数**:「首次选院」与「切院」是同一个页面、同一个动作
+   *    (契约 x-frontend-routes:/hospital-pick 的 query 为空)。
+   * ⛔ **没有任何医院查询参数**(旧的医院 code 入参已退役)。
+   * ⚠️ 判据从「场景」改成「**身份**」(契约 §13.11.7.2):
+   *    未登录        ⇒ 跳回登录页
+   *    院管令牌      ⇒ 跳回工作台(院管没有「选择别的医院」这件事)
+   *    平台超管令牌  ⇒ 渲染本页
+   * ⛔ **选院 / 切院都不调后端、都不换令牌**(2026-10-30 用户拍板):
+   *    只写本地上下文「当前医院」(只存 id)⇒ 之后每个医院作用域请求带
+   *    `X-Target-Hospital-Id` 请求头,由服务端逐请求判定。
    * ========================================================== */
-  var HIDE_HOSPITAL_IDS = [2];
 
-  /* 本页可见的医院列表(过滤掉隐藏项) */
-  function visibleHospitals() {
-    return BACK_DATA.hospitals.filter(function (h) {
-      return HIDE_HOSPITAL_IDS.indexOf(h.id) === -1;
+  var HOSPITALS = [];   /* 本页当前展示的医院(数据源 = GET /platform/hospitals) */
+  var IS_PLATFORM = false;
+
+  function showErr(err) {
+    var box = document.getElementById('pickErr');
+    var body = document.getElementById('pickErrBody');
+    body.innerHTML = '<b>' + BackApi.esc(BackApi.errorText(err)) + '</b>'
+      + (err && err.unreachable
+          ? '<br>请确认本地静态服务器(serve.py)与后端 admin-api 都在运行。'
+          : (err && err.requestId ? '<br>请求 ID:' + BackApi.esc(err.requestId) : ''));
+    box.style.display = 'block';
+  }
+
+  /* ---------- 作用域说明条 ---------- */
+  function renderScope() {
+    var title = document.getElementById('scopeTitle');
+    var body = document.getElementById('scopeBody');
+    /* ⚠️ 「当前医院」现在 = **前端本地上下文**(契约键见 assets/back-api.js 的
+     *    CURRENT_HOSPITAL_KEY),
+     *    ⛔ 不再从会话摘要的 hospital 读 —— 超管的令牌不带医院,摘要里恒为 null。
+     *    显示用的**名字**从医院列表里按 id 取(⛔ 本地只存 id,不缓存摘要)。 */
+    var curId = (window.BackApi && BackApi.getCurrentHospitalId) ? BackApi.getCurrentHospitalId() : '';
+    var cur = null;
+    if (curId) {
+      for (var i = 0; i < HOSPITALS.length; i++) {
+        if (String(HOSPITALS[i].id) === String(curId)) { cur = HOSPITALS[i]; break; }
+      }
+    }
+    if (cur) {
+      title.textContent = '平台视图 · 当前在「' + cur.name + '」';
+      body.innerHTML = ' —— 在下面选另一家即可切换过去(本院数据不受影响)。';
+    } else {
+      title.textContent = '平台视图';
+      body.innerHTML = ' —— 你还没选院。选定一家之后即可进入该院后台;'
+        + '未选院时进不去本院页面(没有本院数据可看)。';
+    }
+  }
+
+  /* ---------- 医院列表 ---------- */
+  function renderGrid() {
+    var grid = document.getElementById('grid');
+    grid.innerHTML = '<div style="grid-column:1/-1">' + BackApi.loadingHtml('平台医院列表') + '</div>';
+    BackApi.listHospitals().then(function (data) {
+      var items = (data && data.items) || [];
+      HOSPITALS = items;
+      /* ⚠️ 说明条要显示「当前在「X 院」」⇒ 得先有列表(名字从列表里按 id 取) */
+      renderScope();
+      if (!items.length) {
+        grid.innerHTML = '<div style="grid-column:1/-1">'
+          + BackApi.emptyHtml('平台上还没有医院', '用右下角的「添加新医院」建一家,再回来选。') + '</div>';
+        return;
+      }
+      var cards = items.map(function (h) {
+        var off = (h.status !== 'on');
+        var mark = h.shortName || h.name || '?';
+        /* ⚠️ 三元表达式不要把 `?` / `:` 放在以 `+` 开头的续行上 —— 会被当成
+         *    「真分支 + :」而报 Unexpected token ':'。这里先拆成变量。 */
+        var cover = h.imageUrl
+          ? '<img src="' + BackApi.esc(h.imageUrl) + '" alt="">'
+          : '<span>' + BackApi.esc(mark.charAt(0)) + '</span>';
+        var tag = '<span class="hp-tag">' + BackApi.esc(h.level || '未定级') + '</span>';
+        var st = '<span class="hp-online' + (off ? ' hp-off' : '') + '">'
+               + (off ? '已停用' : '运营中') + '</span>';
+        var act = off ? '不可选' : '选择 ›';
+        return '<div class="hp-card" data-h="' + BackApi.esc(h.id) + '"' + (off ? ' data-off="1"' : '') + '>'
+          + '<div class="hp-cover">' + cover + tag + st + '</div>'
+          + '<div class="hp-body">'
+          +   '<div class="hp-name">' + BackApi.esc(h.name) + '</div>'
+          +   '<div class="hp-meta">' + BackApi.esc(h.area || '—') + ' · 床位 ' + (h.bedCount || '—') + '</div>'
+          + '</div>'
+          + '<div class="hp-foot">'
+          +   '<span>' + BackApi.esc(h.phone || h.shortName || '') + '</span>'
+          +   '<span class="btn-text" style="color:var(--brand)">' + act + '</span>'
+          + '</div>'
+          + '</div>';
+      }).join('');
+
+      /* 「添加新医院」入口:**平台超管可见**(他是唯一能建院的角色);
+         院管看不到(契约 §13.11.7.2)—— 给他一个必然 403 的按钮就是坏体验。 */
+      var addCard = IS_PLATFORM
+        ? '<div class="hp-card add" id="addCard">'
+          +   '<div class="hp-plus">+</div>'
+          +   '<div><b style="font-size:14px">添加新医院</b></div>'
+          +   '<div class="fz-12" style="margin-top:6px">上传医院图片、填写基础信息即可。<br>之后可在此页面继续完善。</div>'
+          + '</div>'
+        : '';
+
+      grid.innerHTML = cards + addCard;
+    }).catch(function (err) {
+      grid.innerHTML = '<div style="grid-column:1/-1">' + BackApi.errorHtml(err) + '</div>';
+      renderScope();
+      showErr(err);
     });
   }
 
-  function renderGrid() {
-    var list = visibleHospitals();
-    var cards = list.map(function (h, i) {
-      var ds = BACK_DATA.deptListByHospital(h.id);
-      /* ⚠️ 医护人数只算**已分科室**的人:待分配人员 departmentId = 0,
-       *    不属于任何科室 → 天然不计入(合并后仍成立) */
-      var staff = BACK_DATA.staff.filter(function (s) {
-        return ds.some(function (d) { return d.id === s.departmentId; });
-      }).length;
-      return '<div class="hp-card" data-h="' + h.id + '">'
-        +   '<div class="hp-cover">'
-        +     (h.image
-              ? '<img src="' + h.image + '" alt="">'
-              : '<span>' + (h.short || h.name).charAt(0) + '</span>')
-        +     '<span class="hp-tag">' + (h.level || '未定级') + '</span>'
-        +     '<span class="hp-online ' + (h.status === 0 ? 'hp-off' : '') + '">'
-        +       (h.status === 1 ? '运营中' : '已停用') + '</span>'
-        +   '</div>'
-        +   '<div class="hp-body">'
-        +     '<div class="hp-name">' + h.name + '</div>'
-        +     '<div class="hp-meta">'
-
-        +       h.area + ' · 床位 ' + (h.beds || '—')
-        +     '</div>'
-        +   '</div>'
-        +   '<div class="hp-foot">'
-        +     '<span><b>' + ds.length + '</b> 个科室 · <b>' + staff + '</b> 名医护</span>'
-        +     '<span class="btn-text" style="color:var(--brand)">进入 ›</span>'
-        +   '</div>'
-        + '</div>';
-    }).join('');
-
-    var addCard =
-        '<div class="hp-card add" id="addCard">'
-      +   '<div class="hp-plus">+</div>'
-      +   '<div><b style="font-size:14px">添加新医院</b></div>'
-      +   '<div class="fz-12" style="margin-top:6px">上传医院图片、填写基础信息即可。<br>之后可在此页面继续完善。</div>'
-      + '</div>';
-
-    document.getElementById('grid').innerHTML = cards + addCard;
-  }
-
-  function setCurrentAndGo(id) {
-    BACK_DATA.setCurrentHospitalId(id);
-    Back.toast('已切换医院:' + BACK_DATA.hospital(id).name, 'ok');
+  /* ---------- 选定一家医院 → 只写「当前医院」上下文(不调后端、不换令牌) ---------- */
+  function pickHospital(id) {
+    var h = null;
+    for (var i = 0; i < HOSPITALS.length; i++) {
+      if (String(HOSPITALS[i].id) === String(id)) { h = HOSPITALS[i]; break; }
+    }
+    /* ⛔ 停用医院不可选:提示 + **不跳转**(契约 x-frontend-routes) */
+    if (h && h.status !== 'on') {
+      Back.toast('该医院已停用,请选一家运营中的医院', 'err');
+      return;
+    }
+    /* ⛔ "0" 是平台哨兵,不是一家医院 ⇒ 前端先挡住(服务端也会拒 40001) */
+    if (String(id) === '0') {
+      Back.toast('参数缺失或格式错误:0 是平台哨兵,不是医院', 'err');
+      return;
+    }
+    /* ⚠️ 列表里已经没有这家了(列表变了 / id 过期)⇒ 不写上下文,更不跳转 */
+    if (!h) {
+      Back.toast('该医院不存在,请刷新列表后重试', 'err');
+      return;
+    }
+    /* ⛔ **不调任何后端端点、⛔ 不换令牌、⛔ 不保留第二把令牌**
+     *    (2026-10-30 用户拍板;契约 x-frontend-routes ④ + x-target-hospital):
+     *    ⛔ 旧实现(向后端要一把带该院作用域的令牌)**已作废** —— 那个端点已从契约里删除,
+     *    留着会让人以为「切院 = 换令牌」,而且用户一点就报错。
+     *    「当前医院」= **前端本地上下文**,只存 id。 */
+    BackApi.setCurrentHospitalId(String(id));   /* 契约键 emrs.admin.currentHospitalId(sessionStorage、只放 id) */
+    /* 演示数据层的当前医院(**显示层**:静态数据靠它过滤)—— 与上面的契约键是两回事,各管各的。 */
+    if (window.BACK_DATA) {
+      BACK_DATA.setCurrentHospitalId(h.id);
+    }
+    Back.toast('已切换医院:' + h.name, 'ok');
     setTimeout(function () { location.href = 'back-dashboard.html'; }, 500);
   }
 
-  /* 进入本页时校正当前医院:
-     若当前医院不在可见列表(被本页隐藏 / 已失效),回落到第一家可见医院并提示,
-     避免出现「选不中、却已经在里面」的不一致。
-     时机:back-layout.js 的 mount() 在 DOMContentLoaded 才渲染顶栏,
-           本函数先跑,顶栏随后读到的就是校正后的医院。 */
-  function syncCurrentHospital() {
-    var list = visibleHospitals();
-    var curId = BACK_DATA.getCurrentHospitalId();
-    for (var i = 0; i < list.length; i++) {
-      if (String(list[i].id) === String(curId)) return;   /* 当前医院本来就可见,无需处理 */
-    }
-    if (!list.length) return;
-    var fallback = list[0];
-    var cur = BACK_DATA.hospital(curId);
-    BACK_DATA.setCurrentHospitalId(fallback.id);
-    Back.toast('原当前医院「' + ((cur && cur.name) || curId) + '」在本页不可选,已自动切换为「' + fallback.name + '」', 'warn');
+  /* ---------- 入口守卫 ---------- */
+  function guard() {
+    if (!BackApi.getToken()) { location.href = 'back-login.html'; return false; }
+    /* 院管访问本页 ⇒ 重定向回工作台(不渲染选院 UI) */
+    if (!BackApi.isPlatformAdmin()) { location.href = 'back-dashboard.html'; return false; }
+    IS_PLATFORM = true;
+    return true;
   }
-
-  syncCurrentHospital();
-  renderGrid();
 
   /* 卡片点击 */
   document.getElementById('grid').addEventListener('click', function (e) {
     if (e.target.closest('#addCard')) { Back.drawer('newDrawer', true); return; }
     var card = e.target.closest('[data-h]');
     if (!card) return;
-    setCurrentAndGo(card.getAttribute('data-h'));
+    pickHospital(card.getAttribute('data-h'));
   });
 
   /* ---------- 添加医院 drawer ---------- */
@@ -229,8 +331,9 @@
     document.getElementById('nIntro').textContent = this.value.length;
   });
 
-  /* 保存 */
+  /* 保存:POST /platform/hospitals(仅平台超管) */
   document.getElementById('saveH').addEventListener('click', function () {
+    if (!IS_PLATFORM) return;
     var ok = Back.validate(document.body, {
       hName:  { required: true, minLen: 2, maxLen: 30, msg: '医院名称 2–30 字' },
       hShort: { required: true, minLen: 2, maxLen: 10, msg: '简称 2–10 字' },
@@ -239,30 +342,34 @@
     });
     if (!ok) return;
 
-    /* ⚠️ id 数值化(AR 契约 §13):新医院用数字 id。
-     *    Date.now() 本身是数字,且不会与种子 id(1 / 2)相撞。 */
-    var id = Date.now();
-    var h = {
-      id: id,
+    var payload = {
       name: document.querySelector('[name="hName"]').value.trim(),
-      short: document.querySelector('[name="hShort"]').value.trim(),
+      shortName: document.querySelector('[name="hShort"]').value.trim(),
       level: document.querySelector('[name="hLevel"]').value,
-      beds: parseInt(document.querySelector('[name="hBeds"]').value) || null,
-      phone: document.querySelector('[name="hPhone"]').value.trim(),
       area: document.querySelector('[name="hArea"]').value.trim(),
+      phone: document.querySelector('[name="hPhone"]').value.trim(),
       intro: document.querySelector('[name="hIntro"]').value.trim(),
-      image: pickedImage,
-      status: 1,
-      createdAt: new Date().toISOString().slice(0, 10)
+      imageUrl: pickedImage,
+      status: 'on'
     };
-    BACK_DATA.hospitals.push(h);
-    Back.drawer('newDrawer', false);
-    Back.toast('已添加医院:' + h.name, 'ok');
-    renderGrid();
+    var beds = document.querySelector('[name="hBeds"]').value.trim();
+    if (beds) payload.bedCount = Number(beds);
 
-    /* 新增的医院自动设为当前 */
-    setTimeout(function () { setCurrentAndGo(h.id); }, 500);
+    BackApi.createHospital(payload).then(function (created) {
+      Back.drawer('newDrawer', false);
+      Back.toast('已添加医院:' + (created ? created.name : payload.name), 'ok');
+      renderGrid();
+    }).catch(function (err) {
+      showErr(err);
+      Back.toast(BackApi.errorText(err), 'err');
+    });
   });
+
+  /* ---------- 启动 ---------- */
+  if (guard()) {
+    /* ⚠️ 说明条要等医院列表到手才回显「当前在「X 院」」⇒ 由 renderGrid() 内部调用 */
+    renderGrid();
+  }
 </script>
 </body>
 </html>

@@ -366,12 +366,15 @@
     var h = (s && s.hospital) || null;
     var name = h ? h.name : '当前医院';
     var lv = (h && h.level) ? '(' + h.level + ')' : '';
+    /* ⛔ 切换入口**只有平台超管**有(院管只属于一家医院) */
+    var link = BackApi.isPlatformAdmin()
+      ? '<span style="margin-left:8px"><a href="back-hospital-pick.html" style="color:var(--brand);text-decoration:underline">切换当前医院</a></span>'
+      : '';
     return '<div class="hp-scope"><img src="assets/icons-png/icon-info.png">'
       +   '<div><b>当前作用域:' + BackApi.esc(name) + '</b>' + BackApi.esc(lv) + '。'
       +   '人员列表由后端按登录会话的医院自动过滤,前端不传医院 id'
-      +   '<span style="margin-left:8px">'
-      +   '<a href="back-hospital-pick.html" style="color:var(--brand);text-decoration:underline">切换医院</a>'
-      +   '</span></div></div>';
+      +   link
+      +   '</div></div>';
   }
 
   /* ---- 三个 Tab 的数据口径(全站唯一,用 **status 正向表达**)---- */

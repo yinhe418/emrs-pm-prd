@@ -30,7 +30,10 @@
       <p class="lb-t">请使用科室分配的后台账号登录</p>
 
       <!-- 账号 / 密码放进 form:密码框脱离 form 会让 Chrome 控制台报
-           「Password field is not contained in a form」。提交按钮通过 form 属性关联。 -->
+           「Password field is not contained in a form」。提交按钮通过 form 属性关联。
+           ⛔ 表单上**只有账号 / 密码**两个字段(在 form 内);
+              「记住我」是勾选框(在 form 外),**没有任何医院字段** ——
+              2026-10-30 用户明确否掉过「登录页放医院选择器」。 -->
       <form id="loginForm" novalidate>
         <div class="fi" id="fi-user">
           <label for="u"><span class="req">*</span>账号</label>
@@ -49,21 +52,58 @@
         <div class="note note-block" style="margin:0" id="errBox"></div>
       </div>
 
-      <!-- ⚠️ 「记住我」当前**没有实现**:令牌存 sessionStorage,关掉标签页即失效。
-           后端只给了 expiresIn,没有给 refresh_token / 持久化会话接口,
-           所以这个勾选框暂时不改变任何行为 —— 不假装它是生效的。 -->
-      <label class="chk mb-12" title="本轮令牌存 sessionStorage(关掉标签页即失效);后端尚未提供刷新令牌 / 持久化会话接口,此勾选暂不改变行为">
-        <input type="checkbox" checked> 记住我(7 天内免登录)
+      <!-- 「记住我」:**真生效**了(§13.11.6)。
+           勾选 = 下发长效凭据(refresh token,7 天绝对过期)⇒ access 过期可静默换新的
+           ⇒ 7 天内免登录;令牌存 localStorage。
+           不勾选 = 只发 access token(8 小时)⇒ 存 sessionStorage,关掉标签页即失效。 -->
+      <label class="chk mb-12" title="勾选后 7 天内免登录:长效凭据存 localStorage(7 天绝对过期);不勾选则只存 sessionStorage,关掉标签页即失效"
+             id="rmbLabel">
+        <input type="checkbox" id="rmb" checked> 记住我(7 天内免登录)
       </label>
+
+      <!-- 演示模式开关(⛔ 不在 form 内,不是表单字段):
+           §13.11 的三个新端点(/auth/refresh、/auth/logout、/platform/session)
+           + 登录响应的 scope 字段,后端**尚未实现**
+           ⇒ 演示两级管理员流程时切到本地契约 mock。默认 'auto':先打真后端,
+           后端不可达 / 端点未实现才落 mock。
+           ⚠️ 模式**落 localStorage**('emrs.mock.mode')⇒ 跨页、跨刷新都保持;
+              不落盘的话每跳一页就复位 ⇒ 变成「半 mock 半真」(见 assets/back-api.js)。
+           ⛔ **切院没有端点** ⇒ 选院 / 切院只改本地「当前医院」,不发任何请求。 -->
+      <div class="fz-12 text-3" style="margin:-4px 0 12px">
+        接口:<b id="mockState">真实后端</b> ·
+        <button type="button" class="btn-text" id="mockToggle">切到本地契约 mock</button>
+        <span id="mockResetWrap" style="display:none"> ·
+          <button type="button" class="btn-text" id="mockReset">重置为 auto</button>
+        </span>
+      </div>
+      <div class="note note-info" id="mockTip" style="display:none;margin-bottom:12px">
+        <img src="assets/icons-png/icon-info.png">
+        <div><b>本地契约 mock 模式</b>(§13.11 的新端点后端还没实现,先用本地 mock 走通流程)<br>
+          · 账号里含 <code class="k">platform</code> ⇒ <b>平台超级管理员</b>(登录后先进「选择医院」页)<br>
+          · 其余账号 ⇒ <b>医院管理员</b>(直接进工作台)<br>
+          · 口令不校验;⛔ 仓里不落任何真实口令<br>
+          · 模式已落 <code class="k">localStorage</code> ⇒ <b>跨页、跨刷新都保持</b>;
+            演示完点「重置为 auto」就回到「先真后端、不可达才落 mock」</div>
+      </div>
+
+      <!-- 演示账号提示(小字):上面**预填**的是演示账号,不是凭据来源 ——
+           真实账号由后端 mkadmin 创建(登录名全平台唯一,不能重名)。 -->
+      <div class="fz-12 text-3" style="margin:-4px 0 12px">
+        演示账号:<b>platform_admin</b>(平台超管)· <b>hsyy_admin</b> / <b>hzyy_admin</b>(院管)
+        · 口令 <b>Passw0rd!</b> —— 已预填在上面的输入框里,直接点「登录」即可
+      </div>
 
       <button class="btn btn-primary" id="loginBtn" type="submit" form="loginForm">登 录</button>
 
       <!-- Demo 提示:演示时隐藏。需要演示异常态时,删掉下面这行 style="display:none" 即可。
-           ⚠️ 登录已接真后端(POST /api/adm/v1/auth/login),账号由后端 mkadmin 工具创建,
-              这里不再写死口令 —— 演示前请用真实账号登录。 -->
+           ⚠️ 登录请求体只有 {username, password, rememberMe?};账号由后端 mkadmin 工具创建,
+              这里不写死口令 —— 演示前请用真实账号登录。
+           ⚠️ 「登录名全平台唯一」(2026-10-30 用户拍板)⇒ 每家医院的账号名不能重名,
+              所以**没有**「同名跨院」这种场景,也不会再有 40104。 -->
       <div class="login-demo" style="display:none">
         <b>Demo 提示</b><br>
-        账号 <code class="k">admin</code> · 口令由后端 <code class="k">mkadmin</code> 工具创建<br>
+        账号由后端 <code class="k">mkadmin</code> 工具创建(登录名全平台唯一,不能重名)<br>
+        登录名全平台唯一 ⇒ 不存在「同名跨院」,也不会返回 <code class="k">40104</code><br>
         连错 5 次会锁定账号(错误码 <code class="k">40103</code>),这是后端的真实行为
       </div>
 
@@ -77,11 +117,13 @@
   </div>
 
   <script src="assets/back-api.js"></script>
+  <script src="assets/back-data.js"></script>
   <script>
     (function () {
       var errBox = document.getElementById('errBox');
       var fiErr = document.getElementById('fi-err');
       var btn = document.getElementById('loginBtn');
+      var rmb = document.getElementById('rmb');
 
       function showErr(sel, msg) {
         var fi = document.querySelector(sel);
@@ -94,15 +136,40 @@
       }
       /* 后端错误展示:把 §13.3 的错误码与文案都摆出来,便于对着后端日志查 */
       function showApiErr(err) {
-        var html = '<b>' + BackApi.esc(BackApi.errorText(err)) + '</b>';
+        var html = '<div><b>' + BackApi.esc(BackApi.errorText(err)) + '</b>';
         if (err && err.unreachable) {
           html += '<br>请确认本地静态服务器(serve.py)与后端 admin-api 都在运行。';
         } else if (err && err.requestId) {
           html += '<br>请求 ID:' + BackApi.esc(err.requestId);
         }
+        html += '</div>';
         fiErr.style.display = 'block';
         errBox.innerHTML = html;
       }
+
+      /* ---------- 演示模式指示(§13.11 的新端点后端还没实现)---------- */
+      function renderMockLine() {
+        var mode = BackApi.mockMode();
+        var forced = (mode === true);
+        document.getElementById('mockState').textContent =
+          forced ? '本地契约 mock'
+                 : (mode === false ? '真实后端(强制)' : '真实后端(不可达时自动落 mock)');
+        document.getElementById('mockToggle').textContent =
+          forced ? '切回真实后端' : '切到本地契约 mock';
+        document.getElementById('mockTip').style.display = forced ? 'block' : 'none';
+        /* 「重置为 auto」只在被强制过的时候出现(默认就是 auto,不用显示) */
+        var rw = document.getElementById('mockResetWrap');
+        if (rw) rw.style.display = (mode === 'auto') ? 'none' : 'inline';
+      }
+      document.getElementById('mockToggle').addEventListener('click', function () {
+        var forced = (BackApi.mockMode() === true);
+        BackApi.setMock(!forced);
+        renderMockLine();
+      });
+      document.getElementById('mockReset').addEventListener('click', function () {
+        BackApi.resetMock();
+        renderMockLine();
+      });
 
       function doLogin() {
         clearErr();
@@ -111,15 +178,38 @@
         if (!u) { showErr('#fi-user', '请输入账号'); return; }
         if (!p) { showErr('#fi-pwd', '请输入密码'); return; }
 
+        var remember = !!rmb.checked;
+
         /* loading 态:按钮置灰,避免重复提交 */
         btn.disabled = true;
         btn.textContent = '登录中…';
 
-        /* ⚠️ 走真实后端 POST /api/adm/v1/auth/login(经 serve.py 反代)。
-         *    成功后把令牌 + 用户信息存 sessionStorage,再跳工作台。 */
-        BackApi.login(u, p).then(function (data) {
-          BackApi.saveSession(data);
-          location.href = 'back-dashboard.html';
+        /* ⚠️ 走 POST /api/adm/v1/auth/login(经 serve.py 反代)。
+         *    请求体只有 {username, password, rememberMe?} —— ⛔ 不发任何医院字段
+         *    (医院从**账号行**推导,前端不参与)。
+         *    成功后按 data.scope 分流(§13.11.8 第 2 条):
+         *      scope = hospital ⇒ 进工作台;scope = platform ⇒ 进选院页(超管还没选院)。 */
+        BackApi.login(u, p, remember).then(function (data) {
+          /* ⚠️ 令牌存哪由 rememberMe 决定(§13.11.6.6):
+             *   false ⇒ sessionStorage(关掉标签页即失效)
+             *   true  ⇒ localStorage(access + 长效凭据)⇒ 7 天内免登录 */
+          BackApi.saveSession(data, remember, false);
+          /* 「当前医院」= **前端本地上下文**(契约键 emrs.admin.currentHospitalId,
+             *   sessionStorage、只放 id)—— 之后每个医院作用域请求带
+             *   `X-Target-Hospital-Id` 请求头。
+             * ⚠️ 超管的 data.hospital 是 **null** ⇒ **不许写**这个键(他必须先选院)。 */
+          if (data && data.hospital && data.hospital.id) {
+            BackApi.setCurrentHospitalId(String(data.hospital.id));
+          }
+          /* 演示数据层的当前医院(**显示层**:静态数据靠它过滤)—— 与契约键是两回事。 */
+          if (data && data.hospital && data.hospital.id && window.BACK_DATA) {
+            BACK_DATA.setCurrentHospitalId(data.hospital.id);
+          }
+          if (data && data.scope === 'platform') {
+            location.href = 'back-hospital-pick.html';
+          } else {
+            location.href = 'back-dashboard.html';
+          }
         }).catch(function (err) {
           btn.disabled = false;
           btn.textContent = '登 录';
@@ -134,8 +224,14 @@
         doLogin();
       });
 
-      /* 默认填账号(口令由后端 mkadmin 创建,不预填) */
-      document.getElementById('u').value = 'admin';
+      /* 预填**演示账号**(不是凭据来源 —— 真实账号由后端 mkadmin 创建)。
+       * ⚠️ 登录名全平台唯一(2026-10-30 拍板)⇒ 不能用裸 'admin'(各院都要起全局不撞名的登录名),
+       *    而且**必须是真能登录的账号名**(platform_admin / hsyy_admin / hzyy_admin),
+       *    否则一点「登录」就是 40102「账号或密码不正确」。 */
+      document.getElementById('u').value = 'platform_admin';
+      document.getElementById('p').value = 'Passw0rd!';
+
+      renderMockLine();
     })();
   </script>
 </body>
