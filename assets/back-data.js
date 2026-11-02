@@ -423,7 +423,13 @@ var BACK_DATA = (function () {
         { id: 2, name: '舒张压', type: 'num', validMin: 20, validMax: 180, rangeMin: 60, rangeMax: 90,  unit: 'mmHg', step: 1, req: 'required' },
         { id: 3, name: '心率',   type: 'num', validMin: 20, validMax: 250, rangeMin: 60, rangeMax: 100, unit: 'bpm',   step: 1, req: 'optional' },
         { id: 4, name: '测量时间', type: 'datetime', validMin: null, validMax: null, rangeMin: null, rangeMax: null, unit: '', step: 1, req: 'auto' },
-        { id: 5, name: '测量体位', type: 'enum', enumVals: ['坐位', '卧位', '立位'], validMin: null, validMax: null, rangeMin: null, rangeMax: null, unit: '', step: 1, req: 'optional' }
+        { id: 5, name: '测量体位', type: 'enum', enumOpts: [
+          { code: 'SITTING', label: '坐位', affectsCompletion: 1, status: 1 },
+          { code: 'SUPINE', label: '卧位', affectsCompletion: 1, status: 1 },
+          { code: 'STANDING', label: '立位', affectsCompletion: 1, status: 1 },
+          /* 预置一条已停用项:让「已停用」区在演示里可见(行保留、code 不复用) */
+          { code: 'NOT_MEASURED', label: '未测量', affectsCompletion: 0, status: 0 }
+        ], validMin: null, validMax: null, rangeMin: null, rangeMax: null, unit: '', step: 1, req: 'optional' }
       ] },
     { id: 2, name: '记录血糖', icon: 'icon-blood-drop', departmentId: 1,
       desc: '指尖血糖自测,空腹与餐后各测一次。', status: 1, order: 2,
@@ -435,14 +441,26 @@ var BACK_DATA = (function () {
     { id: 3, name: '服药反馈', icon: 'icon-pill', departmentId: 1,
       desc: '患者反馈当日服药情况,护士据此跟进。', status: 1, order: 3,
       fields: [
-        { id: 21, name: '服药情况', type: 'enum', enumVals: ['正常服用', '减量服用', '未正常服用'], validMin: null, validMax: null, rangeMin: null, rangeMax: null, unit: '', step: 1, req: 'required' },
+        { id: 21, name: '服药情况', type: 'enum', enumOpts: [
+          { code: 'ADHERENT', label: '正常服用', affectsCompletion: 1, status: 1 },
+          { code: 'PARTIAL_ADHERENT', label: '减量服用', affectsCompletion: 1, status: 1 },
+          { code: 'SELF_DISCONTINUED', label: '未正常服用', affectsCompletion: 1, status: 1 },
+          { code: 'ADVERSE_REACTION', label: '不良反应', affectsCompletion: 1, status: 1 }
+        ], validMin: null, validMax: null, rangeMin: null, rangeMax: null, unit: '', step: 1, req: 'required' },
         { id: 22, name: '备注', type: 'text', validMin: null, validMax: null, rangeMin: null, rangeMax: null, unit: '', step: 1, req: 'optional' },
         { id: 23, name: '填写理由', type: 'text', validMin: null, validMax: null, rangeMin: null, rangeMax: null, unit: '', step: 1, req: 'optional' }
       ] },
     { id: 4, name: '电话回访', icon: 'icon-call', departmentId: 1,
       desc: '护士电话随访记录接通情况与随访结论。', status: 1, order: 4,
       fields: [
-        { id: 31, name: '接通状态', type: 'enum', enumVals: ['电话接通', '未接通', '拒接'], validMin: null, validMax: null, rangeMin: null, rangeMax: null, unit: '', step: 1, req: 'required' },
+        { id: 31, name: '接通状态', type: 'enum', enumOpts: [
+          { code: 'PHONE_CONNECTED', label: '电话接通', affectsCompletion: 1, status: 1 },
+          /* 基线种子里这两条 affects_completion=0:选中时本次填报仍算未完成 */
+          { code: 'VOICEMAIL_ONLY', label: '仅留言', affectsCompletion: 0, status: 1 },
+          { code: 'NOT_CONNECTED', label: '未接通', affectsCompletion: 0, status: 1 },
+          /* 预置一条已停用项:让「已停用」区在演示里可见 */
+          { code: 'REFUSED', label: '拒接', affectsCompletion: 1, status: 0 }
+        ], validMin: null, validMax: null, rangeMin: null, rangeMax: null, unit: '', step: 1, req: 'required' },
         { id: 32, name: '随访结论', type: 'text', validMin: null, validMax: null, rangeMin: null, rangeMax: null, unit: '', step: 1, req: 'optional' }
       ] },
     { id: 5, name: '上传检查报告', icon: 'icon-camera', departmentId: 1,
@@ -454,7 +472,11 @@ var BACK_DATA = (function () {
     { id: 6, name: '康复训练打卡', icon: 'icon-run', departmentId: 1,
       desc: '每日康复训练打卡。', status: 1, order: 6,
       fields: [
-        { id: 51, name: '训练项目', type: 'enum', enumVals: ['步行训练', '被动运动', '语言训练'], validMin: null, validMax: null, rangeMin: null, rangeMax: null, unit: '', step: 1, req: 'required' },
+        { id: 51, name: '训练项目', type: 'enum', enumOpts: [
+          { code: 'WALKING', label: '步行训练', affectsCompletion: 1, status: 1 },
+          { code: 'PASSIVE', label: '被动运动', affectsCompletion: 1, status: 1 },
+          { code: 'SPEECH', label: '语言训练', affectsCompletion: 1, status: 1 }
+        ], validMin: null, validMax: null, rangeMin: null, rangeMax: null, unit: '', step: 1, req: 'required' },
         { id: 52, name: '训练时长', type: 'num', validMin: 0, validMax: 600, rangeMin: null, rangeMax: null, unit: '分钟', step: 1, req: 'optional', custom: true }
       ] },
     { id: 7, name: '口述病例', icon: 'icon-microscope', departmentId: 1,
@@ -470,7 +492,12 @@ var BACK_DATA = (function () {
         { id: 72, name: '剂量', type: 'text', ph: '如 100 mg',
           validMin: null, validMax: null, rangeMin: null, rangeMax: null, unit: '', step: 1, req: 'required' },
         { id: 73, name: '频次', type: 'enum',
-          enumVals: ['每日一次', '每日两次', '每晚一次', '必要时'],
+          enumOpts: [
+            { code: 'QD', label: '每日一次', affectsCompletion: 1, status: 1 },
+            { code: 'BID', label: '每日两次', affectsCompletion: 1, status: 1 },
+            { code: 'QN', label: '每晚一次', affectsCompletion: 1, status: 1 },
+            { code: 'PRN', label: '必要时', affectsCompletion: 1, status: 1 }
+          ],
           validMin: null, validMax: null, rangeMin: null, rangeMax: null, unit: '', step: 1, req: 'required' }
       ] }
   ];

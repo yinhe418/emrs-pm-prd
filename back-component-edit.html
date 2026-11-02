@@ -24,14 +24,16 @@
     <div class="form-grid">
       <div class="fi">
         <label><span class="req">*</span>组件名称</label>
-        <input class="ipt" name="cName" placeholder="2–30 字,同医院内唯一">
+        <input class="ipt" name="cName" placeholder="2–30 字,同科室内唯一">
         <span class="err-msg"></span>
       </div>
       <div class="fi full">
         <label>图标</label>
         <div class="flex" style="gap:6px" id="iconPick"></div>
         <span class="err-msg"></span>
-        <div class="image-up" style="margin-top:10px">
+        <!-- ⚠️ 自定义图标上传待『文件上传』模块上线后解禁(需 POST /files);本期只有内置图标选择器,组件的 icon 存图标名。
+             容器内元素(#icPrev / #icFile / #icClear)保留在 DOM,仅整块隐藏,JS 不会报错。 -->
+        <div class="image-up" style="margin-top:10px;display:none">
           <div class="iu-preview" id="icPrev">
             <div>暂无图<br>上传后将显示在这里</div>
           </div>
@@ -98,6 +100,7 @@
               <select class="sel" id="ctype">
                 <option value="num">数字类型</option>
                 <option value="datetime">日期时间</option>
+                <option value="date">日期</option>
                 <option value="enum">枚举</option>
                 <option value="drug">药品库(选择)</option>
                 <option value="file">图片(上传)</option>
@@ -122,7 +125,7 @@
 
     <div style="padding:13px 16px;border-top:1px solid var(--line-2)" class="fz-12 text-3">
       <b>数字类型</b> = 上下限对它生效,单位必填 &nbsp;·&nbsp;
-      <b>日期时间 / 枚举 / 药品库(选择) / 图片(上传) / 文本</b> = 上下限无意义,添加时自动置灰<br>
+      <b>日期时间 / 日期 / 枚举 / 药品库(选择) / 图片(上传) / 文本</b> = 上下限无意义,添加时自动置灰<br>
       <b>必填</b> = 患者提交时必须填 &nbsp;·&nbsp;
       <b>选填</b> = 可留空 &nbsp;·&nbsp;
       <b>自动</b> = 系统自动采集(如测量时间),患者不可编辑
@@ -264,6 +267,30 @@
          : r === 'auto' ? '<span class="badge badge-info">自动</span>'
          : '<span class="badge badge-gray">选填</span>';
   }
+
+  /* ---------- 枚举字段副标题 + 配置入口 ----------
+     ⚠️ code 是统计聚合键、字段内唯一,**只能在「字段配置」页生成** ⇒ 本页不给枚举维护入口,
+        只给跳转;新建的枚举字段枚举值留空 ⇒ 显示「待配置枚举值」,别让人以为漏了。 */
+  function isPersistedField(f) {
+    return c.fields.some(function (x) { return String(x.id) === String(f.id); });
+  }
+  function enumCellSub(f) {
+    var opts = f.enumOpts || [];
+    var on = opts.filter(function (o) { return o.status === 1; }).length;
+    var off = opts.length - on;
+    var persisted = isPersistedField(f);
+    var s = '<div class="cell-sub fz-11">启用 ' + on + ' 项'
+         + (off ? ' · 停用 ' + off + ' 项' : '') + '</div>';
+    if (!on) {
+      s += '<div class="cell-sub fz-11 text-4">待配置枚举值'
+         + (persisted ? '' : '(保存组件后可去字段配置页维护)') + '</div>';
+    }
+    if (persisted) {
+      s += '<div><a class="btn-text" href="back-component-field.html?c=' + c.id + '&f=' + f.id
+         + '">去配置枚举值 ›</a></div>';
+    }
+    return s;
+  }
   function renderFields() {
     var tb = document.getElementById('fBody');
     tb.innerHTML = fields.map(function (f, i) {
@@ -276,7 +303,7 @@
         +   (f.disputed ? '<div><span class="badge badge-warn" title="上下限口径存在冲突,待统一">⚠️ 上下限口径待定</span></div>' : '')
         + '</td>'
         + '<td class="fz-12"><span class="badge badge-outline">' + (FTYPES[f.type] || f.type) + '</span>'
-        +   (f.type === 'enum' && f.enumVals ? '<div class="cell-sub fz-11">' + f.enumVals.length + ' 项 · 可手填</div>' : '')
+        +   (f.type === 'enum' ? enumCellSub(f) : '')
         +   (f.type === 'drug' ? '<div class="cell-sub fz-11">选自药品库</div>' : '') + '</td>'
         + '<td class="fz-12">' + (ranged ? sideText(f.rangeMin, f.unit) : '<span class="text-4">不适用</span>') + '</td>'
         + '<td class="fz-12">' + (ranged ? sideText(f.rangeMax, f.unit) : '<span class="text-4">不适用</span>') + '</td>'
@@ -310,12 +337,11 @@
   document.getElementById('fBody').addEventListener('click', function (e) {
     var el = e.target.closest('[data-del]'); if (!el) return;
     var i = +el.getAttribute('data-del'), f = fields[i];
-    var refs = 2, rows = 184;
     document.getElementById('delTitle').textContent = '停用字段「' + f.name + '」';
     document.getElementById('delBody').innerHTML =
       '<div class="note note-block" style="margin:0 0 10px"><img src="assets/icons-png/icon-warning.png">'
-      + '<div><b>该字段已被使用,不能硬删除,只能停用。</b></div></div>'
-      + '<div>已被 <b>' + refs + '</b> 个任务模板引用、<b>' + rows + '</b> 条历史数据使用。停用后:</div>'
+      + '<div><b>该字段不能硬删除,只能停用</b>(系统统一软删:删了还能查到是谁删的,也能恢复)。</div></div>'
+      + '<div><b>任务分配模块尚未上线</b>,本期不统计该字段的引用数与历史条数。停用后:</div>'
       + '<ul><li>小程序端<b>不再显示</b>该字段</li>'
       + '<li>进行中任务的该字段置灰标「已停用」,历史数据只读可看</li>'
       + '<li><b>历史数据全部保留</b>,后台不提供物理删除入口</li>'
@@ -364,15 +390,10 @@
       if (unit === '') { Back.toast('数字类型请填写单位,例如 mm / bpm / mmol/L', 'err'); document.getElementById('cunit').focus(); return; }
       f.rangeMin = lo; f.rangeMax = hi; f.unit = unit;
     } else if (type === 'enum') {
-      /* 枚举值管理员可自行输入,不限定预设清单;
-         添加后还能在「字段配置」页用「+ 新增枚举值」继续增删。*/
-      var vals = window.prompt(
-        '枚举值(用顿号「、」分隔,可自行填写,不限于预设清单)',
-        '正常服用、减量服用、未正常服用');
-      if (vals === null) return;
-      f.enumVals = vals.split(/[、,，]/).map(function (x) { return x.trim(); })
-                    .filter(function (x) { return x.length; });
-      if (!f.enumVals.length) { Back.toast('枚举至少要有 1 个值', 'err'); return; }
+      /* 枚举值不在本页维护:code 是统计聚合键、字段内唯一,只能在「字段配置」页生成。
+         两个入口都维护会打架(code 会撞)⇒ 本页只负责把字段建出来,枚举值留空,
+         字段列表显示「待配置枚举值」,引导去「字段配置」页维护。*/
+      f.enumOpts = [];
     } else if (type === 'drug') {
       /* 药名只能从药品库选,不可手打;具体可选药品在「字段配置」页按本院药品库生成 */
       f.fromDrugLib = true;
@@ -396,10 +417,20 @@
     });
 
     var name = document.querySelector('[name="cName"]').value.trim();
-    var dup = BACK_DATA.components.filter(function (x) { return x.name === name && x.id !== c.id; })[0];
+    /* ⚠️ 唯一性口径:**同科室内唯一**(基线 uk_component_dept_name (department_id, name))。
+       · 比对必须带**归属科室**,不能只比名字;
+       · 科室取**当前表单里选的**(#cDept 的 value)—— 归属科室可能在保存前刚被改过,
+         不能用 c.departmentId(编辑态原值);
+       · ⚠️ 容错比较:<select>.value 是字符串,departmentId 是数字,直接 === 会静默失配。 */
+    var curDept = document.querySelector('#cDept').value;
+    var dup = BACK_DATA.components.filter(function (x) {
+      return x.name === name
+        && String(x.departmentId) === String(curDept)
+        && String(x.id) !== String(c.id);
+    })[0];
     if (dup) {
       var fi = document.querySelector('[name="cName"]').closest('.fi');
-      fi.classList.add('has-err'); fi.querySelector('.err-msg').textContent = '同名组件已存在:' + dup.name;
+      fi.classList.add('has-err'); fi.querySelector('.err-msg').textContent = '同科室已存在同名组件:' + dup.name;
       ok = false;
     }
 

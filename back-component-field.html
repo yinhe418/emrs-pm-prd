@@ -54,9 +54,15 @@
         </button>
       </div>
       <div class="flex flex-wrap" id="enumList" style="gap:8px;margin-top:10px"></div>
+      <div id="enumOffWrap" style="display:none;margin-top:12px">
+        <button class="btn-text muted" id="enumOffToggle" type="button"><span id="enumOffToggleText">展开已停用</span>(<span id="enumOffCount">0</span>)</button>
+        <div class="flex flex-wrap" id="enumOffList" style="gap:8px;margin-top:8px;display:none"></div>
+      </div>
       <div class="hint" style="display:block;margin-top:10px">
-        枚举值<b>由管理员手动维护</b>,不限于预设清单:点「新增枚举值」自行添加,点值上的 ✕ 删除。
-        删到 0 项无法保存(枚举至少要有 1 个值)。
+        <b>枚举值由管理员手动维护</b>,不限预设清单:点「新增枚举值」新增,点值上的 ✕ 停用。<br>
+        <b>停用 ≠ 删除</b>:行保留、<b>历史填报不受影响</b>,可随时「恢复」;
+        该 <b>code 槽位仍被占用</b>,<b>永不复用</b>给别的概念。<br>
+        <b>code 是统计聚合键,创建后不可修改</b>;label 是显示文案,医院可随时改,改名不影响统计分桶。
       </div>
     </div>
 
@@ -144,6 +150,43 @@
   </div>
 </main>
 
+<!-- ========== 新增枚举值 弹窗(code 与 label 分开填) ========== -->
+<div class="modal-mask" id="enumAddModal">
+  <div class="modal">
+    <div class="modal-head">
+      <img src="assets/icons-png/icon-plus.png" alt="">
+      <h3>新增枚举值</h3>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid c1">
+        <div class="fi" id="ecCodeFi">
+          <label><span class="req">*</span>统计编码 code</label>
+          <input class="ipt mono" id="ecCode" placeholder="如 SITTING" maxlength="32">
+          <span class="hint">统计聚合键,字段内唯一,自动转大写;创建后<b>不可修改</b>。</span>
+          <span class="err-msg"></span>
+        </div>
+        <div class="fi" id="ecLabelFi">
+          <label><span class="req">*</span>显示文案 label</label>
+          <input class="ipt" id="ecLabel" placeholder="如 坐位" maxlength="100">
+          <span class="hint">显示文案,医院可随时改,改名不影响统计分桶。</span>
+          <span class="err-msg"></span>
+        </div>
+        <div class="fi">
+          <label>计入完成</label>
+          <label style="display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink-2)">
+            <input type="checkbox" id="ecAffects" checked>计入完成
+          </label>
+          <span class="hint">关闭后:选中该选项时,本次填报<b>仍算未完成</b>。</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-default" id="ecCancel" type="button">取消</button>
+      <button class="btn btn-primary" id="ecOk" type="button">确认新增</button>
+    </div>
+  </div>
+</div>
+
 <script src="assets/back-api.js"></script>
 <script src="assets/back-data.js"></script>
 <script src="assets/back-layout.js"></script>
@@ -183,47 +226,186 @@
       document.getElementById('srcTitle').textContent =
         f.type === 'enum' ? '枚举值维护' : '药品库来源';
       document.getElementById('srcDesc').innerHTML = f.type === 'enum'
-        ? '枚举值由管理员手动维护,不限于预设清单。'
+        ? '枚举值由管理员手动维护:code 是统计聚合键(创建后不可改),label 可随时改文案。'
         : '药名只能从药品库选择,不能手打。';
     }
 
-    /* 枚举值:管理员可手动增删,不限于预设清单 */
+    /* ---------- 枚举值:code / label / 计入完成 / 停用(软删) ----------
+       ⚠️ 基线口径(不改,只落成产品形态):
+          code   = 统计聚合键,字段内唯一,「永不改名永不复用」;
+          label  = 显示文案,医院可改,改名不影响统计分桶;
+          affectsCompletion = 选中该选项时本次填报是否计入完成;
+          删除 = 停用(status=0):行保留、code 槽位仍被占用、历史填报不受影响。 */
+    var ENUM_CODE_RE = /^[A-Z][A-Z0-9_]{0,31}$/;
+
     function esc(s) {
       return String(s).replace(/[&<>"']/g, function (x) {
         return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[x];
       });
     }
+    function enumOpts() { return f.enumOpts || (f.enumOpts = []); }
+    function enumOn() { return enumOpts().filter(function (o) { return o.status === 1; }); }
+    function enumOff() { return enumOpts().filter(function (o) { return o.status === 0; }); }
+    function enumByCode(code) {
+      return enumOpts().filter(function (o) { return o.code === code; })[0];
+    }
+
     function renderEnum() {
-      var box = document.getElementById('enumList');
-      box.innerHTML = (f.enumVals || []).map(function (v, i) {
+      var on = enumOn(), off = enumOff();
+      document.getElementById('enumList').innerHTML = on.map(function (o) {
         return '<span class="badge badge-outline" style="display:inline-flex;align-items:center;gap:6px;padding-right:4px">'
-          + esc(v)
-          + '<button type="button" class="btn-text danger" data-rm="' + i + '" title="删除该枚举值">✕</button></span>';
-      }).join('') || '<span class="text-4 fz-12">还没有枚举值,点上方「新增枚举值」添加</span>';
-      document.getElementById('enumCount').textContent = (f.enumVals || []).length + ' 项';
+          + '<span class="btn-text" data-edit="' + esc(o.code) + '" title="点击修改显示文案">'
+          +   esc(o.label) + '</span>'
+          + '<span class="mono fz-11 text-4" title="统计聚合键,创建后不可修改">' + esc(o.code) + '</span>'
+          + (o.affectsCompletion ? '' : '<span class="badge badge-warn">不计入完成</span>')
+          + '<button type="button" class="btn-text danger" data-off="' + esc(o.code)
+          +   '" title="停用该枚举值(行保留、可恢复,code 不复用)">✕</button>'
+          + '</span>';
+      }).join('') || '<span class="text-4 fz-12">还没有启用项,点上方「新增枚举值」添加</span>';
+
+      document.getElementById('enumOffList').innerHTML = off.map(function (o) {
+        return '<span class="badge badge-gray" style="display:inline-flex;align-items:center;gap:6px;padding-right:4px">'
+          + '<span style="text-decoration:line-through" title="已停用">' + esc(o.label) + '</span>'
+          + '<span class="mono fz-11 text-4">' + esc(o.code) + '</span>'
+          + '<button type="button" class="btn-text" data-on="' + esc(o.code)
+          +   '" title="恢复该枚举值(code 与原行一致)">恢复</button>'
+          + '</span>';
+      }).join('');
+
+      document.getElementById('enumOffWrap').style.display = off.length ? '' : 'none';
+      document.getElementById('enumOffCount').textContent = off.length;
+      document.getElementById('enumCount').textContent =
+        '启用 ' + on.length + ' 项 · 已停用 ' + off.length + ' 项';
     }
 
     if (f.type === 'enum') {
-      f.enumVals = f.enumVals || [];
       document.getElementById('enumBox').style.display = '';
       renderEnum();
+
+      /* 新增枚举值:走弹窗(code 与 label 必须分开填 —— code 是标识、label 是文案) */
       document.getElementById('enumAdd').addEventListener('click', function () {
-        var v = window.prompt('新增枚举值(管理员自行填写,不限于预设清单)', '');
-        if (v === null) return;
-        v = v.trim();
-        if (!v) { Back.toast('枚举值不能为空', 'err'); return; }
-        if (f.enumVals.indexOf(v) >= 0) { Back.toast('该枚举值已存在:' + v, 'err'); return; }
-        f.enumVals.push(v);
-        renderEnum();
-        Back.toast('已新增枚举值「' + v + '」,记得点保存', 'ok');
+        document.getElementById('ecCode').value = '';
+        document.getElementById('ecLabel').value = '';
+        document.getElementById('ecAffects').checked = true;
+        ['ecCodeFi', 'ecLabelFi'].forEach(function (id) {
+          var fi = document.getElementById(id);
+          fi.classList.remove('has-err');
+          fi.querySelector('.err-msg').textContent = '';
+        });
+        Back.modal('enumAddModal', true);
+        setTimeout(function () { document.getElementById('ecCode').focus(); }, 60);
       });
+
+      /* code 自动转大写 */
+      document.getElementById('ecCode').addEventListener('input', function () {
+        this.value = this.value.toUpperCase();
+      });
+
+      document.getElementById('ecCancel').addEventListener('click', function () {
+        Back.modal('enumAddModal', false);
+      });
+
+      document.getElementById('ecOk').addEventListener('click', function () {
+        var code = document.getElementById('ecCode').value.trim().toUpperCase();
+        var label = document.getElementById('ecLabel').value.trim();
+        var affects = document.getElementById('ecAffects').checked ? 1 : 0;
+        var codeFi = document.getElementById('ecCodeFi');
+        var labelFi = document.getElementById('ecLabelFi');
+        codeFi.classList.remove('has-err'); codeFi.querySelector('.err-msg').textContent = '';
+        labelFi.classList.remove('has-err'); labelFi.querySelector('.err-msg').textContent = '';
+        var ok = true;
+        if (!code) {
+          codeFi.classList.add('has-err');
+          codeFi.querySelector('.err-msg').textContent = '统计编码必填'; ok = false;
+        } else if (!ENUM_CODE_RE.test(code)) {
+          codeFi.classList.add('has-err');
+          codeFi.querySelector('.err-msg').textContent = '编码规则:首字母 A-Z,其余只能是 A-Z / 0-9 / _,最长 32 位';
+          ok = false;
+        } else if (enumByCode(code)) {
+          codeFi.classList.add('has-err');
+          codeFi.querySelector('.err-msg').textContent = '该编码已存在'; ok = false;
+        }
+        if (!label) {
+          labelFi.classList.add('has-err');
+          labelFi.querySelector('.err-msg').textContent = '显示文案必填'; ok = false;
+        } else if (label.length > 100) {
+          labelFi.classList.add('has-err');
+          labelFi.querySelector('.err-msg').textContent = '显示文案最多 100 字'; ok = false;
+        }
+        if (!ok) return;
+        enumOpts().push({ code: code, label: label, affectsCompletion: affects, status: 1 });
+        renderEnum();
+        Back.modal('enumAddModal', false);
+        Back.toast('已新增枚举值「' + label + '」(' + code + '),记得点保存', 'ok');
+      });
+
+      /* 启用区:✕ = 停用(软删);点 label = 就地改文案 */
       document.getElementById('enumList').addEventListener('click', function (e) {
-        var el = e.target.closest('[data-rm]'); if (!el) return;
-        var i = +el.getAttribute('data-rm');
-        var gone = f.enumVals.splice(i, 1)[0];
-        renderEnum();
-        Back.toast('已删除枚举值「' + gone + '」,记得点保存', 'warn');
+        var off = e.target.closest ? e.target.closest('[data-off]') : null;
+        if (off) {
+          var o = enumByCode(off.getAttribute('data-off'));
+          if (!o) return;
+          if (enumOn().length <= 1) { Back.toast('至少要保留 1 个启用项', 'err'); return; }
+          o.status = 0;
+          renderEnum();
+          Back.toast('已停用「' + o.label + '」:行保留、历史填报不受影响,code 不复用', 'warn');
+          return;
+        }
+        var ed = e.target.closest ? e.target.closest('[data-edit]') : null;
+        if (ed) startEditLabel(enumByCode(ed.getAttribute('data-edit')), ed);
       });
+
+      /* 已停用区:恢复(code 与原行一致) */
+      document.getElementById('enumOffList').addEventListener('click', function (e) {
+        var el = e.target.closest ? e.target.closest('[data-on]') : null;
+        if (!el) return;
+        var o = enumByCode(el.getAttribute('data-on'));
+        if (!o) return;
+        o.status = 1;
+        renderEnum();
+        Back.toast('已恢复「' + o.label + '」', 'ok');
+      });
+
+      /* 已停用区:默认收起,点一下展开/收起
+         ⚠️ 只改 #enumOffToggleText 的文字,别动 this.textContent ——
+            按钮里还嵌着 #enumOffCount,整体覆盖会把计数节点冲掉(⇒ 后续渲染 null 报错)。 */
+      document.getElementById('enumOffToggle').addEventListener('click', function () {
+        var box = document.getElementById('enumOffList');
+        var open = box.style.display === 'none';
+        box.style.display = open ? '' : 'none';
+        document.getElementById('enumOffToggleText').textContent = open ? '收起已停用' : '展开已停用';
+      });
+
+      /* 就地改文案:回车/失焦保存,Esc 取消;编辑期间 code 那行灰字不可动 */
+      function startEditLabel(o, labelEl) {
+        if (!o || document.querySelector('#enumList input[data-editinput]')) return;
+        var chip = labelEl.parentNode;
+        var inp = document.createElement('input');
+        inp.className = 'ipt';
+        inp.setAttribute('data-editinput', '1');
+        inp.style.cssText = 'width:130px;height:26px;padding:0 6px;font-size:12px;';
+        inp.value = o.label;
+        labelEl.style.display = 'none';
+        chip.insertBefore(inp, labelEl);
+        inp.focus(); inp.select();
+        var done = false;
+        function finish(cancel) {
+          if (done) return; done = true;
+          var v = inp.value.trim();
+          if (cancel) { renderEnum(); return; }
+          if (!v) { Back.toast('显示文案不能为空', 'err'); renderEnum(); return; }
+          if (v !== o.label) {
+            o.label = v;
+            renderEnum();
+            Back.toast('已改文案,统计分桶不受影响', 'ok');
+          } else { renderEnum(); }
+        }
+        inp.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter') { e.preventDefault(); finish(false); }
+          else if (e.key === 'Escape') { e.preventDefault(); finish(true); }
+        });
+        inp.addEventListener('blur', function () { finish(false); });
+      }
     }
 
     /* 药名字段:从本院药品库选,不可手打 */
@@ -283,9 +465,9 @@
 
     /* 保存 */
     document.getElementById('saveBtn').addEventListener('click', function () {
-      /* 枚举:至少留 1 个值,否则小程序端无从选择 */
-      if (f.type === 'enum' && !(f.enumVals || []).length) {
-        Back.toast('枚举至少要有 1 个值,请点「新增枚举值」添加', 'err');
+      /* 枚举:至少留 1 个**启用**项(已停用的不算),否则小程序端无从选择 */
+      if (f.type === 'enum' && !enumOn().length) {
+        Back.toast('枚举至少要有 1 个启用项,请点「新增枚举值」添加', 'err');
         return;
       }
       /* 药名:只能来自药品库 */
