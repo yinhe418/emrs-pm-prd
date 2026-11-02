@@ -3,20 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>认领设置 · 后台管理</title>
+  <title>设置科室与职称 · 后台管理</title>
   <link rel="stylesheet" href="assets/back.css">
 </head>
-<body data-page="staff" data-crumb='[{"name":"后台管理"},{"name":"组织与人员"},{"href":"back-staff.html","name":"工作人员"},{"name":"认领设置"}]'>
+<body data-page="staff" data-crumb='[{"name":"后台管理"},{"name":"组织与人员"},{"href":"back-staff.html","name":"工作人员"},{"name":"设置科室与职称"}]'>
 
 <main class="back-main has-sticky">
-
-  <div class="note note-warn" id="countdownBar">
-    <img src="assets/icons-png/icon-warning.png">
-    <div>
-      <b>认领有效期 <span id="cd" style="font-family:ui-monospace,Menlo,monospace">23:41:08</span></b>
-      — 超过 24 小时未完成设置,认领将自动退回队列并通知原认领人。
-    </div>
-  </div>
 
   <div class="split">
     <!-- ========== 左:微信原始信息(只读) ========== -->
@@ -41,8 +33,6 @@
             <tr><td class="text-3" style="border:none">停留时长</td><td style="border:none" id="pDays">—</td></tr>
             <tr><td class="text-3" style="border:none">扫码来源</td><td style="border:none" id="pSrc">—</td></tr>
             <tr><td class="text-3" style="border:none">二维码归属</td><td style="border:none">工作人员邀请码(医院级)</td></tr>
-            <tr><td class="text-3" style="border:none">认领人</td><td style="border:none" id="pClaim">—</td></tr>
-            <tr><td class="text-3" style="border:none">认领时间</td><td style="border:none" id="pClaimAt">—</td></tr>
           </tbody>
         </table>
 
@@ -59,7 +49,6 @@
         <div class="card-head"><h3>处理记录</h3></div>
         <div class="timeline">
           <div class="tl-item hi"><div class="tl-t" id="tl1">—</div><div class="tl-b">扫码进入小程序,进入待分配队列</div></div>
-          <div class="tl-item" id="tl2row"><div class="tl-t" id="tl2">—</div><div class="tl-b">管理员认领</div></div>
           <div class="tl-item" id="tl3row"><div class="tl-t">待完成</div><div class="tl-b">设置科室与职称</div></div>
         </div>
       </div>
@@ -68,7 +57,7 @@
     <!-- ========== 右:设置表单 ========== -->
     <div class="grow">
       <div class="page-head">
-        <h1>认领并设置</h1>
+        <h1>设置科室与职称</h1>
         <div class="sub">科室与职称<b>都是必填</b>,设置完成后该人员即可正常使用小程序,无需重新扫码。</div>
       </div>
 
@@ -129,8 +118,7 @@
     <a class="btn btn-default" href="back-staff.html?tab=pending">← 返回队列</a>
     <button type="button" class="btn btn-text danger" id="archBtn" style="margin-left:6px">归档此人</button>
     <span class="ml-auto"></span>
-    <button class="btn btn-default" id="saveLater">保存并稍后处理</button>
-    <button class="btn btn-primary" id="saveBtn">完成设置</button>
+    <button class="btn btn-primary" id="saveBtn">保存并转正</button>
   </div>
 </main>
 
@@ -190,29 +178,7 @@
   document.getElementById('pWechat').innerHTML = w.wechatBound
     ? '微信绑定:<span class="badge badge-pass">已绑定</span>'
     : '微信绑定:<span class="badge badge-gray">未绑定</span>';
-  /* 认领人存 id,显示时现取名字 */
-  var claimer = BACK_DATA.claimedByName(w);
-  document.getElementById('pClaim').innerHTML = claimer
-    ? '<span class="badge badge-info">' + claimer + '</span>' : '<span class="badge badge-block">未认领</span>';
-  document.getElementById('pClaimAt').textContent = fmtTime(w.claimedAt);
   document.getElementById('tl1').textContent = fmtTime(w.scannedAt);
-  if (claimer) {
-    document.getElementById('tl2').textContent = fmtTime(w.claimedAt);
-    document.getElementById('tl2row').classList.add('hi');
-  } else {
-    document.getElementById('tl2row').style.opacity = '.5';
-    document.getElementById('tl2').textContent = '尚未认领';
-  }
-
-  /* 倒计时 */
-  var sec = 23 * 3600 + 41 * 60 + 8;
-  setInterval(function () {
-    sec--;
-    if (sec < 0) sec = 0;
-    var h = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60), s = sec % 60;
-    var pad = function (x) { return x < 10 ? '0' + x : '' + x; };
-    document.getElementById('cd').textContent = pad(h) + ':' + pad(m) + ':' + pad(s);
-  }, 1000);
 
   /* 表单默认 */
   document.querySelector('[name="sName"]').value = w.nickName.replace('**', '');
@@ -323,9 +289,6 @@
     w.phone = v.sPhone;
     w.status = 1;                      /* 1 = 在职 */
     w.avatarSource = avatarMode;       /* avatar_source:wechat | override | default */
-    /* 认领人存 id(claimedByStaffId),显示时现取名字 */
-    w.claimedByStaffId = w.claimedByStaffId || BACK_DATA.ADMIN_STAFF_ID;
-    w.claimExpiresAt = '';             /* 已转正 → 不再有认领有效期 */
     w.archiveReason = '';
     w.archivedAt = '';
     w.archivedByStaffId = null;        /* 契约里「无」是 null,不是空串 */
@@ -334,17 +297,6 @@
     Back.toast('已设置:' + v.sName + ' · ' + BACK_DATA.dept(v.sDept).name
       + ' · ' + BACK_DATA.pos(pickedPos).name + ',对方立即可用', 'ok');
     setTimeout(function () { location.href = 'back-staff.html?tab=set'; }, 1100);
-  });
-
-  /* 保存并稍后处理:保留认领,人还在待分配队列里(status = 3 已认领) */
-  document.getElementById('saveLater').addEventListener('click', function () {
-    w.status = 3;
-    w.claimedByStaffId = BACK_DATA.ADMIN_STAFF_ID;
-    w.claimedAt = BACK_DATA.NOW_ISO;
-    w.claimExpiresAt = '2026-10-29T10:00:00+08:00';   /* 24 小时有效期 */
-    BACK_DATA.saveStaff();
-    Back.toast('已保留认领,24 小时内可回来继续', 'warn');
-    setTimeout(function () { location.href = 'back-staff.html?tab=pending'; }, 900);
   });
 
   document.getElementById('archBtn').addEventListener('click', function (e) {

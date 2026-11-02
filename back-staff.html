@@ -19,7 +19,7 @@
   <div class="note note-info">
     <img src="assets/icons-png/icon-info.png">
     <div><b>本页已接真后端</b>(<code>GET /api/adm/v1/staff</code>,三个 Tab 按 <code>status</code> 分别取数)。
-      科室名称 / 简介完整度 / 下属病患 / 认领归档等**写操作**依赖尚未交付的端点,页面上以「—」占位;
+      科室名称 / 简介完整度 / 下属病患 / 设置科室与职称、归档等**写操作**依赖尚未交付的端点,页面上以「—」占位;
       「详情 / 编辑」页本轮未接后端,仍是演示态。</div>
   </div>
 
@@ -90,14 +90,14 @@
       <div class="kpi-row">
         <div class="kpi red">
           <a href="?tab=pending" class="text-3">停留排序</a>
-          <div class="k-lab">待认领</div>
-          <div class="k-val" id="kNoClaim">0</div>
-          <div class="k-sub">管理员尚未认领</div>
+          <div class="k-lab">待设置科室</div>
+          <div class="k-val" id="kUnset">0</div>
+          <div class="k-sub">扫码进入、尚未设置科室与职称</div>
         </div>
         <div class="kpi orange">
-          <div class="k-lab">已认领未完成</div>
-          <div class="k-val" id="kClaimed">0</div>
-          <div class="k-sub">认领后 24h 内需完成设置</div>
+          <div class="k-lab">历史待设置</div>
+          <div class="k-val" id="kLegacy">0</div>
+          <div class="k-sub">历史遗留数据,新流程不再产生</div>
         </div>
         <div class="kpi blue">
           <div class="k-lab">停留 &gt; 3 天</div>
@@ -118,8 +118,8 @@
         </div>
         <div class="seg" id="pState">
           <button data-v="" class="active">全部</button>
-          <button data-v="2">待认领</button>
-          <button data-v="3">已认领未完成</button>
+          <button data-v="2">待设置</button>
+          <button data-v="3">待设置(历史)</button>
         </div>
         <span class="ml-auto"></span>
         <span class="fz-12 text-3">默认按停留时长倒序 · 超时 7 天自动归档</span>
@@ -130,13 +130,12 @@
           <table class="tbl">
             <thead>
               <tr>
-                <th style="width:150px">微信昵称</th>
-                <th style="width:118px">扫码时间</th>
-                <th style="width:96px">停留时长</th>
-                <th style="width:150px">科室</th>
-                <th style="width:118px">职称</th>
-                <th style="width:130px">认领人</th>
-                <th style="width:130px">微信绑定</th>
+                <th style="width:160px">微信昵称</th>
+                <th style="width:140px">扫码时间</th>
+                <th style="width:100px">停留时长</th>
+                <th style="width:160px">科室</th>
+                <th style="width:130px">职称</th>
+                <th style="width:150px">微信绑定</th>
                 <th class="col-act" style="width:150px">操作</th>
               </tr>
             </thead>
@@ -154,7 +153,7 @@
     <section data-pane="archived" class="hidden">
       <div class="note note-gray">
         <img src="assets/icons-png/icon-info.png">
-        <div><b>归档 ≠ 删除。</b>扫码超过 7 天未认领、或管理员手动归档(误扫 / 非本院人员 / 重复)都会进入这里。
+        <div><b>归档 ≠ 删除。</b>扫码超过 7 天未设置科室与职称、或管理员手动归档(误扫 / 非本院人员 / 重复)都会进入这里。
           数据保留 180 天,管理员可手动恢复。<br>
           <b>兜底:</b>若本院职工被误归档,本人可在小程序端提交工牌照片 + 本人自证,管理员在此处恢复并设置。</div>
       </div>
@@ -330,12 +329,6 @@
     if (p.roles.indexOf('nurse') >= 0) rs.push('<span class="badge badge-outline">护士</span>');
     return badge + (rs.length ? '<span style="margin-left:6px">' + rs.join(' ') + '</span>' : '');
   }
-  /* 认领人姓名:认领人也是 staff 行,在三个 Tab 里查得到 */
-  function claimedByName(s) {
-    if (!s || !s.claimedByStaffId) return '';
-    var m = staffById(s.claimedByStaffId);
-    return m ? (m.name || m.nickName || '') : '';
-  }
   function sessionHospitalName() {
     var s = BackApi.getSession();
     return (s && s.hospital && s.hospital.name) ? s.hospital.name : '本院';
@@ -380,7 +373,7 @@
   /* ---- 三个 Tab 的数据口径(全站唯一,用 **status 正向表达**)---- */
   /* 已设置:status ∈ {0 停用, 1 在职} */
   function setPool() { return TABS.set.rows; }
-  /* 待分配科室:status ∈ {2 待认领, 3 已认领待处理} */
+  /* 待分配科室:status ∈ {2 待设置, 3 历史遗留待设置} */
   function pendPool() { return TABS.pending.rows; }
   /* 已归档:status === 4 */
   function archPool() { return TABS.archived.rows; }
@@ -461,17 +454,17 @@
 
     if (t.error) {
       cntEl.textContent = '—'; nEl.textContent = '—'; totEl.textContent = '接口失败';
-      document.getElementById('kNoClaim').textContent = '—';
-      document.getElementById('kClaimed').textContent = '—';
+      document.getElementById('kUnset').textContent = '—';
+      document.getElementById('kLegacy').textContent = '—';
       document.getElementById('kLong').textContent = '—';
       document.getElementById('kToday').textContent = '—';
       document.getElementById('kLast7').textContent = '—';
-      body.innerHTML = BackApi.stateRow(8, BackApi.errorHtml(t.error));
+      body.innerHTML = BackApi.stateRow(7, BackApi.errorHtml(t.error));
       return;
     }
     if (!t.loaded) {
       cntEl.textContent = '…'; nEl.textContent = '…'; totEl.textContent = '加载中…';
-      body.innerHTML = BackApi.stateRow(8, BackApi.loadingHtml('/api/adm/v1/staff?status=' + t.status));
+      body.innerHTML = BackApi.stateRow(7, BackApi.loadingHtml('/api/adm/v1/staff?status=' + t.status));
       return;
     }
 
@@ -479,7 +472,7 @@
     var pool = pendPool();
     var rows = pool.filter(function (p) {
       if (kw && (p.nickName || '').indexOf(kw) < 0) return false;
-      /* pState 是数字(2 待认领 / 3 已认领),不能用 truthy 判断 */
+      /* pState 是数字(2 待设置 / 3 历史遗留待设置),不能用 truthy 判断 */
       if (pState !== '' && p.status !== pState) return false;
       return true;
     }).sort(function (a, b) { return BackApi.daysSince(b.scannedAt) - BackApi.daysSince(a.scannedAt); });
@@ -489,9 +482,9 @@
     cntEl.textContent = t.total;
     totEl.textContent = '后端共 ' + t.total + ' 条';
     /* KPI 三张卡同口径:都取**全队列**,不随搜索 / 分段筛选变化 */
-    document.getElementById('kNoClaim').textContent =
+    document.getElementById('kUnset').textContent =
       pool.filter(function (p) { return p.status === 2; }).length;
-    document.getElementById('kClaimed').textContent =
+    document.getElementById('kLegacy').textContent =
       pool.filter(function (p) { return p.status === 3; }).length;
     document.getElementById('kLong').textContent =
       pool.filter(function (p) { return BackApi.daysSince(p.scannedAt) > 3; }).length;
@@ -505,7 +498,6 @@
       var days = BackApi.daysSince(p.scannedAt);
       var durCls = days > 3 ? 'text-red fw-5' : days > 1 ? 'text-orange' : 'text-green';
       var dur = days + ' 天';
-      var claimer = claimedByName(p);
       return '<tr class="' + (days > 7 ? 'row-danger' : days > 3 ? 'row-warn' : '') + '">'
         + '<td><div class="cell-user"><span class="av-sm" style="background:#8A94A6">'
         +   BackApi.esc(BackApi.avatarText(p)) + '</span>'
@@ -515,18 +507,12 @@
         + '<td class="' + durCls + '">' + dur + '</td>'
         + '<td><span class="text-4 fz-12">— 未设置 —</span></td>'
         + '<td><span class="text-4 fz-12">— 未设置 —</span></td>'
-        + '<td class="fz-12">' + (claimer
-              ? '<span class="badge badge-info">' + BackApi.esc(claimer) + '</span><div class="cell-sub">' + BackApi.fmtTimeHM(p.claimedAt) + ' 认领</div>'
-              : '<span class="badge badge-block">未认领</span>') + '</td>'
         + '<td>' + wechatCell(p) + '</td>'
         + '<td class="col-act">'
-        +   (p.status === 3
-              ? '<span class="fz-12 text-orange fw-5">' + BackApi.esc(claimer || '处理中') + ' 处理中</span>'
-              : '<a class="btn-text" href="back-staff-pending-detail.html?id=' + p.id + '">认领并设置</a>')
-        +   '<a class="btn-text muted" data-claim="' + p.id + '">认领</a>'
+        +   '<a class="btn-text" href="back-staff-pending-detail.html?id=' + p.id + '">设置科室与职称</a>'
         +   '<a class="btn-text danger" data-arch="' + p.id + '">归档</a>'
         + '</td></tr>';
-    }).join('') : BackApi.stateRow(8, BackApi.emptyHtml('待分配队列已清空', '所有扫码人员都已设置科室与职称'));
+    }).join('') : BackApi.stateRow(7, BackApi.emptyHtml('待分配队列已清空', '所有扫码人员都已设置科室与职称'));
   }
 
   /* ---------- 已归档 ---------- */
@@ -558,7 +544,7 @@
         + '<td class="fz-12 text-3">' + BackApi.esc(p.archiveReason || '—') + '</td>'
         + '<td class="col-act"><a class="btn-text" data-restore="' + p.id + '">恢复并设置</a></td>'
         + '</tr>';
-    }).join('') : BackApi.stateRow(5, BackApi.emptyHtml('没有归档记录', '扫码超 7 天未认领或手动归档的记录会出现在这里'));
+    }).join('') : BackApi.stateRow(5, BackApi.emptyHtml('没有归档记录', '扫码超 7 天未设置科室与职称或手动归档的记录会出现在这里'));
   }
 
   function renderAll() {
@@ -566,7 +552,7 @@
   }
 
   /* ---------- 分段筛选 ---------- */
-  /* ⚠️ data-v 存的是**数字** status(1 在职 / 0 已停用 / 2 待认领 / 3 已认领),
+  /* ⚠️ data-v 存的是**数字** status(1 在职 / 0 已停用 / 2 待设置 / 3 历史遗留待设置),
    *    这里要转成 Number 再存 —— 字符串 '0' 与数字 0 比较会静默失配。 */
   document.getElementById('fStatus').addEventListener('click', function (e) {
     var b = e.target.closest('[data-v]'); if (!b) return;
@@ -585,13 +571,13 @@
 
   /* ---------- 操作 ----------
    * ⚠️ 本轮后端只交付了 **GET** 列表接口(GET /api/adm/v1/staff),
-   *    认领 / 归档 / 停用 / 恢复 都没有写端点。
+   *    启用 / 恢复 / 归档 都没有写端点。
    *    所以这里**不再改本地数据**(改了也是假数据,刷新就没了),
    *    改成明确提示「接口未交付」—— 不假装操作成功。 */
   document.body.addEventListener('click', function (e) {
     var t = e.target, g = function (a) { return t.getAttribute && t.getAttribute(a); };
 
-    if (g('data-en') || g('data-claim') || g('data-restore') || g('data-arch')) {
+    if (g('data-en') || g('data-restore') || g('data-arch')) {
       return Back.toast(WRITE_API_TIP, 'warn');
     }
 

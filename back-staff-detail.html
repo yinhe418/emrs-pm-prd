@@ -175,7 +175,7 @@
   Back.bindTabs('[data-tab-group="d"]');
   var s = BACK_DATA.member(Back.qs('id')) || BACK_DATA.staff[1];
   /* ⚠️ 待分配人员(status 2/3)也在 staff 表里,id 能查到 —— 但他们还没科室 / 职称,
-   *    不该打开「人员详情」。直接跳到「认领设置」页。 */
+   *    不该打开「人员详情」。直接跳到「设置科室与职称」页。 */
   if (BACK_DATA.isPendingStaff(s)) {
     location.replace('back-staff-pending-detail.html?id=' + s.id);
   }
