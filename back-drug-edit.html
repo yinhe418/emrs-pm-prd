@@ -52,6 +52,7 @@
       <div class="fi">
         <label><span class="req">*</span>剂型</label>
         <select class="sel" name="form"></select>
+        <span class="err-msg"></span>
       </div>
       <div class="fi">
         <label>状态</label>
@@ -149,26 +150,32 @@
     });
     return max + 1;
   }
+  /* ⚠️ 新建时类别 / 剂型**不预选**(留空)—— 两者都是必填:
+     预选「其他」「片剂」等于用兜底桶把分类问题静默掉(档案里的药没有一条在「其他」);
+     留空 ⇒ 停在「请选择类别 / 请选择剂型」占位上,保存时校验会拦。 */
   if (!d) d = { id: nextDrugId(), hospitalId: (Back.currentHospital() || {}).id || 1,
-                name: '', generic: '', cat: '其他', spec: '', form: '片剂', status: 1, otc: 'rx',
+                name: '', generic: '', cat: '', spec: '', form: '', status: 1, otc: 'rx',
                 photoUrl: '', usage: '', ind: '', adr: '', contra: '', inter: '' };
 
   var v = BACK_DATA.drugView(d);
 
   document.getElementById('ttl').textContent = isEdit ? '编辑药品 · ' + v.gn : '新建药品';
 
-  /* 类别下拉 */
+  /* 类别下拉(⚠️ 第一项是空占位「请选择类别」—— 类别是**必填**,
+     必须能选回空值,保存时才有校验可拦;不带 value 的 <option> 值 = 文本) */
   (function () {
     var cs = document.querySelector('[name="cat"]');
     var set = {};
     BACK_DATA.drugs.forEach(function (x) { if (x.cat) set[x.cat] = true; });
+    cs.insertAdjacentHTML('afterbegin', '<option value="">请选择类别</option>');
     Object.keys(set).forEach(function (k) { cs.insertAdjacentHTML('beforeend', '<option>' + k + '</option>'); });
     cs.insertAdjacentHTML('beforeend', '<option>其他</option>');
   })();
 
-  /* 剂型下拉(规范枚举 ∪ 档案里实际出现过的值) */
+  /* 剂型下拉(规范枚举 ∪ 档案里实际出现过的值;同样带空占位,剂型**必填**) */
   (function () {
     var fs = document.querySelector('[name="form"]');
+    fs.insertAdjacentHTML('afterbegin', '<option value="">请选择剂型</option>');
     BACK_DATA.drugForms().forEach(function (f) {
       fs.insertAdjacentHTML('beforeend', '<option>' + f + '</option>');
     });
@@ -201,10 +208,15 @@
   updatePhoto();
 
   /* 保存 */
+  /* ⚠️ 必填口径(2026-11-03 PM 定稿):通用名 / 类别 / 规格 / 剂型 **4 项都是必填**,
+     label 上的红星和这里的校验规则必须一一对上(以前只校验通用名 + 规格)。
+     文案风格沿用已有的「通用名 2–40 字」「请输入规格」:下拉用「请选择 X」。 */
   document.getElementById('saveBtn').addEventListener('click', function () {
     var ok = Back.validate(document.body, {
       gn: { required: true, minLen: 2, maxLen: 40, msg: '通用名 2–40 字' },
-      spec: { required: true, msg: '请输入规格' }
+      cat: { required: true, msg: '请选择类别' },
+      spec: { required: true, msg: '请输入规格' },
+      form: { required: true, msg: '请选择剂型' }
     });
     var name = document.querySelector('[name="gn"]').value.trim();
     var dup = BACK_DATA.drugs.filter(function (x) {
