@@ -61,6 +61,19 @@
         <input type="checkbox" id="rmb" checked> 记住我(7 天内免登录)
       </label>
 
+      <!-- ⚠️ **演示前隐藏**(2026-11-03 用户拍板)—— 下面这一整块是**说给我们自己听的**:
+           ① mock 模式开关 ② mock 模式说明 ③ 演示账号提示。
+           演示给终端用户(医生/科室主任/院管)时不该出现 ⇒ 整体隐藏。
+           ⇒ **怎么恢复**:把 <div id="demoInternalBlock"> 上的 style="display:none"
+             删掉(或改成 display:block)即可 —— **里面的 JS 一行都不用动**
+             (脚本仍会正常写 mockState / mockTip 的内容,只是不再可见)。
+           ⚠️ 为什么用「外层一个隐藏容器」而不是给每块各加 display:none:
+             `mockTip` 的显隐是**脚本在运行时改的**(renderMockLine 会把它设成 'block'),
+             单给它加内联 display:none 会被脚本覆盖 ⇒ 必须藏在一个同样被藏的父容器里。
+           ⛔ 隐藏后**页面上没有开关了** ⇒ 想切 mock / 真后端只能走控制台:
+                BackApi.setMock(true) / BackApi.setMock(false) / BackApi.resetMock()
+              (见 assets/back-api.js);localStorage 键 = 'emrs.mock.mode'。 -->
+      <div id="demoInternalBlock" style="display:none">
       <!-- 演示模式开关(⛔ 不在 form 内,不是表单字段):
            §13.11 的三个新端点(/auth/refresh、/auth/logout、/platform/session)
            + 登录响应的 scope 字段,后端**尚未实现**
@@ -92,6 +105,7 @@
         演示账号:<b>platform_admin</b>(平台超管)· <b>hsyy_admin</b> / <b>hzyy_admin</b>(院管)
         · 口令 <b>Passw0rd!</b> —— 已预填在上面的输入框里,直接点「登录」即可
       </div>
+      </div><!-- /demoInternalBlock -->
 
       <button class="btn btn-primary" id="loginBtn" type="submit" form="loginForm">登 录</button>
 
