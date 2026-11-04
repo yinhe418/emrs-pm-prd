@@ -335,6 +335,10 @@ var BACK_DATA = (function () {
    *
    * 字段说明
    *   患者级: id / name / sex / age / inNo / status(在管·已结管)
+   *            name     —— 真实姓名(后台可编辑;允许为空)
+   *            nickName —— 微信授权名(扫码授权写入,后台只读;允许为空)
+   *                        展示口径:name 优先,为空回退 nickName,都空显示「—」
+   *                        (2026-11-04 用户拍板,见 admin-design-spec.md §3.6.6)
    *            extraNurs[] —— 患者级「病患协作护士」全局名单(DB patient_co_nurse)
    *   项目级(projs[] 一行 = DB patient_project 一行):
    *            projId     —— 项目主档 id;'' = 未指定项目(占位,患者未入组)
@@ -346,7 +350,7 @@ var BACK_DATA = (function () {
    *            status     —— 项目级状态:'active' 在管 / 'closed' 已结管
    */
   var patients = [
-    { id: 1, name: '陈丙英', sex: 'F', age: 81, inNo: '320***22', extraNurs: [], status: 'active',
+    { id: 1, name: '陈丙英', nickName: '英子', sex: 'F', age: 81, inNo: '320***22', extraNurs: [], status: 'active',
       /* ⚠️ 2026-10-29 用户拍板:删掉 PT1 名下的「365 天长周期管理」参与记录 ——
        *    陈丙英是**真实档案实例**,不该在她名下挂一条为演示「多项目」而编造的参与关系。
        *    「一个患者可参与多个项目」的能力演示由 PT2 陈明远承担(90 天管理 + 颈动脉斑块研究)。 */
@@ -360,7 +364,7 @@ var BACK_DATA = (function () {
         { name: '舒张压', comp: '60 - 90',  now: '60 - 95',   unit: 'mmHg' },
         { name: 'LDL-C', comp: '< 1.8',   now: '< 1.4',    unit: 'mmol/L' }
       ] },
-    { id: 2, name: '陈明远', sex: 'M', age: 68, inNo: '320***58', extraNurs: [], status: 'active',
+    { id: 2, name: '陈明远', nickName: '明月清风', sex: 'M', age: 68, inNo: '320***58', extraNurs: [], status: 'active',
       projs: [
         { projId: '90d_health', docId: 2, nurId: 6, coNurId: 0,
           enrole: '2026-10-06', closedAt: '', closeReason: '', status: 'active' },
@@ -370,7 +374,7 @@ var BACK_DATA = (function () {
       ],
       base: { src: 'dept', by: '神经内科 · 科室配置', at: '' },
       fields: [ { name: '收缩压', comp: '90 - 140', now: '—', unit: 'mmHg' } ] },
-    { id: 3, name: '李桂芳', sex: 'F', age: 74, inNo: '320***71', extraNurs: [7], status: 'active',
+    { id: 3, name: '李桂芳', nickName: '芳华', sex: 'F', age: 74, inNo: '320***71', extraNurs: [7], status: 'active',
       projs: [
         /* 协作护士两层演示:患者级 extraNurs = [7],本项目下 coNurId 也是 7 */
         { projId: '90d_health', docId: 3, nurId: 5, coNurId: 7,
@@ -378,7 +382,7 @@ var BACK_DATA = (function () {
       ],
       base: { src: 'doctor', by: '医生乙', at: '2026-10-12' },
       fields: [ { name: '收缩压', comp: '90 - 140', now: '95 - 145', unit: 'mmHg' } ] },
-    { id: 4, name: '王建国', sex: 'M', age: 65, inNo: '320***09', extraNurs: [], status: 'active',
+    { id: 4, name: '王建国', nickName: '老建', sex: 'M', age: 65, inNo: '320***09', extraNurs: [], status: 'active',
       /* 未入组:projId = '' = 未指定项目(占位),主管医生已由扫码绑定,主管护士待分配 */
       projs: [
         { projId: '', docId: 2, nurId: 0, coNurId: 0,
@@ -386,14 +390,14 @@ var BACK_DATA = (function () {
       ],
       base: { src: 'dept', by: '神经内科 · 科室配置', at: '' },
       fields: [] },
-    { id: 5, name: '周淑珍', sex: 'F', age: 79, inNo: '320***33', extraNurs: [], status: 'active',
+    { id: 5, name: '周淑珍', nickName: '珍珠', sex: 'F', age: 79, inNo: '320***33', extraNurs: [], status: 'active',
       projs: [
         { projId: '90d_health', docId: 4, nurId: 7, coNurId: 0,
           enrole: '2026-08-25', closedAt: '', closeReason: '', status: 'active' }
       ],
       base: { src: 'dept', by: '神经内科 · 科室配置', at: '' },
       fields: [ { name: '收缩压', comp: '90 - 140', now: '—', unit: 'mmHg' } ] },
-    { id: 6, name: '赵国强', sex: 'M', age: 71, inNo: '320***84', extraNurs: [], status: 'closed',
+    { id: 6, name: '赵国强', nickName: '国强', sex: 'M', age: 71, inNo: '320***84', extraNurs: [], status: 'closed',
       /* 已结管:项目级 status='closed' + 结管时间 + 结管原因 */
       projs: [
         { projId: '90d_health', docId: 3, nurId: 5, coNurId: 0,
@@ -401,7 +405,9 @@ var BACK_DATA = (function () {
       ],
       base: { src: 'doctor', by: '医生乙', at: '2026-06-14', expired: true },
       fields: [ { name: '收缩压', comp: '90 - 140', now: '—', unit: 'mmHg' } ] },
-    { id: 7, name: '孙丽华', sex: 'F', age: 66, inNo: '320***47', extraNurs: [], status: 'active',
+    { id: 7, name: '', nickName: '平安是福', sex: 'F', age: 66, inNo: '320***47', extraNurs: [], status: 'active',
+      /* ⚠️ 边界用例(2026-11-04):真实姓名未填,只有微信授权名 —— 列表 / 抽屉回退显示微信名。
+       *    真实姓名允许为空是用户拍板口径,见 admin-design-spec.md §3.6.6。 */
       /* 未入组:projId = '' = 未指定项目(占位) */
       projs: [
         { projId: '', docId: 8, nurId: 9, coNurId: 0,

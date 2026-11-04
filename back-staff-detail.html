@@ -273,7 +273,8 @@
           var pj = r.projId
             ? '<span class="badge badge-outline">' + BACK_DATA.projName(r.projId) + '</span>'
             : '<span class="badge badge-gray">未指定项目</span>';
-          return '<tr><td><span class="cell-main">' + p.name + '</span> '
+          /* 患者姓名口径:真实姓名优先,为空回退微信授权名,都空显示「—」(同 back-patients / §3.6.6) */
+          return '<tr><td><span class="cell-main">' + (p.name || p.nickName || '—') + '</span> '
               + '<span class="cell-sub">' + p.age + ' 岁 · ' + (p.sex === 'M' ? '男' : '女') + '</span></td>'
               + '<td>' + pj + '<div class="cell-sub">入组 ' + r.enrole + '</div></td>'
               + '<td>' + as + '</td><td>' + base + '</td>'

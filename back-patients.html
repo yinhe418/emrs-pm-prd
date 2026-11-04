@@ -38,14 +38,14 @@
     <div class="kpi green">
       <div class="k-lab">本月新增</div>
       <div class="k-val">4</div>
-      <div class="k-sub">扫码绑定入组</div>
+      <div class="k-sub">本月建档</div>
     </div>
   </div>
 
   <div class="filters">
     <div class="search-wrap">
       <img src="assets/icons-png/icon-search.png" alt="">
-      <input class="ipt search-ipt" id="kw" placeholder="姓名 / 住院号">
+      <input class="ipt search-ipt" id="kw" placeholder="姓名 / 微信名 / 住院号">
     </div>
     <select class="sel" id="fDoc"><option value="">主管医生:全部</option></select>
     <select class="sel" id="fNur"><option value="">归属护士:全部</option></select>
@@ -105,9 +105,14 @@
   <div class="drawer-body">
     <div class="flex" style="gap:12px;margin-bottom:14px">
       <span class="av-sm" id="pAv" style="width:46px;height:46px;font-size:17px;background:#5BBFC5">患</span>
-      <div>
-        <div style="font-size:16px;font-weight:600" id="pName">—</div>
-        <div class="fz-12 text-3" id="pSex">—</div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <div style="font-size:16px;font-weight:600" id="pName">—</div>
+          <button class="btn btn-text" id="pEditName" style="font-size:12px">编辑真实姓名</button>
+        </div>
+        <div class="fz-11 text-3" id="pNameHint" style="display:none;margin-top:1px">真实姓名未填写,展示时回退微信名</div>
+        <div class="fz-12 text-3" id="pNick" style="margin-top:3px">—</div>
+        <div class="fz-12 text-3" id="pSex" style="margin-top:3px">—</div>
       </div>
     </div>
 
@@ -183,6 +188,44 @@
   </div>
 </div>
 
+<!-- ========== 修改真实姓名弹窗(单输入框) ========== -->
+<div class="modal-mask" id="nameModal">
+  <div class="modal">
+    <div class="modal-head">
+      <img src="assets/icons-png/icon-edit.png" alt="">
+      <h3>修改真实姓名</h3>
+    </div>
+    <div class="modal-body">
+      <div class="fi">
+        <label>真实姓名</label>
+        <input class="ipt w-full" id="pNameInput" maxlength="20" placeholder="2–20 字;留空表示清空">
+        <span class="hint">微信授权名不随此改动变化;修改只写入审计日志,不需要填写变更原因。<br>
+          清空真实姓名后,列表与抽屉将回退显示微信授权名。</span>
+        <span class="err-msg"></span>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-default" id="pNameCancel">取消</button>
+      <button class="btn btn-primary" id="pNameSave">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 清空真实姓名二次确认 ========== -->
+<div class="modal-mask" id="clearNameModal">
+  <div class="modal">
+    <div class="modal-head">
+      <img src="assets/icons-png/icon-warning.png" alt="">
+      <h3>清空真实姓名</h3>
+    </div>
+    <div class="modal-body" id="clearNameBody">—</div>
+    <div class="modal-foot">
+      <button class="btn btn-default" id="clearNameCancel">取消</button>
+      <button class="btn btn-danger" id="clearNameOk">确定清空</button>
+    </div>
+  </div>
+</div>
+
 <script src="assets/projects.js"></script>
 <script src="assets/back-api.js"></script>
 <script src="assets/back-data.js"></script>
@@ -190,6 +233,22 @@
 <script>
   var cur = null;
   var curProjIdx = 0;   /* 当前编辑的项目参与记录下标(归属调整按项目维度) */
+
+  /* ---------- 姓名展示口径(2026-11-04 用户拍板,见 admin-design-spec.md §3.6.6)----------
+   * name = 真实姓名(可空);nickName = 微信授权名(只读)。
+   * 展示:name 优先,为空回退 nickName,两者都空显示「—」。 */
+  function dispName(p) { return p.name || p.nickName || '—'; }
+  function avatarText(p) {
+    var n = dispName(p);
+    return n === '—' ? '患' : n.charAt(0);
+  }
+  /* 真实姓名与微信名**都存在且不同**时,副行补一条微信名(保持现有行高密度,不另起一行)
+   * 微信名整体 nowrap:列宽较窄时整段换到下一行,不会把「微信」拆成两行 */
+  function nickSub(p) {
+    return (p.name && p.nickName && p.name !== p.nickName)
+      ? ' · <span style="white-space:nowrap">微信 ' + BackApi.esc(p.nickName) + '</span>'
+      : '';
+  }
 
   /* 下拉:按「可承担角色位」筛(主管医生 = roles 含 doctor;护士 = roles 含 nurse) */
   (function () {
@@ -218,7 +277,7 @@
     var fb = document.getElementById('fBase').value;
     var fs = document.getElementById('fStatus').value;
     return Back.hospFilter(BACK_DATA.patients, 'patients').filter(function (p) {
-      if (kw && (p.name + p.inNo).indexOf(kw) < 0) return false;
+      if (kw && ((p.name || '') + (p.nickName || '') + p.inNo).indexOf(kw) < 0) return false;
       if (fd && !BACK_DATA.hasProjDoc(p, fd)) return false;
       if (fn === '__none' && !BACK_DATA.pendingNurse(p)) return false;
       if (fn && fn !== '__none' && !BACK_DATA.hasProjNur(p, fn)) return false;
@@ -281,11 +340,11 @@
       var rs = BACK_DATA.projsOf(p);
       return '<tr style="cursor:pointer" data-p="' + p.id + '"'
         + (BACK_DATA.pendingNurse(p) ? ' class="row-warn"' : '') + '>'
-        + '<td><div class="cell-user"><span class="av-sm" style="background:' + BACK_DATA.avatarColor(p.name) + '">'
-        +   p.name.charAt(0) + '</span>'
-        +   '<div><div class="cell-main">' + p.name + '</div>'
+        + '<td><div class="cell-user"><span class="av-sm" style="background:' + BACK_DATA.avatarColor(dispName(p)) + '">'
+        +   BackApi.esc(avatarText(p)) + '</span>'
+        +   '<div><div class="cell-main">' + BackApi.esc(dispName(p)) + '</div>'
         +   '<div class="cell-sub">' + p.age + ' 岁 · ' + (p.sex === 'M' ? '男' : '女')
-        +   (rs.length > 1 ? ' · ' + rs.length + ' 个项目' : '') + '</div></div></div></td>'
+        +   (rs.length > 1 ? ' · ' + rs.length + ' 个项目' : '') + nickSub(p) + '</div></div></div></td>'
         + '<td><span class="mono">' + p.inNo + '</span></td>'
         + '<td>' + rs.map(function (r) { return staffCell(r, r.docId); }).join('') + '</td>'
         + '<td>' + rs.map(function (r) { return staffCell(r, r.nurId); }).join('') + '</td>'
@@ -398,9 +457,10 @@
     var p = cur;
     var ps = BACK_DATA.projsOf(p);
     curProjIdx = 0;
-    document.getElementById('pTitle').textContent = p.name + ' · 基本信息';
-    document.getElementById('pAv').textContent = p.name.charAt(0);
-    document.getElementById('pName').textContent = p.name;
+    document.getElementById('pTitle').textContent = dispName(p) + ' · 基本信息';
+    document.getElementById('pAv').textContent = avatarText(p);
+    document.getElementById('pAv').style.background = BACK_DATA.avatarColor(dispName(p));
+    renderNameBlock(p);
     document.getElementById('pSex').textContent = p.age + ' 岁 · ' + (p.sex === 'M' ? '男' : '女')
       + ' · ' + ps.length + ' 个项目';
 
@@ -462,6 +522,107 @@
 
     Back.drawer('pDrawer', true);
   }
+
+  /* 抽屉头部:真实姓名 + 微信授权名(微信名只读) */
+  function renderNameBlock(p) {
+    document.getElementById('pName').innerHTML = p.name
+      ? BackApi.esc(p.name)
+      : '<span class="text-4">—</span>';
+    document.getElementById('pNameHint').style.display = p.name ? 'none' : 'block';
+    document.getElementById('pNick').innerHTML = '微信授权名:'
+      + (p.nickName ? BackApi.esc(p.nickName) : '<span class="text-4">—</span>')
+      + ' <span class="badge badge-gray">只读</span>';
+  }
+
+  /* ---------- 修改真实姓名(抽屉内弹窗,仅一个输入框)---------- */
+  function openNameModal() {
+    if (!cur) return;
+    var inp = document.getElementById('pNameInput');
+    var fi = inp.closest('.fi');
+    fi.classList.remove('has-err');
+    fi.querySelector('.err-msg').textContent = '';
+    inp.value = cur.name || '';
+    Back.modal('nameModal', true);
+    inp.focus();
+    inp.select();
+  }
+  function closeNameModal() {
+    document.getElementById('nameModal').classList.remove('on');
+    /* 抽屉通常仍开着:关闭弹窗后要恢复 body 滚动锁 */
+    document.body.style.overflow = document.getElementById('pDrawer').classList.contains('on') ? 'hidden' : '';
+  }
+  /* 清空真实姓名:必须二次确认,防止误触清空 */
+  function openClearConfirm() {
+    var p = cur;
+    document.getElementById('clearNameBody').innerHTML =
+      '清空真实姓名后,列表与抽屉将显示微信授权名'
+      + (p.nickName
+          ? '「' + BackApi.esc(p.nickName) + '」'
+          : '(该患者暂无微信授权名,将显示「—」)')
+      + ',确定清空?';
+    /* 先收起姓名弹窗再弹确认,避免两个弹窗叠在一起、下层按钮露出来 */
+    document.getElementById('nameModal').classList.remove('on');
+    Back.modal('clearNameModal', true);
+  }
+  function closeClearModal() {
+    document.getElementById('clearNameModal').classList.remove('on');
+    var lock = document.getElementById('nameModal').classList.contains('on')
+      || document.getElementById('pDrawer').classList.contains('on');
+    document.body.style.overflow = lock ? 'hidden' : '';
+  }
+  /* 保存姓名(含清空)并刷新抽屉 / 列表 */
+  function applyName(v, toastMsg) {
+    cur.name = v;
+    closeNameModal();
+    closeClearModal();
+    renderNameBlock(cur);
+    document.getElementById('pTitle').textContent = dispName(cur) + ' · 基本信息';
+    document.getElementById('pAv').textContent = avatarText(cur);
+    document.getElementById('pAv').style.background = BACK_DATA.avatarColor(dispName(cur));
+    render();   /* 列表即时更新(排序 / 筛选结果不变,仅姓名列重绘) */
+    Back.toast(toastMsg);
+  }
+  function saveName() {
+    if (!cur) return;
+    var inp = document.getElementById('pNameInput');
+    var fi = inp.closest('.fi');
+    var v = inp.value.trim();
+    fi.classList.remove('has-err');
+    /* 空串 / 纯空格 = 允许清空,但必须走二次确认 */
+    if (!v) {
+      openClearConfirm();
+      return;
+    }
+    if (v.length < 2) {
+      fi.classList.add('has-err');
+      fi.querySelector('.err-msg').textContent = '真实姓名至少 2 个字(当前 ' + v.length + ')';
+      inp.focus();
+      return;
+    }
+    if (v.length > 20) {
+      fi.classList.add('has-err');
+      fi.querySelector('.err-msg').textContent = '最多 20 个字(当前 ' + v.length + ')';
+      return;
+    }
+    applyName(v, '已修改真实姓名');
+  }
+  document.getElementById('pEditName').addEventListener('click', openNameModal);
+  document.getElementById('pNameCancel').addEventListener('click', closeNameModal);
+  document.getElementById('pNameSave').addEventListener('click', saveName);
+  document.getElementById('pNameInput').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { e.preventDefault(); saveName(); }
+  });
+  document.getElementById('pNameInput').addEventListener('input', function () {
+    this.closest('.fi').classList.remove('has-err');
+  });
+  document.getElementById('clearNameCancel').addEventListener('click', function () {
+    document.getElementById('clearNameModal').classList.remove('on');
+    Back.modal('nameModal', true);   /* 回到姓名弹窗,输入内容保留(空值) */
+    document.getElementById('pNameInput').focus();
+  });
+  document.getElementById('clearNameOk').addEventListener('click', function () {
+    applyName('', '已清空真实姓名');
+  });
 
   /* 变更影响提示 */
   function updateImpact() {

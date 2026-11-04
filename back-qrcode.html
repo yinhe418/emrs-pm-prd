@@ -303,6 +303,7 @@
           recs.push({
             t: r.enrole,
             who: x.name,
+            nickName: x.nickName || '',   /* 派生记录带上微信授权名,展示时按统一口径回退 */
             st: r.status,
             reason: '项目:' + BACK_DATA.projName(r.projId)
               + (r.status === 'closed'
@@ -319,7 +320,7 @@
         : r.st === 'closed' ? '<span class="badge badge-gray">已结管</span>'
         : '<span class="badge badge-pass">已完成</span>';
       return '<div class="flex" style="padding:9px 0;border-bottom:1px solid var(--line-2)">'
-        + '<span class="cell-main">' + r.who + '</span>' + badge
+        + '<span class="cell-main" style="white-space:nowrap">' + (r.who || r.nickName || '—') + '</span>' + badge
         + '<span class="ml-auto fz-12 text-3 mono">' + r.t + '</span>'
         + (r.reason ? '<span class="fz-11 text-3" style="width:100%">' + r.reason + '</span>' : '')
         + '</div>';
