@@ -122,6 +122,10 @@
     <div class="form-sec" style="margin-top:18px">
       <h4>家属<span class="badge badge-gray" style="margin-left:6px" id="pFamilyCount">—</span></h4>
       <div id="pFamily"></div>
+      <!-- 家属电话同样是 PHI:与患者电话同款「查看留痕」轻提示(不阻断) -->
+      <div class="fz-11 text-3" id="pFamilyPhoneHint" style="margin-top:6px">
+        家属联系方式同为明文展示;查看同样会记录到操作日志。
+      </div>
       <div class="hint" style="margin-top:6px">
         一个患者可有 0..N 位家属。家属由<b>患者在小程序端出示二维码、家属扫码绑定</b>后自动建立,后台只读展示,不提供新增 / 编辑 / 删除。
       </div>
@@ -232,7 +236,18 @@
         <label>联系电话</label>
         <input class="ipt w-full" id="pfPhone" maxlength="20"
                placeholder="11 位手机号,或带区号的座机(如 010-88888888)">
-        <span class="hint">选填;保存后按脱敏展示。⛔ 不接受分机号。</span>
+        <!-- 提示文案由 refreshPhoneUI() 按「当前患者 + 待清空状态」动态写;
+             输入框**不回填**(明文不回填,掩码也不回填 —— 避免把掩码当号码存进去) -->
+        <div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px">
+          <span class="hint" id="pfPhoneHint" style="flex:1;min-width:0">选填;留空 = 不改。⛔ 不接受分机号。</span>
+          <!-- 清空入口:与真前端 PatientProfileDialog 同构 ——
+               有值才出「清空」;点了变待清空态,换成「撤销清空」 -->
+          <span style="white-space:nowrap">
+            <button type="button" class="btn btn-text" id="pfPhoneClear" style="font-size:11.5px">清空</button>
+            <button type="button" class="btn btn-text" id="pfPhoneRestore"
+                    style="font-size:11.5px;display:none">撤销清空</button>
+          </span>
+        </div>
         <span class="err-msg"></span>
       </div>
       <div class="fi mt-12">
@@ -324,7 +339,36 @@
       : BackApi.esc(String(v));
   }
 
-  /* 家属列表:一个患者 0..N 条,只读展示(绑定关系只能由小程序端扫码建立);无家属时显示空态 */
+  /* ---------- 联系电话掩码(2026-11-04 用户拍板「详情明文 + 列表零 PHI」)----------
+   * 数据源存**完整号码**(见 assets/back-data.js),掩码只在渲染层做:
+   *   ⛔ 列表**不展示电话**(不返回任何电话字段);本函数只服务于编辑弹窗里
+   *   「当前 139****3062」这类掩码提示,不参与列表渲染;详情抽屉走明文。
+   *
+   * ⚠️ fail-closed 原则(见 memory: masking-must-fail-closed):
+   *    认不出的形态**一律保守掩码**,绝不 return 原文 —— 宁可多掩,不可漏掩。
+   * 判形顺序:① 剥 +86 / 86 前缀 → ② 长度 ≤7 全掩 → ③ 含「-」按座机
+   *           → ④ 11 位数字按手机 → ⑤ 其余保守掩码
+   */
+  function maskPhone(v) {
+    var s = String(v === null || v === undefined ? '' : v).trim().replace(/\s+/g, '');
+    if (!s) return '';                                  /* 未采集 → 由 orDash 显示「—」 */
+    s = s.replace(/^\+?86/, '');                        /* ① +86 / 86 前缀先剥掉 */
+    if (s.length <= 7) return '****';                   /* ② 太短一律全掩,不留碎片 */
+    if (s.indexOf('-') >= 0) {                          /* ③ 座机:区号-****后4位 */
+      var parts = s.split('-');
+      var area = parts.shift().replace(/\D/g, '');
+      var rest = parts.join('').replace(/\D/g, '');
+      return rest.length >= 4 ? (area || '') + '-****' + rest.slice(-4) : (area || '') + '-****';
+    }
+    var digits = s.replace(/\D/g, '');
+    if (digits.length === 11) return digits.slice(0, 3) + '****' + digits.slice(7);   /* ④ 手机 */
+    if (digits.length >= 7) return digits.slice(0, 3) + '****' + digits.slice(-4);    /* ⑤ 保守掩码 */
+    return '****';
+  }
+
+  /* 家属列表:一个患者 0..N 条,只读展示(绑定关系只能由小程序端扫码建立);无家属时显示空态
+   * ⚠️ 电话口径(2026-11-04 用户拍板):家属表在**抽屉详情内** ⇒ 与患者电话同口径,
+   *    直接出明文(数据源存完整号码),不在渲染层掩码。列表页不展示家属信息。 */
   function familyHtml(p) {
     var list = p.family || [];
     if (!list.length) {
@@ -349,6 +393,9 @@
     var fam = p.family || [];
     document.getElementById('pFamilyCount').textContent = fam.length ? fam.length + ' 位' : '暂无';
     document.getElementById('pFamily').innerHTML = familyHtml(p);
+    /* 家属电话只要有明文就出「查看留痕」提示;无家属 / 都没电话 ⇒ 不出(不留空话) */
+    document.getElementById('pFamilyPhoneHint').style.display =
+      fam.some(function (f) { return !!f.phone; }) ? '' : 'none';
   }
 
   /* 下拉:按「可承担角色位」筛(主管医生 = roles 含 doctor;护士 = roles 含 nurse) */
@@ -447,6 +494,9 @@
         +   '<div class="cell-sub">' + p.age + ' 岁 · ' + (p.sex === 'M' ? '男' : '女')
         +   (rs.length > 1 ? ' · ' + rs.length + ' 个项目' : '') + nickSub(p) + '</div></div></div></td>'
         + '<td><span class="mono">' + p.inNo + '</span></td>'
+        /* ⚠️ 列表**不出电话**(2026-11-04 复核):真前端 PatientsPage 列表无电话列,
+         *    后端 GET /patients 也不返回电话字段 ⇒ 原型不得多出一列,否则会变成契约缺口。
+         *    电话只在抽屉详情(renderBasic)里出现,且为明文。 */
         + '<td>' + rs.map(function (r) { return staffCell(r, r.docId); }).join('') + '</td>'
         + '<td>' + rs.map(function (r) { return staffCell(r, r.nurId); }).join('') + '</td>'
         + '<td>' + rs.map(projCell).join('') + '</td>'
@@ -566,9 +616,19 @@
       + (p.idCard ? ' <span class="badge badge-gray">已脱敏</span>' : '') + '</td></tr>'
       + '<tr><td class="text-3" style="border:none">住院号</td><td style="border:none"><span class="mono">'
       + p.inNo + '</span></td></tr>'
-      /* 2026-11-04:电话 / 身高 / 体重 / 住址 —— 只读展示,编辑走抽屉内「编辑档案信息」弹窗 */
+      /* 2026-11-04 用户拍板:电话**详情明文**(护士要能照着打电话)+ 提示「查看留痕」;
+       * ⛔ 列表**不展示电话**(列表零 PHI,不含任何电话字段);maskPhone() 只用于本页
+       * 编辑弹窗里「当前 139****3062」的提示,不参与列表渲染。
+       * 原型没有真后端,这里模拟的是「详情 GET 返回明文」的结果。
+       * 原「已脱敏」badge 已按新口径撤掉。 */
       + '<tr><td class="text-3" style="border:none">联系电话</td><td style="border:none">'
-      + orDash(p.phone) + (p.phone ? ' <span class="badge badge-gray">已脱敏</span>' : '') + '</td></tr>'
+      + '<span class="mono">' + orDash(p.phone) + '</span>'
+      + (p.phone ? ' <span class="badge badge-info">查看已记录</span>' : '')
+      + (p.phone
+          ? '<div class="fz-11 text-3" style="margin-top:2px">'
+            + '查看联系方式会记录到操作日志(操作人 / 时间 / 患者)</div>'
+          : '')
+      + '</td></tr>'
       + '<tr><td class="text-3" style="border:none">身高</td><td style="border:none">'
       + orDash(p.heightCm) + (p.heightCm === null || p.heightCm === undefined || p.heightCm === '' ? '' : ' cm')
       + '</td></tr>'
@@ -763,22 +823,40 @@
     }
   }
 
-  /* 保存前归一为掩码;已是掩码的原样返回 */
-  function maskPhoneInput(v) {
-    if (/^1[3-9]\d{9}$/.test(v)) return v.slice(0, 3) + '****' + v.slice(7);
-    var m = v.match(/^(0\d{2,3})-(\d{7,8})$/);
-    return m ? m[1] + '-****' + m[2].slice(-4) : v;
-  }
+  /* 电话只收**完整号码**:掩码值不许存(否则详情里会显示成掩码,与「详情明文」口径相悖) */
   function phoneOk(v) {
-    if (v.indexOf('****') >= 0) {
-      return /^1\d{2}\*{4}\d{4}$/.test(v) || /^0\d{2,3}-\*{4}\d{4}$/.test(v);
-    }
     return /^1[3-9]\d{9}$/.test(v) || /^0\d{2,3}-\d{7,8}$/.test(v);
+  }
+
+  /* ---------- 电话「清空」入口(与真前端 PatientProfileDialog 同构)----------
+   * 待清空标记:只有点了「清空」才置 true ⇒ 保存时提交空串;
+   * 重新输入号码 / 点「撤销清空」即放弃该意图(同真前端 onInput 行为)。 */
+  var phoneCleared = false;
+
+  function refreshPhoneUI() {
+    var maskedNow = maskPhone(cur ? cur.phone : '');
+    var hint = document.getElementById('pfPhoneHint');
+    if (phoneCleared) {
+      hint.innerHTML = '保存后将清空联系电话';
+    } else if (maskedNow) {
+      hint.innerHTML = '当前 <b class="mono">' + BackApi.esc(maskedNow) + '</b>;'
+        + '留空 = 不改,要改请重新输入完整号码。⛔ 不接受分机号。';
+    } else {
+      hint.innerHTML = '尚未采集;留空 = 不改。⛔ 不接受分机号。';
+    }
+    /* 有值且未待清空 ⇒ 出「清空」;待清空 ⇒ 出「撤销清空」 */
+    document.getElementById('pfPhoneClear').style.display =
+      (!phoneCleared && maskedNow) ? '' : 'none';
+    document.getElementById('pfPhoneRestore').style.display = phoneCleared ? '' : 'none';
   }
 
   function openProfileModal() {
     if (!cur) return;
-    document.getElementById('pfPhone').value = cur.phone || '';
+    /* 电话输入框**一律留空**:明文不回填(不把 PHI 摊在编辑弹窗里),掩码也不回填
+     * (否则用户直接点保存会把掩码当号码存下去)。当前值以掩码形式写在提示里。 */
+    document.getElementById('pfPhone').value = '';
+    phoneCleared = false;              /* 每次打开都从「未待清空」开始 */
+    refreshPhoneUI();
     document.getElementById('pfHeight').value =
       (cur.heightCm === null || cur.heightCm === undefined) ? '' : String(cur.heightCm);
     document.getElementById('pfWeight').value =
@@ -803,9 +881,13 @@
     ['pfPhone', 'pfHeight', 'pfWeight', 'pfAddr'].forEach(function (id) { pfErr(id, ''); });
     var ok = true;
 
-    /* 联系电话:选填;填了就按 §16.2 校验(允许已脱敏的回填值) */
-    if (phone) {
-      if (phone.length < 7 || phone.length > 20) {
+    /* 联系电话:选填;**留空 = 不改**;点了「清空」才提交空串(与真前端同构)。
+     * 填了就按 §16.2 校验完整号码;⛔ 掩码值一律拒收(电话存完整值,列表不展示电话) */
+    if (!phoneCleared && phone) {
+      if (phone.indexOf('*') >= 0) {
+        pfErr('pfPhone', '请填写完整号码(列表会自动掩码展示,无需手输掩码)');
+        ok = false;
+      } else if (phone.length < 7 || phone.length > 20) {
         pfErr('pfPhone', '联系电话 7–20 个字符(当前 ' + phone.length + ')');
         ok = false;
       } else if (!phoneOk(phone)) {
@@ -856,6 +938,9 @@
 
     if (!ok) return;
 
+    /* 电话提交值:null = 不改('' 只在用户点了「清空」时出现) */
+    var phoneSubmit = phoneCleared ? '' : (phone || null);
+
     /* 2026-11-04 用户拍板「只弹提示,不限制清空」:
      * 仅在「原本有值 → 本次要清空」时弹确认(体重 / 身高);改成另一个值、原来就空,都不弹。
      * 确认框只是提示,点「仍要清空」照常清空;点「取消」弹窗不关、不提交。 */
@@ -867,23 +952,27 @@
       drops.push({ key: 'heightCm', label: '身高', old: cur.heightCm, unit: ' cm' });
     }
     if (drops.length) {
-      pendingProfile = { phone: phone, hVal: hVal, wVal: wVal, addr: addr };
+      pendingProfile = { phone: phoneSubmit, hVal: hVal, wVal: wVal, addr: addr };
       openPfClearConfirm(drops);
       return;
     }
-    applyProfile(phone, hVal, wVal, addr);
+    applyProfile(phoneSubmit, hVal, wVal, addr);
   }
 
-  /* 提交档案信息(校验通过后调用;清空确认也走这里) */
+  /* 提交档案信息(校验通过后调用;清空确认也走这里)
+   * 电话:**存完整号码**。phone === null = 不改(弹窗从不回填);
+   * phone === '' = 用户点了「清空」;其余 = 新号码。
+   * 保存后 renderBasic 用明文重绘详情 —— 这里模拟的是「详情 GET 返回明文」的结果;
+   * 列表不展示电话,无需重绘。 */
   function applyProfile(phone, hVal, wVal, addr) {
-    cur.phone = phone ? maskPhoneInput(phone) : '';
+    if (phone !== null) cur.phone = phone;
     cur.heightCm = hVal;
     cur.weightKg = wVal;
     cur.address = addr;
     closeProfileModal();
     closePfClearModal();
     renderBasic(cur);
-    /* 列表页不展示这 4 项 ⇒ 无需重绘列表 */
+    /* 列表不展示电话 / 这 4 项 ⇒ 无需重绘列表 */
     Back.toast('已保存档案信息');
   }
 
@@ -935,9 +1024,26 @@
   document.getElementById('pEditProfile').addEventListener('click', openProfileModal);
   document.getElementById('pfCancel').addEventListener('click', closeProfileModal);
   document.getElementById('pfSave').addEventListener('click', saveProfile);
+
+  /* 「清空」/「撤销清空」:只切标记,不立即提交 —— 点「保存」才把空串写下去 */
+  document.getElementById('pfPhoneClear').addEventListener('click', function () {
+    phoneCleared = true;
+    document.getElementById('pfPhone').value = '';
+    pfErr('pfPhone', '');
+    refreshPhoneUI();
+  });
+  document.getElementById('pfPhoneRestore').addEventListener('click', function () {
+    phoneCleared = false;
+    refreshPhoneUI();
+  });
+
   ['pfPhone', 'pfHeight', 'pfWeight', 'pfAddr'].forEach(function (id) {
     var el = document.getElementById(id);
-    el.addEventListener('input', function () { pfErr(id, ''); });
+    el.addEventListener('input', function () {
+      pfErr(id, '');
+      /* 重新输入号码 = 放弃「清空」意图(与真前端一致) */
+      if (id === 'pfPhone' && phoneCleared) { phoneCleared = false; refreshPhoneUI(); }
+    });
     el.addEventListener('change', function () { pfErr(id, ''); });
   });
 

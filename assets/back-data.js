@@ -342,13 +342,17 @@ var BACK_DATA = (function () {
    *                        展示口径:name 优先,为空回退 nickName,都空显示「—」
    *                        (2026-11-04 用户拍板,见 admin-design-spec.md §3.6.6)
    *            extraNurs[] —— 患者级「病患协作护士」全局名单(DB patient_co_nurse)
-   *            phone     —— 联系电话(脱敏展示,如 138****8821;空 = 未采集)
+   *            phone     —— 联系电话(**存完整号码**;展示口径 2026-11-04 用户拍板:
+   *                         详情明文 + 列表零 PHI(列表不展示电话)+ 写审计 ⇒ 掩码只在
+   *                         编辑弹窗提示里用,见 back-patients.html:maskPhone())
+   *                         ⚠️ 号码一律用 1390000xxxx 这类**占位形态**(中间 4 位全 0),不是可拨打的真实号码
+   *                         空串 = 未采集
    *            heightCm  —— 身高(cm,number;null = 未采集)
    *            weightKg  —— 体重(kg,number;null = 未采集)
    *            address   —— 家庭住址(只到城区 + 小区,不写门牌;空 = 未采集)
    *            family[]  —— 家属列表(一个患者可多条;空数组 = 暂无家属信息)
    *                         字段:name 姓名 / relation 关系(儿子·女儿·配偶·其他)
-   *                               nickName 微信名 / phone 联系电话(脱敏)
+   *                               nickName 微信名 / phone 联系电话(同样存完整号码,详情明文 / 列表不外露)
    *                         ⚠️ 字段名与 patient-elderly-help.html「家属授权协助」对齐
    *   项目级(projs[] 一行 = DB patient_project 一行):
    *            projId     —— 项目主档 id;'' = 未指定项目(占位,患者未入组)
@@ -362,11 +366,11 @@ var BACK_DATA = (function () {
   var patients = [
     { id: 1, name: '陈丙英', nickName: '英子', sex: 'F', age: 81, idCard: '320************22', inNo: 'ZY2026093011', extraNurs: [], status: 'active',
       /* 联系电话 / 身高 / 体重 / 住址:2026-11-04 补(后台只读展示) */
-      phone: '139****3062', heightCm: 158, weightKg: 52.5, address: 'H 市 江湾区 · 康乐里小区',
+      phone: '13900003062', heightCm: 158, weightKg: 52.5, address: 'H 市 江湾区 · 康乐里小区',
       /* 家属:与 patient-elderly-help.html「家属授权协助」口径一致 —— 陈大伟 / 儿子 / 138****8821 */
       family: [
-        { name: '陈大伟', relation: '儿子', nickName: '大伟', phone: '138****8821' },
-        { name: '陈小敏', relation: '女儿', nickName: '小敏', phone: '137****4417' }
+        { name: '陈大伟', relation: '儿子', nickName: '大伟', phone: '13800008821' },
+        { name: '陈小敏', relation: '女儿', nickName: '小敏', phone: '13700004417' }
       ],
       /* ⚠️ 2026-10-29 用户拍板:删掉 PT1 名下的「365 天长周期管理」参与记录 ——
        *    陈丙英是**真实档案实例**,不该在她名下挂一条为演示「多项目」而编造的参与关系。
@@ -382,7 +386,7 @@ var BACK_DATA = (function () {
         { name: 'LDL-C', comp: '< 1.8',   now: '< 1.4',    unit: 'mmol/L' }
       ] },
     { id: 2, name: '陈明远', nickName: '明月清风', sex: 'M', age: 68, idCard: '320************58', inNo: 'ZY2026100608', extraNurs: [], status: 'active',
-      phone: '136****7750', heightCm: 172, weightKg: 70, address: 'H 市 城西区 · 明德苑', family: [],
+      phone: '13600007750', heightCm: 172, weightKg: 70, address: 'H 市 城西区 · 明德苑', family: [],
       projs: [
         { projId: '90d_health', docId: 2, nurId: 6, coNurId: 0,
           enrole: '2026-10-06', closedAt: '', closeReason: '', status: 'active' },
@@ -393,7 +397,7 @@ var BACK_DATA = (function () {
       base: { src: 'dept', by: '神经内科 · 科室配置', at: '' },
       fields: [ { name: '收缩压', comp: '90 - 140', now: '—', unit: 'mmHg' } ] },
     { id: 3, name: '李桂芳', nickName: '芳华', sex: 'F', age: 74, idCard: '320************71', inNo: 'ZY2026091205', extraNurs: [7], status: 'active',
-      phone: '135****2189', heightCm: 155, weightKg: 48, address: 'H 市 江湾区 · 桂香园', family: [],
+      phone: '13500002189', heightCm: 155, weightKg: 48, address: 'H 市 江湾区 · 桂香园', family: [],
       projs: [
         /* 协作护士两层演示:患者级 extraNurs = [7],本项目下 coNurId 也是 7 */
         { projId: '90d_health', docId: 3, nurId: 5, coNurId: 7,
@@ -402,7 +406,7 @@ var BACK_DATA = (function () {
       base: { src: 'doctor', by: '医生乙', at: '2026-10-12' },
       fields: [ { name: '收缩压', comp: '90 - 140', now: '95 - 145', unit: 'mmHg' } ] },
     { id: 4, name: '王建国', nickName: '老建', sex: 'M', age: 65, idCard: '320************09', inNo: 'ZY2026101823', extraNurs: [], status: 'active',
-      phone: '137****6034', heightCm: 175, weightKg: 82, address: 'H 市 城东区 · 东和苑', family: [],
+      phone: '13700006034', heightCm: 175, weightKg: 82, address: 'H 市 城东区 · 东和苑', family: [],
       /* 未入组:projId = '' = 未指定项目(占位),主管医生已由扫码绑定,主管护士待分配 */
       projs: [
         { projId: '', docId: 2, nurId: 0, coNurId: 0,
@@ -411,10 +415,10 @@ var BACK_DATA = (function () {
       base: { src: 'dept', by: '神经内科 · 科室配置', at: '' },
       fields: [] },
     { id: 5, name: '周淑珍', nickName: '珍珠', sex: 'F', age: 79, idCard: '320************33', inNo: 'ZY2026082517', extraNurs: [], status: 'active',
-      phone: '138****5527', heightCm: 150, weightKg: 45.5, address: 'H 市 城南区 · 南湖家园',
+      phone: '13800005527', heightCm: 150, weightKg: 45.5, address: 'H 市 城南区 · 南湖家园',
       /* 只有一位家属(单条用例) */
       family: [
-        { name: '周晓燕', relation: '女儿', nickName: '燕子', phone: '136****2098' }
+        { name: '周晓燕', relation: '女儿', nickName: '燕子', phone: '13600002098' }
       ],
       projs: [
         { projId: '90d_health', docId: 4, nurId: 7, coNurId: 0,
@@ -423,7 +427,7 @@ var BACK_DATA = (function () {
       base: { src: 'dept', by: '神经内科 · 科室配置', at: '' },
       fields: [ { name: '收缩压', comp: '90 - 140', now: '—', unit: 'mmHg' } ] },
     { id: 6, name: '赵国强', nickName: '国强', sex: 'M', age: 71, idCard: '320************84', inNo: 'ZY2026061430', extraNurs: [], status: 'closed',
-      phone: '139****8813', heightCm: 170, weightKg: 66, address: 'H 市 城北区 · 北苑新村', family: [],
+      phone: '13900008813', heightCm: 170, weightKg: 66, address: 'H 市 城北区 · 北苑新村', family: [],
       /* 已结管:项目级 status='closed' + 结管时间 + 结管原因 */
       projs: [
         { projId: '90d_health', docId: 3, nurId: 5, coNurId: 0,
