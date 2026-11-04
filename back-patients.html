@@ -109,6 +109,7 @@
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
           <div style="font-size:16px;font-weight:600" id="pName">—</div>
           <button class="btn btn-text" id="pEditName" style="font-size:12px">编辑真实姓名</button>
+          <button class="btn btn-text" id="pEditProfile" style="font-size:12px">编辑档案信息</button>
         </div>
         <div class="fz-11 text-3" id="pNameHint" style="display:none;margin-top:1px">真实姓名未填写,展示时回退微信名</div>
         <div class="fz-12 text-3" id="pNick" style="margin-top:3px">—</div>
@@ -117,6 +118,14 @@
     </div>
 
     <table class="tbl" id="pBasic" style="font-size:12.5px"></table>
+
+    <div class="form-sec" style="margin-top:18px">
+      <h4>家属<span class="badge badge-gray" style="margin-left:6px" id="pFamilyCount">—</span></h4>
+      <div id="pFamily"></div>
+      <div class="hint" style="margin-top:6px">
+        一个患者可有 0..N 位家属。家属由<b>患者在小程序端出示二维码、家属扫码绑定</b>后自动建立,后台只读展示,不提供新增 / 编辑 / 删除。
+      </div>
+    </div>
 
     <div class="form-sec" style="margin-top:18px">
       <h4>项目参与<span class="badge badge-gray" style="margin-left:6px" id="pProjCount">—</span></h4>
@@ -211,6 +220,64 @@
   </div>
 </div>
 
+<!-- ========== 编辑档案信息(联系电话 / 身高 / 体重 / 家庭住址) ========== -->
+<div class="modal-mask" id="profileModal">
+  <div class="modal">
+    <div class="modal-head">
+      <img src="assets/icons-png/icon-edit.png" alt="">
+      <h3>编辑档案信息</h3>
+    </div>
+    <div class="modal-body">
+      <div class="fi">
+        <label>联系电话</label>
+        <input class="ipt w-full" id="pfPhone" maxlength="20"
+               placeholder="11 位手机号,或带区号的座机(如 010-88888888)">
+        <span class="hint">选填;保存后按脱敏展示。⛔ 不接受分机号。</span>
+        <span class="err-msg"></span>
+      </div>
+      <div class="fi mt-12">
+        <label>身高(cm)</label>
+        <input class="ipt w-full" id="pfHeight" inputmode="numeric" maxlength="8"
+               placeholder="30–250 的整数,如 170">
+        <span class="err-msg"></span>
+      </div>
+      <div class="fi mt-12">
+        <label>体重(kg)</label>
+        <input class="ipt w-full" id="pfWeight" inputmode="decimal" maxlength="8"
+               placeholder="1.0–300.0,最多 1 位小数">
+        <span class="hint">体重进入溶栓剂量计算,请按实际测量值填写。</span>
+        <span class="err-msg"></span>
+      </div>
+      <div class="fi mt-12">
+        <label>家庭住址</label>
+        <textarea class="ipt w-full" id="pfAddr" rows="2"
+                  placeholder="≤200 字;填到城市 + 小区即可,不必写门牌"></textarea>
+        <span class="hint">保存后按脱敏展示(只展示到城区 + 小区)。</span>
+        <span class="err-msg"></span>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-default" id="pfCancel">取消</button>
+      <button class="btn btn-primary" id="pfSave">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 清空体重 / 身高 提示确认(只提示,不限制清空) ========== -->
+<div class="modal-mask" id="pfClearModal">
+  <div class="modal">
+    <div class="modal-head">
+      <img src="assets/icons-png/icon-warning.png" alt="">
+      <h3>确认清空档案信息</h3>
+    </div>
+    <div class="modal-body" id="pfClearBody">—</div>
+    <div class="modal-foot">
+      <button class="btn btn-default" id="pfClearCancel">取消</button>
+      <button class="btn btn-danger" id="pfClearOk">仍要清空</button>
+    </div>
+  </div>
+</div>
+
 <!-- ========== 清空真实姓名二次确认 ========== -->
 <div class="modal-mask" id="clearNameModal">
   <div class="modal">
@@ -248,6 +315,40 @@
     return (p.name && p.nickName && p.name !== p.nickName)
       ? ' · <span style="white-space:nowrap">微信 ' + BackApi.esc(p.nickName) + '</span>'
       : '';
+  }
+
+  /* 基本信息值:未采集(空串 / null / undefined)统一显示「—」,与本模块既有口径一致 */
+  function orDash(v) {
+    return (v === null || v === undefined || v === '')
+      ? '<span class="text-4">—</span>'
+      : BackApi.esc(String(v));
+  }
+
+  /* 家属列表:一个患者 0..N 条,只读展示(绑定关系只能由小程序端扫码建立);无家属时显示空态 */
+  function familyHtml(p) {
+    var list = p.family || [];
+    if (!list.length) {
+      return '<div class="empty" style="padding:16px 0 6px">'
+        + '<img src="assets/icons-png/icon-empty-box.png" alt="">'
+        + '<div class="e-d" style="margin-bottom:0">暂无家属信息</div></div>';
+    }
+    return '<div class="tbl-wrap"><table class="tbl" style="font-size:12px">'
+      + '<thead><tr><th>姓名</th><th style="width:64px">关系</th>'
+      + '<th style="width:90px">微信名</th><th style="width:126px;white-space:nowrap">联系电话</th>'
+      + '</tr></thead><tbody>'
+      + list.map(function (f) {
+          return '<tr><td>' + orDash(f.name) + '</td>'
+            + '<td class="text-3">' + orDash(f.relation) + '</td>'
+            + '<td class="text-3">' + orDash(f.nickName) + '</td>'
+            + '<td style="white-space:nowrap"><span class="mono">' + orDash(f.phone) + '</span></td></tr>';
+        }).join('')
+      + '</tbody></table></div>';
+  }
+
+  function renderFamily(p) {
+    var fam = p.family || [];
+    document.getElementById('pFamilyCount').textContent = fam.length ? fam.length + ' 位' : '暂无';
+    document.getElementById('pFamily').innerHTML = familyHtml(p);
   }
 
   /* 下拉:按「可承担角色位」筛(主管医生 = roles 含 doctor;护士 = roles 含 nurse) */
@@ -453,6 +554,37 @@
     });
   }
 
+  /* 基本信息表(含 2026-11-04 新增的 4 个档案字段);保存后可直接重绘 */
+  function renderBasic(p) {
+    var extra = (p.extraNurs || []).map(function (id) {
+      var s = BACK_DATA.member(id);
+      return s ? s.name : id;
+    });
+    document.getElementById('pBasic').innerHTML =
+      '<tr><td class="text-3" style="width:110px;border:none">身份证号</td><td style="border:none">'
+      + '<span class="mono">' + orDash(p.idCard) + '</span>'
+      + (p.idCard ? ' <span class="badge badge-gray">已脱敏</span>' : '') + '</td></tr>'
+      + '<tr><td class="text-3" style="border:none">住院号</td><td style="border:none"><span class="mono">'
+      + p.inNo + '</span></td></tr>'
+      /* 2026-11-04:电话 / 身高 / 体重 / 住址 —— 只读展示,编辑走抽屉内「编辑档案信息」弹窗 */
+      + '<tr><td class="text-3" style="border:none">联系电话</td><td style="border:none">'
+      + orDash(p.phone) + (p.phone ? ' <span class="badge badge-gray">已脱敏</span>' : '') + '</td></tr>'
+      + '<tr><td class="text-3" style="border:none">身高</td><td style="border:none">'
+      + orDash(p.heightCm) + (p.heightCm === null || p.heightCm === undefined || p.heightCm === '' ? '' : ' cm')
+      + '</td></tr>'
+      + '<tr><td class="text-3" style="border:none">体重</td><td style="border:none">'
+      + orDash(p.weightKg) + (p.weightKg === null || p.weightKg === undefined || p.weightKg === '' ? '' : ' kg')
+      + '</td></tr>'
+      + '<tr><td class="text-3" style="border:none">家庭住址</td><td style="border:none">'
+      + orDash(p.address) + '</td></tr>'
+      + '<tr><td class="text-3" style="border:none">患者状态</td><td style="border:none">'
+      + (p.status === 'active' ? '<span class="badge badge-pass">在管</span>' : '<span class="badge badge-gray">已结管</span>')
+      + '<span class="fz-11 text-3" style="margin-left:6px">患者级</span></td></tr>'
+      + '<tr><td class="text-3" style="border:none">协作护士</td><td style="border:none">'
+      + (extra.length ? extra.join('、') : '<span class="text-4">无</span>')
+      + '<span class="fz-11 text-3" style="margin-left:6px">患者级全局名单</span></td></tr>';
+  }
+
   function openDrawer() {
     var p = cur;
     var ps = BACK_DATA.projsOf(p);
@@ -464,21 +596,10 @@
     document.getElementById('pSex').textContent = p.age + ' 岁 · ' + (p.sex === 'M' ? '男' : '女')
       + ' · ' + ps.length + ' 个项目';
 
-    var extra = (p.extraNurs || []).map(function (id) {
-      var s = BACK_DATA.member(id);
-      return s ? s.name : id;
-    });
-    document.getElementById('pBasic').innerHTML =
-      '<tr><td class="text-3" style="width:110px;border:none">身份证号</td><td style="border:none">'
-      + '<span class="mono">' + p.inNo + '</span> <span class="badge badge-gray">已脱敏</span></td></tr>'
-      + '<tr><td class="text-3" style="border:none">住院号</td><td style="border:none"><span class="mono">'
-      + p.inNo + '</span></td></tr>'
-      + '<tr><td class="text-3" style="border:none">患者状态</td><td style="border:none">'
-      + (p.status === 'active' ? '<span class="badge badge-pass">在管</span>' : '<span class="badge badge-gray">已结管</span>')
-      + '<span class="fz-11 text-3" style="margin-left:6px">患者级</span></td></tr>'
-      + '<tr><td class="text-3" style="border:none">协作护士</td><td style="border:none">'
-      + (extra.length ? extra.join('、') : '<span class="text-4">无</span>')
-      + '<span class="fz-11 text-3" style="margin-left:6px">患者级全局名单</span></td></tr>';
+    renderBasic(p);
+
+    /* 家属(可录入,医护代录) */
+    renderFamily(p);
 
     /* 项目参与 */
     document.getElementById('pProjCount').textContent = ps.length + ' 个项目';
@@ -622,6 +743,202 @@
   });
   document.getElementById('clearNameOk').addEventListener('click', function () {
     applyName('', '已清空真实姓名');
+  });
+
+  /* ---------- 编辑档案信息(联系电话 / 身高 / 体重 / 家庭住址)----------
+   * 校验依据 field-constraints.md §16.2–16.5:
+   *   电话 7–20 字符,手机 11 位或带区号座机,⛔ 不接受分机;
+   *   身高 30–250 整数,⛔ 不接受小数(不静默取整);
+   *   体重 1.0–300.0,最多 1 位小数,⛔ 不静默四舍五入(进溶栓剂量);
+   *   家庭住址 ≤200 字。
+   * 错误就地提示、弹窗不关;保存后重绘「基本信息」。 */
+  function pfErr(id, msg) {
+    var fi = document.getElementById(id).closest('.fi');
+    if (msg) {
+      fi.classList.add('has-err');
+      fi.querySelector('.err-msg').textContent = msg;
+    } else {
+      fi.classList.remove('has-err');
+      fi.querySelector('.err-msg').textContent = '';
+    }
+  }
+
+  /* 保存前归一为掩码;已是掩码的原样返回 */
+  function maskPhoneInput(v) {
+    if (/^1[3-9]\d{9}$/.test(v)) return v.slice(0, 3) + '****' + v.slice(7);
+    var m = v.match(/^(0\d{2,3})-(\d{7,8})$/);
+    return m ? m[1] + '-****' + m[2].slice(-4) : v;
+  }
+  function phoneOk(v) {
+    if (v.indexOf('****') >= 0) {
+      return /^1\d{2}\*{4}\d{4}$/.test(v) || /^0\d{2,3}-\*{4}\d{4}$/.test(v);
+    }
+    return /^1[3-9]\d{9}$/.test(v) || /^0\d{2,3}-\d{7,8}$/.test(v);
+  }
+
+  function openProfileModal() {
+    if (!cur) return;
+    document.getElementById('pfPhone').value = cur.phone || '';
+    document.getElementById('pfHeight').value =
+      (cur.heightCm === null || cur.heightCm === undefined) ? '' : String(cur.heightCm);
+    document.getElementById('pfWeight').value =
+      (cur.weightKg === null || cur.weightKg === undefined) ? '' : String(cur.weightKg);
+    document.getElementById('pfAddr').value = cur.address || '';
+    ['pfPhone', 'pfHeight', 'pfWeight', 'pfAddr'].forEach(function (id) { pfErr(id, ''); });
+    Back.modal('profileModal', true);
+    document.getElementById('pfPhone').focus();
+  }
+  function closeProfileModal() {
+    document.getElementById('profileModal').classList.remove('on');
+    /* 抽屉通常仍开着:关弹窗后要恢复 body 滚动锁 */
+    document.body.style.overflow = document.getElementById('pDrawer').classList.contains('on') ? 'hidden' : '';
+  }
+
+  function saveProfile() {
+    if (!cur) return;
+    var phone = document.getElementById('pfPhone').value.trim();
+    var hRaw = document.getElementById('pfHeight').value.trim();
+    var wRaw = document.getElementById('pfWeight').value.trim();
+    var addr = document.getElementById('pfAddr').value.trim();
+    ['pfPhone', 'pfHeight', 'pfWeight', 'pfAddr'].forEach(function (id) { pfErr(id, ''); });
+    var ok = true;
+
+    /* 联系电话:选填;填了就按 §16.2 校验(允许已脱敏的回填值) */
+    if (phone) {
+      if (phone.length < 7 || phone.length > 20) {
+        pfErr('pfPhone', '联系电话 7–20 个字符(当前 ' + phone.length + ')');
+        ok = false;
+      } else if (!phoneOk(phone)) {
+        pfErr('pfPhone', '请输入 11 位手机号,或带区号的座机号(如 010-88888888)');
+        ok = false;
+      }
+    }
+
+    /* 身高:选填;整数 + 30–250,⛔ 不接受小数 */
+    var hVal = null;
+    if (hRaw) {
+      if (!/^\d+$/.test(hRaw)) {
+        pfErr('pfHeight', '请填写整数厘米(不支持小数)');
+        ok = false;
+      } else {
+        hVal = Number(hRaw);
+        if (hVal < 30 || hVal > 250) {
+          pfErr('pfHeight', '身高应在 30–250 cm 之间(当前 ' + hVal + ')');
+          ok = false;
+        }
+      }
+    }
+
+    /* 体重:选填;1.0–300.0,最多 1 位小数,⛔ 不四舍五入 */
+    var wVal = null;
+    if (wRaw) {
+      if (!/^\d+(\.\d)?$/.test(wRaw)) {
+        if (/^\d+\.\d{2,}$/.test(wRaw)) {
+          pfErr('pfWeight', '最多 1 位小数(当前 ' + wRaw.split('.')[1].length + ' 位)');
+        } else {
+          pfErr('pfWeight', '请填写数字,如 70 或 70.5');
+        }
+        ok = false;
+      } else {
+        wVal = Number(wRaw);
+        if (wVal < 1.0 || wVal > 300.0) {
+          pfErr('pfWeight', '体重应在 1.0–300.0 kg 之间(当前 ' + wRaw + ')');
+          ok = false;
+        }
+      }
+    }
+
+    /* 家庭住址:选填;≤200 字 */
+    if (addr.length > 200) {
+      pfErr('pfAddr', '家庭住址不能超过 200 字(当前 ' + addr.length + ')');
+      ok = false;
+    }
+
+    if (!ok) return;
+
+    /* 2026-11-04 用户拍板「只弹提示,不限制清空」:
+     * 仅在「原本有值 → 本次要清空」时弹确认(体重 / 身高);改成另一个值、原来就空,都不弹。
+     * 确认框只是提示,点「仍要清空」照常清空;点「取消」弹窗不关、不提交。 */
+    var drops = [];
+    if (cur.weightKg !== null && cur.weightKg !== undefined && cur.weightKg !== '' && wVal === null) {
+      drops.push({ key: 'weightKg', label: '体重', old: cur.weightKg, unit: ' kg' });
+    }
+    if (cur.heightCm !== null && cur.heightCm !== undefined && cur.heightCm !== '' && hVal === null) {
+      drops.push({ key: 'heightCm', label: '身高', old: cur.heightCm, unit: ' cm' });
+    }
+    if (drops.length) {
+      pendingProfile = { phone: phone, hVal: hVal, wVal: wVal, addr: addr };
+      openPfClearConfirm(drops);
+      return;
+    }
+    applyProfile(phone, hVal, wVal, addr);
+  }
+
+  /* 提交档案信息(校验通过后调用;清空确认也走这里) */
+  function applyProfile(phone, hVal, wVal, addr) {
+    cur.phone = phone ? maskPhoneInput(phone) : '';
+    cur.heightCm = hVal;
+    cur.weightKg = wVal;
+    cur.address = addr;
+    closeProfileModal();
+    closePfClearModal();
+    renderBasic(cur);
+    /* 列表页不展示这 4 项 ⇒ 无需重绘列表 */
+    Back.toast('已保存档案信息');
+  }
+
+  /* ---------- 清空体重 / 身高 提示确认 ---------- */
+  var pendingProfile = null;
+  var pfClearFocusId = 'pfWeight';   /* 取消后把焦点还给被清空的字段 */
+
+  function openPfClearConfirm(drops) {
+    pfClearFocusId = drops[0].key === 'heightCm' ? 'pfHeight' : 'pfWeight';
+    var lines = drops.map(function (d) {
+      var why = d.label === '体重'
+        ? '体重是溶栓剂量计算依据(rt-PA 0.9 mg/kg、TNK 0.25 mg/kg),清空后开医嘱无法自动算剂量,需手工填写'
+        : '身高不进入剂量计算,清空后档案内将显示「—」';
+      return '<li style="margin-bottom:6px"><b>' + d.label + '</b> '
+        + BackApi.esc(String(d.old)) + d.unit + ' → 空<br>'
+        + '<span class="text-3">' + why + ';本次修改会记审计</span></li>';
+    }).join('');
+    document.getElementById('pfClearBody').innerHTML =
+      '<div>以下档案字段将被清空(只是提示,仍可清空):</div>'
+      + '<ul style="margin:10px 0 0;padding-left:18px">' + lines + '</ul>'
+      + '<div class="hint" style="margin-top:10px">点「仍要清空」照常保存;点「取消」返回编辑弹窗,填写内容不丢失。</div>';
+    /* 先收起编辑弹窗再弹确认,避免两个弹窗叠在一起 */
+    document.getElementById('profileModal').classList.remove('on');
+    Back.modal('pfClearModal', true);
+    document.getElementById('pfClearCancel').focus();
+  }
+
+  function closePfClearModal() {
+    document.getElementById('pfClearModal').classList.remove('on');
+    var lock = document.getElementById('profileModal').classList.contains('on')
+      || document.getElementById('pDrawer').classList.contains('on');
+    document.body.style.overflow = lock ? 'hidden' : '';
+  }
+
+  document.getElementById('pfClearCancel').addEventListener('click', function () {
+    /* 取消 ⇒ 回到编辑弹窗,不提交;输入框内容原样保留 */
+    pendingProfile = null;
+    closePfClearModal();
+    Back.modal('profileModal', true);
+    document.getElementById(pfClearFocusId).focus();
+  });
+  document.getElementById('pfClearOk').addEventListener('click', function () {
+    var pp = pendingProfile;
+    pendingProfile = null;
+    if (!pp) { closePfClearModal(); return; }
+    applyProfile(pp.phone, pp.hVal, pp.wVal, pp.addr);
+  });
+
+  document.getElementById('pEditProfile').addEventListener('click', openProfileModal);
+  document.getElementById('pfCancel').addEventListener('click', closeProfileModal);
+  document.getElementById('pfSave').addEventListener('click', saveProfile);
+  ['pfPhone', 'pfHeight', 'pfWeight', 'pfAddr'].forEach(function (id) {
+    var el = document.getElementById(id);
+    el.addEventListener('input', function () { pfErr(id, ''); });
+    el.addEventListener('change', function () { pfErr(id, ''); });
   });
 
   /* 变更影响提示 */
