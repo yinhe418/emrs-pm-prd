@@ -115,12 +115,13 @@
           </select>
           <input class="ipt" name="duration" type="number" min="1" max="3650" placeholder="天数" style="flex:1;" disabled>
         </div>
-        <span class="hint">周期天数用于校验模板「D N 天」的上限</span>
+        <span class="hint">周期天数用于校验模板「出院后第 N 天」的上限。<b>两端都能改</b>(PC 后台 / 小程序端)</span>
         <span class="err-msg">项目周期需在 1–3650 天之间</span>
       </div>
       <div class="fi">
         <label><span class="req">*</span>开始日期</label>
         <input class="ipt" name="startDate" type="date">
+        <span class="hint">起止日期<b>两端都能改</b>(PC 后台 / 小程序端)⇒ 末次写入生效,每次写入都留审计</span>
         <span class="err-msg">请选择开始日期</span>
       </div>
       <div class="fi">
@@ -131,9 +132,40 @@
       </div>
       <div class="fi">
         <label>定价(元)</label>
-        <input class="ipt" name="price" type="number" min="0" step="1" placeholder="选填">
-        <span class="hint">仅作项目属性记录,<b>不触发任何计费</b></span>
+        <input class="ipt" name="price" type="number" min="0" max="99999999.99" step="0.01" placeholder="选填,默认 0.00">
+        <span class="hint">选填,最多两位小数(基线 <code>DECIMAL(10,2)</code>);仅作项目属性记录,<b>不触发任何计费</b>。<br><b>PC 后台与小程序端都能改这一项</b>(改的是同一个项目属性)⇒ <b>末次写入生效,每次写入都留审计</b></span>
         <span class="err-msg">定价不能为负数</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 最后修改(只读) ============ -->
+  <!-- ⚠️ 2026-11-05 用户拍板:「周期/起止日期/定价 这几个 小程序和后台都可以修改」
+       ⇒ 这几项 + 名称/说明/主负责医生/任务模板编排 **两端都能改**
+       ⇒ 覆盖规则:**末次写入生效 + 每次写入都留审计**(不做乐观锁 / 不做冲突拦截)
+       ⚠️ 审计表结构与字段名归 AR 定,本区块只用中文字段名占位。 -->
+  <div class="card" id="lastModCard">
+    <div class="card-head"><h3>最后修改</h3><span class="ch-desc">只读 · 两端都能改,所以要能看出「谁 / 什么时候 / 从哪一端」改的</span></div>
+    <div class="form-grid">
+      <div class="fi">
+        <label>最后修改人</label>
+        <input class="ipt" id="lmBy" readonly>
+        <span class="hint">后台修改 = 后台管理员;小程序端修改 = 科室管理员(该侧「管理员 id」记 0 + 一句来源描述)</span>
+      </div>
+      <div class="fi">
+        <label>最后修改时间</label>
+        <input class="ipt" id="lmAt" readonly>
+        <span class="hint">精确到分钟</span>
+      </div>
+      <div class="fi">
+        <label>最后修改来源</label>
+        <input class="ipt" id="lmSrc" readonly>
+        <span class="hint">「后台」/「小程序端」;两端都能改 ⇒ 末次写入生效,每次写入都留审计</span>
+      </div>
+      <div class="fi" style="grid-column:1 / -1;">
+        <label>来源描述</label>
+        <input class="ipt" id="lmNote" readonly>
+        <span class="hint">小程序端那侧的「一句话描述」;⚠️ <b>不在本页做「两人同时改」的冲突拦截</b>(按覆盖规则:末次写入生效)</span>
       </div>
     </div>
   </div>
@@ -152,7 +184,7 @@
       <img src="assets/icons-png/icon-info.png">
       <div>
         <b>配置两个维度:</b>
-        <b>日期</b> —— 每天 / 出院前 / D N 天(N 由管理员输入,可任意)。<b>顺序即任务下发顺序</b>,用上移 / 下移调整。<br>
+        <b>日期</b> —— 每天 / <b>出院前 N 天</b> / <b>出院后第 N 天</b>(N 以<b>出院日</b>为基准,由管理员输入,可任意)。<b>顺序即任务下发顺序</b>,用上移 / 下移调整。<br>
         <b>目标人</b> —— 主管医生 / 护士 / 患者,可多选(如上传检查报告可同时分配给患者和主管医生)。<br>
         <b>目标人 = 角色位,不是具体人。</b>派到某患者名下时自动解析:主管医生 = 该患者的主管医生;护士 = 该患者的主要联系护士;患者 = 患者本人。
       </div>
@@ -265,6 +297,13 @@
     if (preset === 'custom') return Number(document.querySelector('[name="duration"]').value || 0);
     return Number(preset || 0);
   }
+  /* 「最后修改时间」占位时间戳(到分钟) */
+  function nowStamp() {
+    var d = new Date();
+    function p(n) { return n < 10 ? ('0' + n) : String(n); }
+    return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) +
+           ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+  }
 
   /* ---------- 归属科室下拉 ---------- */
   (function () {
@@ -323,11 +362,18 @@
     document.querySelector('[name="endDate"]').value = proj.endDate || '';
     document.querySelector('[name="price"]').value = proj.price != null ? proj.price : '';
     fillLead(String(proj.leadDoctorId || ''));
+    /* ---- 最后修改(只读)---- */
+    document.getElementById('lmBy').value = proj.lastModifiedBy || '—';
+    document.getElementById('lmAt').value = proj.lastModifiedAt || '—';
+    document.getElementById('lmSrc').value = proj.lastModifiedSource === 'mini' ? '小程序端' : '后台';
+    document.getElementById('lmNote').value = proj.lastModifiedNote || '—';
   } else {
     document.getElementById('ttl').textContent = '新建项目';
     var ps = document.querySelector('[name="startDate"]');
     var pe = document.querySelector('[name="endDate"]');
     ps.value = '2026-11-01'; pe.value = '2027-01-30';
+    /* 新建态:还没有「最后修改」记录 ⇒ 整个区块不显示 */
+    document.getElementById('lastModCard').style.display = 'none';
   }
 
   /* ==========================================================
@@ -348,9 +394,11 @@
     var bits = BACK_PROJ.targetBits(t.target || 0);
 
     /* 日期维度三态(PRD D7):
-     *   每天          —— 不带次数(基线 frequency_type 无 times_per_day,每天就是每天)
-     *   出院前 N 天   —— N 默认 0(出院当天)
-     *   D N 天        —— N 非负整数
+     *   每天          —— 不带次数(基线 frequency_type 无 times_per_day,每天就是每天);
+     *                   ⚠️ 「每天」与基准日**无关**(不是相对出院日的偏移量)
+     *   出院前 N 天   —— N 默认 0(出院当天);相对**出院日**往前数
+     *   出院后第 N 天 —— N 非负整数;相对**出院日**往后数(2026-11-05 用户拍板:
+     *                   「第N天,一般指出院的第N天」⇒ 原来的「D N 天」措辞已废弃)
      * ⚠️ 新增条目**不预选**任何一个,标「待配置」(见 pickOk)。 */
     var pills =
       '<label class="pill"><input type="radio" name="sch-' + t.id + '" value="daily"'
@@ -361,7 +409,7 @@
         + ' value="' + (st.days != null ? st.days : 0) + '"'
         + (st.type === 'pre' ? '' : ' disabled') + '><span>天</span></label>'
       + '<label class="pill"><input type="radio" name="sch-' + t.id + '" value="dayn"'
-        + (st.type === 'dayn' ? ' checked' : '') + '><span>D</span>'
+        + (st.type === 'dayn' ? ' checked' : '') + '><span>出院后第</span>'
         + '<input class="ipt dayn" type="number" min="0" step="1" data-days="' + t.id + '"'
         + ' value="' + (st.days != null ? st.days : 0) + '"'
         + (st.type === 'dayn' ? '' : ' disabled') + '><span>天</span></label>';
@@ -420,7 +468,7 @@
   /* ⚠️ 新条目 id 必须**本页唯一**:
    *   BACK_PROJ.nextId 只扫「已持久化」的 projects,本页连续加两条会拿到同一个 id
    *   ⇒ data-tid 重复 ⇒ document.querySelector('.tmpl[data-tid=…]') 永远命中第一行
-   *   ⇒ 第二行的「D N 天」输入框不会被启用(实测:勾了 D 档,天数框仍是灰的,点不动)。
+   *   ⇒ 第二行的「出院后第 N 天」输入框不会被启用(实测:勾了该档,天数框仍是灰的,点不动)。
    *   这里在 nextId 基础上顺延,直到本页不撞号。 */
   function newTplId() {
     var base = String(BACK_PROJ.nextId('pt'));
@@ -468,7 +516,7 @@
       if (t) { t.status = el.checked ? 1 : 0; syncTplCell(t.id); }
       return;
     }
-    /* 日期维度:单选(每天 / 出院前 N 天 / D N 天) */
+    /* 日期维度:单选(每天 / 出院前 N 天 / 出院后第 N 天) */
     if (el.type === 'radio' && el.name.indexOf('sch-') === 0) {
       var tid = el.name.replace('sch-', '');
       var t2 = tplById(tid);
@@ -487,7 +535,7 @@
       syncTplCell(t3.id);
       return;
     }
-    /* 天数 N(出院前 N 天 / D N 天 共用一个 days 字段,含义由 type 决定) */
+    /* 天数 N(出院前 N 天 / 出院后第 N 天 共用一个 days 字段,含义由 type 决定) */
     var dPre = el.getAttribute('data-days-pre');
     var dDay = el.getAttribute('data-days');
     if (dPre || dDay) {
@@ -661,6 +709,13 @@
       fi4.querySelector('.err-msg').textContent = '定价不能为负数';
       ok = false;
     }
+    /* 定价上限:基线 project.price 是 DECIMAL(10,2) ⇒ 最大 99999999.99 */
+    if (price !== '' && Number(price) > 99999999.99) {
+      var fi4b = document.querySelector('[name="price"]').closest('.fi');
+      fi4b.classList.add('has-err');
+      fi4b.querySelector('.err-msg').textContent = '定价超出可存储上限(最多 99999999.99)';
+      ok = false;
+    }
 
     /* 模板两个维度必须配齐 */
     var bad = null;
@@ -668,10 +723,10 @@
       var t = tpls[i];
       if (!t.sched || !t.sched.type) { bad = { t: t, why: '未选日期维度' }; break; }
       if (!t.target) { bad = { t: t, why: '未选目标人' }; break; }
-      /* 天数校验:出院前 N 天 / D N 天 都受项目周期约束(PRD D7) */
+      /* 天数校验:出院前 N 天 / 出院后第 N 天 都受项目周期约束(PRD D7) */
       if (t.sched.type === 'dayn' || t.sched.type === 'pre') {
         var n = Number(t.sched.days);
-        var lbl = t.sched.type === 'pre' ? ('出院前 ' + n + ' 天') : ('D ' + n + ' 天');
+        var lbl = t.sched.type === 'pre' ? ('出院前 ' + n + ' 天') : ('出院后第 ' + n + ' 天');
         if (!Number.isInteger(n) || n < 0) { bad = { t: t, why: '天数必须是非负整数' }; break; }
         if (dur && n > dur) {
           bad = { t: t, why: lbl + '超出项目周期(' + dur + ' 天)' }; break;
@@ -695,7 +750,14 @@
       startDate: sd,
       endDate: ed,
       price: price === '' ? 0 : Number(price),
-      leadDoctorId: Number(document.querySelector('[name="lead"]').value)
+      leadDoctorId: Number(document.querySelector('[name="lead"]').value),
+      /* ⚠️ 2026-11-05:两端都能改 ⇒ 末次写入生效 + 每次写入都留审计。
+       *   本页是**后台**侧,所以来源写 'backend'。
+       *   ⚠️ 审计表结构与字段名归 AR 定,这里只用中文字段名占位(原型不落审计表)。 */
+      lastModifiedBy: '院管甲',
+      lastModifiedAt: nowStamp(),
+      lastModifiedSource: 'backend',
+      lastModifiedNote: '在 PC 后台修改(来源描述:编辑项目属性 / 任务模板)'
     };
     if (isEdit) {
       BACK_PROJ.updateProject(proj.id, payload);

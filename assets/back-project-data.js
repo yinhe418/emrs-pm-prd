@@ -121,6 +121,37 @@
     }
   ];
 
+  /* ---- 最后修改(演示数据)----
+   * ⚠️ 2026-11-05 用户拍板:「周期/起止日期/定价 这几个 小程序和后台都可以修改」
+   *    ⇒ 这三项 + 名称/说明/主负责医生/任务模板编排,**两端都能改**
+   *    ⇒ 覆盖规则:**末次写入生效 + 每次写入都留审计**(不做乐观锁 / 不做冲突拦截)
+   * ⚠️ **审计表结构与字段名归 AR 定**,原型只用中文字段名占位,不要照抄这里的 key。
+   *    source: 'backend' = 后台管理员改的;'mini' = 小程序端科室管理员改的
+   *    (小程序端那侧:「管理员 id」按用户口径记 0 + 附一句来源描述) */
+  var LASTMOD = {
+    '90d_health':  { by: '科室管理员甲', at: '2026-11-05 16:20', source: 'mini',
+                     note: '通过小程序端「科室管理」修改(来源描述:调整定价与项目周期)' },
+    'carotid':     { by: '院管甲', at: '2026-10-18 09:05', source: 'backend',
+                     note: '在 PC 后台修改(来源描述:调整起止日期)' },
+    '365d_health': { by: '院管甲', at: '2026-09-02 14:40', source: 'backend',
+                     note: '在 PC 后台修改(来源描述:配置任务模板)' },
+    'nsurg_30d':   { by: '院管甲', at: '2026-10-01 10:12', source: 'backend',
+                     note: '在 PC 后台创建' },
+    'old_60d':     { by: '院管甲', at: '2026-01-03 08:30', source: 'backend',
+                     note: '在 PC 后台停用' }
+  };
+  function lastModOf(id) {
+    return LASTMOD[id] || { by: '—', at: '—', source: 'backend', note: '—' };
+  }
+  function attachLastMod(p) {
+    var lm = lastModOf(p.id);
+    p.lastModifiedBy = lm.by;
+    p.lastModifiedAt = lm.at;
+    p.lastModifiedSource = lm.source;
+    p.lastModifiedNote = lm.note;
+    return p;
+  }
+
   /* ---- 组装种子 ---- */
   function seed() {
     var list = baseProjects();
@@ -138,7 +169,7 @@
                  status: t.status, order: i + 1 };
       });
       return p;
-    }));
+    })).map(attachLastMod);
   }
 
   var projects = seed();
@@ -160,8 +191,21 @@
     try { obj = JSON.parse(raw); } catch (e) { return false; }
     if (!obj || obj.v !== FORMAT_V || !Array.isArray(obj.rows) || !obj.rows.length) return false;
     var map = {};
-    projects.forEach(function (p) { map[p.id] = p; });
-    obj.rows.forEach(function (p) { if (p && p.id != null) map[p.id] = p; });
+    var seedMap = {};
+    projects.forEach(function (p) { map[p.id] = p; seedMap[p.id] = p; });
+    obj.rows.forEach(function (p) {
+      if (!p || p.id == null) return;
+      /* ⚠️ 演示态持久化是**旧版本**存的行,可能没有「最后修改」字段
+       * ⇒ 从种子补齐,免得编辑页出现空白块 */
+      var base = seedMap[p.id];
+      if (base && !p.lastModifiedBy) {
+        p.lastModifiedBy = base.lastModifiedBy;
+        p.lastModifiedAt = base.lastModifiedAt;
+        p.lastModifiedSource = base.lastModifiedSource;
+        p.lastModifiedNote = base.lastModifiedNote;
+      }
+      map[p.id] = p;
+    });
     var ids = Object.keys(map);
     projects.length = 0;
     ids.forEach(function (k) { projects.push(map[k]); });
@@ -263,10 +307,12 @@
     if (!s) return '—';
     if (s.type === 'daily') return '每天';
     if (s.type === 'pre')   return s.days > 0 ? ('出院前 ' + s.days + ' 天') : '出院前';
-    if (s.type === 'dayn')  return 'D' + s.days + ' 天';
+    /* ⚠️ 2026-11-05 措辞明确化(用户:「第N天,一般指出院的第N天」):
+     *   「D N 天」里的 D 有歧义(入院日?出院日?)⇒ 统一写成「出院后第 N 天」。 */
+    if (s.type === 'dayn')  return '出院后第 ' + s.days + ' 天';
     return '—';
   }
-  /* 日期维度 → 排序键(出院前 → 每天 → D N 天) */
+  /* 日期维度 → 排序键(出院前 → 每天 → 出院后第 N 天) */
   function schedOrder(s) {
     if (!s) return 9999;
     if (s.type === 'pre')   return 0;

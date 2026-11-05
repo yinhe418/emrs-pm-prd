@@ -121,7 +121,9 @@
       line-height: 1.5;
     }
 
-    /* 日期三选项(每天 / 出院前 N 天 / D N 天) */
+    /* 日期三选项(每天 / 出院前 N 天 / 出院后第 N 天)
+     * ⚠️ 2026-11-05 用户拍板:「第N天,一般指出院的第N天」⇒ 「D N 天」措辞废弃,
+     *    统一写「出院后第 N 天」;「每天」与基准日无关,不是偏移量。 */
     .date-pills {
       flex: 1;
       display: flex;
@@ -201,19 +203,26 @@
     </div>
 
     <div class="page">
-      <!-- 2026-11-05 对齐 PC 后台:跨端分工 = PC 端管「立项与生效」,小程序端管「内容与编排」 -->
+      <!-- 2026-11-05 对齐 PC 后台:
+           跨端分工 = PC 端管「立项与生效」(新建 / 停用 / 归属科室),
+           小程序端管「内容与编排」;
+           ⚠️ 2026-11-05 用户拍板:「周期/起止日期/定价 这几个 小程序和后台都可以修改」
+              ⇒ 这三项 **两端都能改** ⇒ 末次写入生效 + 每次写入都留审计。 -->
       <div class="banner">
         <b>项目内容与编排</b>
         这里编排本项目的<b>任务模板</b>:从任务库挑组件,每个组件配「什么时候做」和「谁来做」。<br>
-        项目的<b>新建 / 周期 / 起止日期 / 定价 / 停用</b>由院管在 PC 后台维护,本页只读。
+        项目的<b>新建 / 停用</b>由院管在 PC 后台做,本页不能做;<b>归属科室</b>保存后也不可改。<br>
+        <b>名称 / 说明 / 主负责医生 / 定价 / 周期天数 / 起止日期 / 任务模板编排</b>——<b>两端都能改</b>(PC 后台 / 小程序端),改的是同一个项目 ⇒ <b>末次写入生效,每次写入都留审计</b>。
       </div>
+
+      <div id="field-err" style="display:none; background:var(--block-bg); border:1px solid var(--block); color:var(--block); padding:9px 12px; border-radius:10px; margin-bottom:12px; font-size:12px;"></div>
 
       <div class="section-title">基本信息</div>
       <div class="group">
         <div class="form-item">
           <span class="form-label">归属科室</span>
           <input class="form-input" value="神经内科" readonly>
-          <span class="ro-hint">项目按科室创建;一个项目归属一个科室。归属科室保存后不可修改。</span>
+          <span class="ro-hint">项目按科室创建;一个项目归属一个科室。归属科室保存后不可修改。<span class="ro-lock">只读</span></span>
         </div>
         <div class="form-item">
           <span class="form-label"><span class="req">*</span>项目主题</span>
@@ -231,19 +240,25 @@
         </div>
         <div class="form-item">
           <span class="form-label"><span class="req">*</span>项目周期</span>
-          <select class="form-select" disabled>
-            <option selected>90 天</option>
-          </select>
-          <span class="ro-hint">项目周期由 PC 后台维护。<span class="ro-lock">只读</span></span>
+          <div style="display:flex; gap:8px;">
+            <select class="form-select" name="durPreset" style="flex:none; width:104px;">
+              <option value="90" selected>90 天</option>
+              <option value="180">180 天</option>
+              <option value="365">365 天</option>
+              <option value="custom">自定义</option>
+            </select>
+            <input class="form-input" name="duration" type="number" min="1" max="3650" inputmode="numeric" placeholder="天数" style="flex:1;" disabled>
+          </div>
+          <span class="ro-hint">周期天数(1–3650 天),用于校验模板「出院后第 N 天」的上限。<b>两端都能改</b> —— ⚠️ 改小后,「出院后第 N 天」超过新周期会被拦。</span>
         </div>
         <div class="form-item">
           <span class="form-label"><span class="req">*</span>开始日期</span>
-          <input class="form-input" type="date" value="2026-09-01" readonly>
-          <span class="ro-hint">起止日期由 PC 后台维护。<span class="ro-lock">只读</span></span>
+          <input class="form-input" type="date" name="startDate" value="2026-09-01">
+          <span class="ro-hint">起止日期<b>两端都能改</b>;结束日期不得早于开始日期。</span>
         </div>
         <div class="form-item">
           <span class="form-label"><span class="req">*</span>结束日期</span>
-          <input class="form-input" type="date" value="2026-11-30" readonly>
+          <input class="form-input" type="date" name="endDate" value="2026-11-30">
         </div>
       </div>
 
@@ -251,13 +266,38 @@
       <div class="section-title">项目定价</div>
       <div class="card">
         <div class="form-item">
-          <span class="form-label"><span class="req">*</span>定价</span>
+          <span class="form-label">定价</span>
           <div style="display:flex; align-items:center; gap:8px;">
             <span style="font-size:18px; font-weight:600; color:var(--ink-3);">¥</span>
-            <input class="form-input" type="number" value="100" min="0" step="10" readonly style="flex:1; font-size:18px; font-weight:600;">
+            <input class="form-input" type="number" value="100" min="0" max="99999999.99" step="0.01" style="flex:1; font-size:18px; font-weight:600;">
             <span style="font-size:14px; color:var(--ink-3);">元</span>
           </div>
-          <span class="ro-hint">定价由 PC 后台维护,本页只读;仅作项目属性记录,不触发计费。</span>
+          <span class="ro-hint">选填,默认 0.00,最多两位小数。<b>PC 后台与小程序端都能改</b>定价(改的是同一个项目属性)⇒ <b>末次写入生效,每次写入都留审计</b>;仅作项目属性记录,不触发任何计费。</span>
+        </div>
+      </div>
+
+      <!-- 最后修改(只读) -->
+      <!-- ⚠️ 2026-11-05:两端都能改 ⇒ 要能看出「谁 / 什么时候 / 从哪一端」改的。
+           ⚠️ 审计表结构与字段名归 AR 定,这里只用中文字段名占位。 -->
+      <div class="section-title">最后修改(只读)</div>
+      <div class="group">
+        <div class="form-item">
+          <span class="form-label">最后修改人</span>
+          <input class="form-input" value="科室管理员甲" readonly>
+          <span class="ro-hint">小程序端修改时,来源描述写在下面一行。</span>
+        </div>
+        <div class="form-item">
+          <span class="form-label">最后修改时间</span>
+          <input class="form-input" value="2026-11-05 16:20" readonly>
+        </div>
+        <div class="form-item">
+          <span class="form-label">最后修改来源</span>
+          <input class="form-input" value="小程序端" readonly>
+          <span class="ro-hint">「后台」/「小程序端」;⚠️ 不做「两人同时改」的冲突拦截 —— 末次写入生效。</span>
+        </div>
+        <div class="form-item">
+          <span class="form-label">来源描述</span>
+          <input class="form-input" value="通过小程序端「科室管理」修改(来源描述:调整定价与项目周期)" readonly>
         </div>
       </div>
 
@@ -265,7 +305,7 @@
       <div class="section-title">任务模板(从任务库组合)</div>
       <div style="background:var(--info-bg); border:1px solid rgba(2, 119, 189, 0.15); padding:10px 14px; border-radius:10px; margin-bottom:12px; font-size:12px; color:var(--info); line-height:1.6;">
         <b>配置两个维度:</b><br>
-        📅 <b>日期</b>:<b>每天</b> / <b>出院前 N 天</b> / <b>D N 天</b>(N 由管理员输入,可任意)<br>
+        📅 <b>日期</b>:<b>每天</b> / <b>出院前 N 天</b> / <b>出院后第 N 天</b>(N 以<b>出院日</b>为基准,由管理员输入,可任意)<br>
         👥 <b>目标人</b>:主管医生 / 护士 / 患者 — <b>可多选</b>(如上传检查报告可同时分配给患者和主管医生)<br>
         <b>目标人 = 角色位,不是具体人。</b>派到某患者名下时自动解析:主管医生 = 该患者的主管医生;护士 = 该患者的主要联系护士;患者 = 患者本人。<br>
         <b>自上而下即任务下发顺序</b>,用 ↑ ↓ 调整。
@@ -289,7 +329,7 @@
               <div class="date-pills">
                 <label class="date-pill"><input type="radio" name="d1" value="daily"><span>每天</span></label>
                 <label class="date-pill"><input type="radio" name="d1" value="pre" checked><span>出院前</span><input type="number" data-kind="pre" value="0" min="0"></label>
-                <label class="date-pill"><input type="radio" name="d1" value="dayn"><span>D</span><input type="number" data-kind="dayn" value="0" min="0" disabled><span>天</span></label>
+                <label class="date-pill"><input type="radio" name="d1" value="dayn"><span>出院后第</span><input type="number" data-kind="dayn" value="0" min="0" disabled><span>天</span></label>
               </div>
             </div>
             <div class="dim-row">
@@ -318,7 +358,7 @@
               <div class="date-pills">
                 <label class="date-pill"><input type="radio" name="d2" value="daily"><span>每天</span></label>
                 <label class="date-pill"><input type="radio" name="d2" value="pre" checked><span>出院前</span><input type="number" data-kind="pre" value="0" min="0"></label>
-                <label class="date-pill"><input type="radio" name="d2" value="dayn"><span>D</span><input type="number" data-kind="dayn" value="0" min="0" disabled><span>天</span></label>
+                <label class="date-pill"><input type="radio" name="d2" value="dayn"><span>出院后第</span><input type="number" data-kind="dayn" value="0" min="0" disabled><span>天</span></label>
               </div>
             </div>
             <div class="dim-row">
@@ -347,7 +387,7 @@
               <div class="date-pills">
                 <label class="date-pill"><input type="radio" name="d3" value="daily"><span>每天</span></label>
                 <label class="date-pill"><input type="radio" name="d3" value="pre" checked><span>出院前</span><input type="number" data-kind="pre" value="0" min="0"></label>
-                <label class="date-pill"><input type="radio" name="d3" value="dayn"><span>D</span><input type="number" data-kind="dayn" value="0" min="0" disabled><span>天</span></label>
+                <label class="date-pill"><input type="radio" name="d3" value="dayn"><span>出院后第</span><input type="number" data-kind="dayn" value="0" min="0" disabled><span>天</span></label>
               </div>
             </div>
             <div class="dim-row">
@@ -376,7 +416,7 @@
               <div class="date-pills">
                 <label class="date-pill"><input type="radio" name="d4" value="daily"><span>每天</span></label>
                 <label class="date-pill"><input type="radio" name="d4" value="pre" checked><span>出院前</span><input type="number" data-kind="pre" value="0" min="0"></label>
-                <label class="date-pill"><input type="radio" name="d4" value="dayn"><span>D</span><input type="number" data-kind="dayn" value="0" min="0" disabled><span>天</span></label>
+                <label class="date-pill"><input type="radio" name="d4" value="dayn"><span>出院后第</span><input type="number" data-kind="dayn" value="0" min="0" disabled><span>天</span></label>
               </div>
             </div>
             <div class="dim-row">
@@ -391,11 +431,11 @@
           </div>
         </div>
 
-        <!-- 5 电话回访 · D7 · 护士 -->
+        <!-- 5 电话回访 · 出院后第 7 天 · 护士 -->
         <div class="task-cell">
           <div class="head">
             <div class="icon"><img src="assets/icons-png/icon-call.png" alt="电" /></div>
-            <div class="info"><b>电话回访</b><span class="sub">D7 · 枚举字段:接通状态 + 随访结论</span></div>
+            <div class="info"><b>电话回访</b><span class="sub">出院后第 7 天 · 枚举字段:接通状态 + 随访结论</span></div>
             <div class="t-order"><button data-move="up" aria-label="上移">↑</button><button data-move="down" aria-label="下移">↓</button></div>
             <input type="checkbox" checked>
           </div>
@@ -405,7 +445,7 @@
               <div class="date-pills">
                 <label class="date-pill"><input type="radio" name="d5" value="daily"><span>每天</span></label>
                 <label class="date-pill"><input type="radio" name="d5" value="pre"><span>出院前</span><input type="number" data-kind="pre" value="0" min="0" disabled></label>
-                <label class="date-pill"><input type="radio" name="d5" value="dayn" checked><span>D</span><input type="number" data-kind="dayn" value="7" min="0"><span>天</span></label>
+                <label class="date-pill"><input type="radio" name="d5" value="dayn" checked><span>出院后第</span><input type="number" data-kind="dayn" value="7" min="0"><span>天</span></label>
               </div>
             </div>
             <div class="dim-row">
@@ -420,11 +460,11 @@
           </div>
         </div>
 
-        <!-- 6 上传检查报告 · D30 · 患者 + 主管医生(多选示例) -->
+        <!-- 6 上传检查报告 · 出院后第 30 天 · 患者 + 主管医生(多选示例) -->
         <div class="task-cell" style="border-color:var(--brand);">
           <div class="head">
             <div class="icon"><img src="assets/icons-png/icon-camera.png" alt="摄" /></div>
-            <div class="info"><b>上传检查报告</b><span class="sub">D30 · 文件字段:照片 + 检查日期</span></div>
+            <div class="info"><b>上传检查报告</b><span class="sub">出院后第 30 天 · 文件字段:照片 + 检查日期</span></div>
             <div class="t-order"><button data-move="up" aria-label="上移">↑</button><button data-move="down" aria-label="下移">↓</button></div>
             <input type="checkbox" checked>
           </div>
@@ -434,7 +474,7 @@
               <div class="date-pills">
                 <label class="date-pill"><input type="radio" name="d6" value="daily"><span>每天</span></label>
                 <label class="date-pill"><input type="radio" name="d6" value="pre"><span>出院前</span><input type="number" data-kind="pre" value="0" min="0" disabled></label>
-                <label class="date-pill"><input type="radio" name="d6" value="dayn" checked><span>D</span><input type="number" data-kind="dayn" value="30" min="0"><span>天</span></label>
+                <label class="date-pill"><input type="radio" name="d6" value="dayn" checked><span>出院后第</span><input type="number" data-kind="dayn" value="30" min="0"><span>天</span></label>
               </div>
             </div>
             <div class="dim-row">
@@ -450,11 +490,11 @@
           </div>
         </div>
 
-        <!-- 7 电话回访 · D30 · 护士 -->
+        <!-- 7 电话回访 · 出院后第 30 天 · 护士 -->
         <div class="task-cell">
           <div class="head">
             <div class="icon"><img src="assets/icons-png/icon-call.png" alt="电" /></div>
-            <div class="info"><b>电话回访</b><span class="sub">D30 · 枚举字段:接通状态 + 随访结论</span></div>
+            <div class="info"><b>电话回访</b><span class="sub">出院后第 30 天 · 枚举字段:接通状态 + 随访结论</span></div>
             <div class="t-order"><button data-move="up" aria-label="上移">↑</button><button data-move="down" aria-label="下移">↓</button></div>
             <input type="checkbox" checked>
           </div>
@@ -464,7 +504,7 @@
               <div class="date-pills">
                 <label class="date-pill"><input type="radio" name="d7" value="daily"><span>每天</span></label>
                 <label class="date-pill"><input type="radio" name="d7" value="pre"><span>出院前</span><input type="number" data-kind="pre" value="0" min="0" disabled></label>
-                <label class="date-pill"><input type="radio" name="d7" value="dayn" checked><span>D</span><input type="number" data-kind="dayn" value="30" min="0"><span>天</span></label>
+                <label class="date-pill"><input type="radio" name="d7" value="dayn" checked><span>出院后第</span><input type="number" data-kind="dayn" value="30" min="0"><span>天</span></label>
               </div>
             </div>
             <div class="dim-row">
@@ -493,7 +533,7 @@
               <div class="date-pills">
                 <label class="date-pill"><input type="radio" name="d8" value="daily" checked><span>每天</span></label>
                 <label class="date-pill"><input type="radio" name="d8" value="pre"><span>出院前</span><input type="number" data-kind="pre" value="0" min="0" disabled></label>
-                <label class="date-pill"><input type="radio" name="d8" value="dayn"><span>D</span><input type="number" data-kind="dayn" value="0" min="0" disabled><span>天</span></label>
+                <label class="date-pill"><input type="radio" name="d8" value="dayn"><span>出院后第</span><input type="number" data-kind="dayn" value="0" min="0" disabled><span>天</span></label>
               </div>
             </div>
             <div class="dim-row">
@@ -522,7 +562,7 @@
               <div class="date-pills">
                 <label class="date-pill"><input type="radio" name="d9" value="daily" checked><span>每天</span></label>
                 <label class="date-pill"><input type="radio" name="d9" value="pre"><span>出院前</span><input type="number" data-kind="pre" value="0" min="0" disabled></label>
-                <label class="date-pill"><input type="radio" name="d9" value="dayn"><span>D</span><input type="number" data-kind="dayn" value="0" min="0" disabled><span>天</span></label>
+                <label class="date-pill"><input type="radio" name="d9" value="dayn"><span>出院后第</span><input type="number" data-kind="dayn" value="0" min="0" disabled><span>天</span></label>
               </div>
             </div>
             <div class="dim-row">
@@ -537,11 +577,11 @@
           </div>
         </div>
 
-        <!-- 10 康复训练打卡 · D90 · 护士 + 患者 -->
+        <!-- 10 康复训练打卡 · 出院后第 90 天 · 护士 + 患者 -->
         <div class="task-cell">
           <div class="head">
             <div class="icon"><img src="assets/icons-png/icon-run.png" alt="动" /></div>
-            <div class="info"><b>康复训练打卡</b><span class="sub">D90 · 枚举:步行 / 被动运动 / 语言训练</span></div>
+            <div class="info"><b>康复训练打卡</b><span class="sub">出院后第 90 天 · 枚举:步行 / 被动运动 / 语言训练</span></div>
             <div class="t-order"><button data-move="up" aria-label="上移">↑</button><button data-move="down" aria-label="下移">↓</button></div>
             <input type="checkbox" checked>
           </div>
@@ -551,7 +591,7 @@
               <div class="date-pills">
                 <label class="date-pill"><input type="radio" name="d10" value="daily"><span>每天</span></label>
                 <label class="date-pill"><input type="radio" name="d10" value="pre"><span>出院前</span><input type="number" data-kind="pre" value="0" min="0" disabled></label>
-                <label class="date-pill"><input type="radio" name="d10" value="dayn" checked><span>D</span><input type="number" data-kind="dayn" value="90" min="0"><span>天</span></label>
+                <label class="date-pill"><input type="radio" name="d10" value="dayn" checked><span>出院后第</span><input type="number" data-kind="dayn" value="90" min="0"><span>天</span></label>
               </div>
             </div>
             <div class="dim-row">
@@ -585,7 +625,7 @@
       <a href="admin-projects.html" class="btn btn-primary btn-block" id="saveBtn" style="margin-top:20px;">
         保存修改
       </a>
-      <div class="ro-hint" style="text-align:center; margin-top:8px;">只保存本页可编辑的内容:项目主题 / 主负责医生 / 任务模板。</div>
+      <div class="ro-hint" style="text-align:center; margin-top:8px;">只保存本页可编辑的内容:项目主题 / 主负责医生 / <b>周期天数 / 起止日期 / 定价</b> / 任务模板。<br>这几项<b>两端都能改</b> ⇒ 末次写入生效,每次写入都留审计。</div>
     </div>
   </div>
   <script>
@@ -658,10 +698,55 @@
         });
       });
 
+      /* 周期:预设 ↔ 自定义(与 PC 后台 back-project-edit.html 同款) */
+      function syncDurPreset() {
+        var preset = document.querySelector('[name="durPreset"]');
+        var num = document.querySelector('[name="duration"]');
+        if (!preset || !num) return;
+        num.disabled = preset.value !== 'custom';
+        if (preset.value !== 'custom') num.value = '';
+      }
+      document.addEventListener('change', function (e) {
+        if (e.target && e.target.name === 'durPreset') syncDurPreset();
+      });
+
       /* 保存前校验 */
       document.addEventListener('click', function (e) {
         var b = e.target.closest ? e.target.closest('#saveBtn') : null;
         if (!b) return;
+        /* ⚠️ #saveBtn 是 <a href="admin-projects.html"> ⇒ 校验不过也照样跳走,
+         *   校验就白做了。必须在这里 preventDefault,只有校验全过才手动跳。 */
+        e.preventDefault();
+        var err = document.getElementById('tpl-err');
+        var fieldErr = document.getElementById('field-err');
+
+        /* ---- 周期天数 ---- */
+        var preset = document.querySelector('[name="durPreset"]');
+        var durNum = document.querySelector('[name="duration"]');
+        var dur = preset.value === 'custom' ? Number(durNum.value || 0) : Number(preset.value || 0);
+        if (!dur || dur < 1 || dur > 3650) {
+          fieldErr.style.display = 'block';
+          fieldErr.innerHTML = '<b>项目周期不合法</b>:周期天数需在 1–3650 天之间(选「自定义」时填天数)。';
+          fieldErr.scrollIntoView({ block: 'center' });
+          return;
+        }
+
+        /* ---- 起止日期 ---- */
+        var sd = document.querySelector('[name="startDate"]').value;
+        var ed = document.querySelector('[name="endDate"]').value;
+        if (!sd || !ed) {
+          fieldErr.style.display = 'block';
+          fieldErr.innerHTML = '<b>起止日期不能为空</b>:开始日期与结束日期都要填。';
+          fieldErr.scrollIntoView({ block: 'center' });
+          return;
+        }
+        if (ed < sd) {
+          fieldErr.style.display = 'block';
+          fieldErr.innerHTML = '<b>结束日期早于开始日期</b>:请调整后再保存。';
+          fieldErr.scrollIntoView({ block: 'center' });
+          return;
+        }
+
         var cells = Array.prototype.slice.call(document.querySelectorAll('.task-cell'));
         var bad = null;
         for (var i = 0; i < cells.length; i++) {
@@ -673,7 +758,6 @@
           });
           if (!hasDate || !hasTarget) { bad = c; break; }
         }
-        var err = document.getElementById('tpl-err');
         if (bad) {
           err.style.display = 'block';
           err.innerHTML = '<b>还有模板没配齐</b>:' + (bad.querySelector('.info b') || {}).textContent
@@ -683,6 +767,29 @@
           return;
         }
         err.style.display = 'none';
+
+        /* ---- 「出院后第 N 天」不得超出项目周期(周期现在两端都能改 ⇒ 这里要拦)---- */
+        var over = null;
+        for (var k = 0; k < cells.length; k++) {
+          var cc = cells[k];
+          var dayn = cc.querySelector('.date-pills input[type=radio][value="dayn"]:checked');
+          if (!dayn) continue;
+          var nIn = cc.querySelector('.date-pills input[data-kind="dayn"]');
+          var n = Number(nIn ? nIn.value : 0);
+          if (Number.isInteger(n) && n > dur) {
+            over = { cell: cc, n: n };
+            break;
+          }
+        }
+        if (over) {
+          fieldErr.style.display = 'block';
+          fieldErr.innerHTML = '<b>模板超出项目周期</b>:「' +
+            ((over.cell.querySelector('.info b') || {}).textContent || '某条模板') +
+            '」的「出院后第 ' + over.n + ' 天」超过项目周期(' + dur + ' 天)⇒ 请把周期调大或改这条模板。';
+          over.cell.scrollIntoView({ block: 'center' });
+          return;
+        }
+        fieldErr.style.display = 'none';
         location.href = 'admin-projects.html';
       });
 

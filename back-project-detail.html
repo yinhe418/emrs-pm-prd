@@ -164,11 +164,11 @@
       return;
     }
 
-    /* 分组顺序:出院前 → 每天 → D N 天(D N 按 N 升序) */
+    /* 分组顺序:出院前 → 每天 → 出院后第 N 天(按 N 升序) */
     var groups = [
       { key: 'pre',   title: '出院前',   items: [] },
       { key: 'daily', title: '每天',     items: [] },
-      { key: 'dayn',  title: 'D N 天',   items: [] }
+      { key: 'dayn',  title: '出院后第 N 天', items: [] }
     ];
     tpls.forEach(function (t) {
       var g = groups.filter(function (x) { return x.key === (t.sched && t.sched.type); })[0];
