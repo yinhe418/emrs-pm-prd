@@ -39,11 +39,6 @@
   <!-- ============ 科室(单视图) ============ -->
   <section data-pane="dept">
 
-    <div class="note note-info">
-      <img src="assets/icons-png/icon-info.png">
-      <div><b>科室责任人</b>:每个科室有且只有一个<b>科室主任</b>(行政职务)。点击科室行的科室主任可更换,系统会强制保证唯一性——同一科室不允许出现两个科室主任。</div>
-    </div>
-
     <div class="filters">
       <div class="search-wrap">
         <img src="assets/icons-png/icon-search.png" alt="">
@@ -85,17 +80,13 @@
   <div class="drawer-body">
     <div class="note note-warn" id="dirDeptName"></div>
     <div class="form-sec">
-      <h4>科室主任<span class="req-all">* 必填 · 唯一</span></h4>
+      <h4>科室主任<span class="req-all">* 必填</span></h4>
       <div class="fi" id="fi-dir">
         <label>选择科室主任</label>
         <select class="sel w-full" id="dirSel"></select>
-        <span class="hint">候选人:本院「科室主任」职位的工作人员。一个科室有且只有一个科室主任。</span>
+        <span class="hint">候选人:本院「科室主任」职位人员。</span>
         <span class="err-msg">请选择科室主任</span>
       </div>
-    </div>
-    <div class="note note-gray">
-      <img src="assets/icons-png/icon-info.png">
-      <div><b>唯一性约束</b><br>若该员工已在其他科室担任科室主任,系统会提示并要求先解除原科室的任命,避免一人同时负责两个科室。</div>
     </div>
   </div>
   <div class="drawer-foot">

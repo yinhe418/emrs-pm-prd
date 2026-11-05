@@ -63,12 +63,12 @@
 
       <!-- 中部:任务区(根据签约状态切换显示) -->
       <div class="page" style="padding:16px; padding-top:0;">
-        <!-- 已签约项目 → 显示任务 -->
+        <!-- 已入组项目 → 显示任务 -->
         <div id="taskBlock">
           <!-- JS 根据 emrs_subscribed_projects 渲染 -->
         </div>
 
-        <!-- 个人目标(已签约才显示) -->
+        <!-- 个人目标(已入组才显示) -->
         <div id="planBlock" style="display:none;">
           <div class="card" style="background:linear-gradient(135deg, var(--brand-light), var(--brand-2-light)); border:none;">
             <div style="font-size:12px; color:var(--brand-dark); margin-bottom:6px;">陈医生为您设定的个人目标</div>
@@ -185,7 +185,7 @@
       <div class="page" style="padding:16px; padding-top:0;">
         <div class="section-title">项目服务</div>
         <div style="font-size:11px; color:var(--ink-3); margin-bottom:10px; padding:0 4px;">
-          点击项目查看详情 · 已签约项目会自动加入上方任务区
+          点击项目 → 签署须知(勾选确认) → 确认加入即入组 · 已入组项目的任务自动出现在上方
         </div>
         <div id="projectList">
           <!-- JS 渲染项目列表 -->
@@ -212,7 +212,7 @@
 
       var subscribed = PROJECT_HELPERS.getSubscribed();
 
-      // 任务区:已签约 → 显示任务;未签约 → 空状态
+      // 任务区:已入组 → 显示任务;未入组 → 空状态
       var taskBlock = document.getElementById('taskBlock');
       var planBlock = document.getElementById('planBlock');
 
@@ -222,20 +222,20 @@
           '<div class="empty-state">'
           + '<div class="icon">📋</div>'
           + '<div class="title">还没有任务</div>'
-          + '<div class="desc">您还未签约任何项目<br>选择下方「项目服务」签约后即可开始随访管理</div>'
+          + '<div class="desc">您还未加入任何项目<br>选择下方「项目服务」签署须知并确认加入后即可开始随访管理</div>'
           + '</div>';
         planBlock.style.display = 'none';
       } else {
-        // 已签约:把"个人目标 / 今日任务 / 周期任务 / 常用"塞进 taskBlock
+        // 已入组:把"个人目标 / 今日任务 / 周期任务 / 常用"塞进 taskBlock
         planBlock.style.display = 'block';
-        // 顶部加一个已签约项目摘要卡(让用户看清自己买了什么)
+        // 顶部加一个已入组项目摘要卡(让用户看清自己买了什么)
         var subNames = subscribed.map(function (id) {
           var p = PROJECT_HELPERS.getProject(id);
           return p ? p.name : id;
         });
         taskBlock.innerHTML =
           '<div class="card" style="background:linear-gradient(135deg, #E8F5E9, #F1F8E9); border:none; margin-bottom:12px;">'
-          + '<div style="font-size:11px; color:var(--pass); margin-bottom:6px;">✓ 您已签约</div>'
+          + '<div style="font-size:11px; color:var(--pass); margin-bottom:6px;">✓ 您已入组</div>'
           + '<div style="font-size:13px; color:var(--ink); line-height:1.6;">'
           + subNames.join(' · ')
           + '</div>'
@@ -259,7 +259,7 @@
               +     '<div class="meta">'
               +       '<span>' + p.duration + '</span>'
               +       '<span class="project-status-badge ' + (ok ? 'ok' : 'no') + '">'
-              +         (ok ? '✓ 已签约' : '未签约')
+              +         (ok ? '✓ 已入组' : '未入组')
               +       '</span>'
               +     '</div>'
               +   '</div>'

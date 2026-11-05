@@ -20,8 +20,7 @@
   <div class="note note-info">
     <img src="assets/icons-png/icon-info.png">
     <div><b>每个字段由四件事决定:</b>字段名 / 字段类型 / 标准范围 / 是否必填。<br>
-      <b>标准范围</b>是科室在本组件上填的配置项,下限与上限<b>各自独立</b>,留空 = 该侧不限。<br>
-      录入值还需通过临床有效区间校验(系统内部判定、不在本页展示),超出即禁止提交。</div>
+      <b>标准范围</b>下限与上限<b>各自独立</b>,留空 = 该侧不限。</div>
   </div>
 
   <div class="tabs" data-tab-group="c" data-scope="cScope">
@@ -157,12 +156,12 @@
       var c = BACK_DATA.byId(BACK_DATA.components, g('data-stop'));
       document.getElementById('stopBody').innerHTML =
         '<div>停用「' + c.name + '」后:</div><ul>'
-        + '<li>患者端不再下发<b>新的</b>该组件任务</li>'
-        + '<li><b>已下发未完成</b>的任务保留,字段标记「已停用」只读</li>'
+        + '<li>患者端不再为该组件<b>生成新的</b>任务</li>'
+        + '<li><b>已生成未完成</b>的任务保留,字段标记「已停用」</li>'
         + '<li>历史数据<b>全部保留</b>,不物理删除</li></ul>'
         + '<div class="note note-warn" style="margin-top:10px"><img src="assets/icons-png/icon-warning.png">'
-        + '<div><b>任务分配模块尚未上线</b>,本期不统计该组件被任务模板引用的次数,无法确认是否仍有进行中的任务。'
-        + '停用后已下发的该组件任务按上方规则<b>保留为只读</b>。</div></div>';
+        + '<div><b>任务分配模块尚未上线</b>,本期不统计该组件被项目任务引用的次数,无法确认是否仍有进行中的任务。'
+        + '停用后已生成的该组件任务按上方规则<b>保留</b>。</div></div>';
       document.getElementById('stopOk').onclick = function () {
         c.status = 0; Back.modal('stopModal', false); render();
         Back.toast('已停用:' + c.name, 'warn');

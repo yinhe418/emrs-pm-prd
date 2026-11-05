@@ -44,54 +44,87 @@
 
       <!-- ============ 基本信息 ============ -->
       <div class="card">
-        <div class="card-head"><h3>基本信息</h3><span class="ch-desc">只读</span></div>
+        <div class="card-head"><h3>基本信息</h3></div>
         <div class="form-grid">
-          <div class="fi"><label>归属科室</label><div class="ro" id="fDept">—</div>
-            <span class="hint">项目的一切配置以此为界;归属科室保存后不可修改</span></div>
+          <div class="fi"><label>归属科室</label><div class="ro" id="fDept">—</div></div>
           <div class="fi"><label>项目主题</label><div class="ro" id="fName">—</div></div>
           <div class="fi"><label>项目类型</label><div class="ro" id="fTag">—</div></div>
-          <div class="fi"><label>主负责医生</label><div class="ro" id="fLead">—</div>
-            <span class="hint">这是数据字段,不是登录身份 —— 他本人没有本模块的后台权限</span></div>
+          <div class="fi"><label>主负责医生</label><div class="ro" id="fLead">—</div></div>
           <div class="fi"><label>项目周期</label><div class="ro" id="fDur">—</div></div>
           <div class="fi"><label>起止日期</label><div class="ro" id="fDate">—</div></div>
-          <div class="fi"><label>定价</label><div class="ro" id="fPrice">—</div>
-            <span class="hint">仅作项目属性记录,不触发计费</span></div>
+          <div class="fi"><label>定价</label><div class="ro" id="fPrice">—</div></div>
           <div class="fi"><label>状态</label><div class="ro" id="fStatus">—</div></div>
         </div>
       </div>
 
-      <!-- ============ 任务模板 ============ -->
+      <!-- ============ 项目任务 ============ -->
       <div class="card" style="margin-top:16px;">
-        <div class="card-head"><h3>任务模板</h3><span class="ch-desc" id="tplCount">0 条</span></div>
+        <div class="card-head"><h3>项目任务</h3><span class="ch-desc" id="tplCount">0 条</span></div>
         <div class="note note-info">
           <img src="assets/icons-png/icon-info.png">
-          <div><b>自上而下即任务下发顺序</b>。每条模板配两个维度:<b>日期</b>(什么时候做)与 <b>目标人</b>(谁来做)。</div>
+          <div>患者入组后按此配置<b>自动生成</b>任务;自上而下即患者端顺序。</div>
         </div>
         <div id="tplBody"></div>
+      </div>
+
+      <!-- ============ 已入组患者(可结管,不可新增) ============ -->
+      <div class="card" style="margin-top:16px;">
+        <div class="card-head"><h3>已入组患者</h3><span class="ch-desc" id="enrollCount">0 人</span></div>
+        <div class="note note-info">
+          <img src="assets/icons-png/icon-info.png">
+          <div>入组由患者在小程序自助完成;后台不可新增入组。</div>
+        </div>
+        <div id="enrollBody"></div>
       </div>
     </div>
 
     <!-- ============ 右栏 ============ -->
     <div style="width:300px; flex:none;">
       <div class="card">
-        <div class="card-head"><h3>目标人角色位</h3></div>
+        <div class="card-head"><h3>执行人 → 跟踪人</h3></div>
         <div id="roleBody"></div>
-      </div>
-
-      <div class="card" style="margin-top:16px;">
-        <div class="card-head"><h3>本模块本期范围</h3></div>
-        <div class="note note-gray">
-          <img src="assets/icons-png/icon-info.png">
-          <div>
-            <b>本期做</b>:建项目、配任务模板、停用 / 启用。<br>
-            <b>本期不做</b>:患者入组、任务下发、填报记录。<br>
-            <b>访问主体</b>:院管(本院全部科室)与平台超管;科室侧无后台身份。
-          </div>
-        </div>
       </div>
     </div>
   </div>
 </main>
+
+<!-- ========== 结管确认 弹窗 ========== -->
+<div class="modal-mask" id="closeModal">
+  <div class="modal">
+    <div class="modal-head">
+      <img src="assets/icons-png/icon-warning.png" alt="">
+      <h3>结管确认</h3>
+    </div>
+    <div class="modal-body">
+      <div id="closeWho" style="margin-bottom:10px;color:var(--ink)">—</div>
+      <div>结管后:</div>
+      <ul>
+        <li>停止为该患者生成后续任务</li>
+        <li>已生成未完成的任务全部取消</li>
+        <li>历史任务与填报记录全部保留</li>
+      </ul>
+      <div class="fi mt-12">
+        <label><span class="req">*</span>结管原因</label>
+        <select class="sel w-full" id="closeReason">
+          <option value="">请选择结管原因…</option>
+          <option value="疗程完成">疗程完成</option>
+          <option value="患者退出">患者退出</option>
+          <option value="转院 / 转诊">转院 / 转诊</option>
+          <option value="失访">失访</option>
+          <option value="其他">其他</option>
+        </select>
+      </div>
+      <div class="fi mt-12">
+        <label>备注</label>
+        <textarea class="ipt w-full" id="closeNote" rows="2" maxlength="100" placeholder="选填,≤100 字"></textarea>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-default" onclick="Back.modal('closeModal',false)">取消</button>
+      <button class="btn btn-danger" id="closeOk">确认结管</button>
+    </div>
+  </div>
+</div>
 
 <script src="assets/back-api.js"></script>
 <script src="assets/back-data.js"></script>
@@ -145,39 +178,44 @@
     if (proj.status === 0) {
       document.getElementById('offTip').innerHTML =
         '<div class="note note-warn"><img src="assets/icons-png/icon-warning.png">'
-        + '<div><b>该项目已停用</b>:任务模板全部保留(只读),重新启用后原样恢复;'
-        + '已存在的患者参与关系照常展示;历史数据全部保留。'
+        + '<div><b>该项目已停用</b>:不再生成新任务,<b>已生成未完成的任务已全部取消</b>;'
+        + '项目任务配置全部保留,重新启用后原样恢复;历史数据全部保留。'
         + '<a href="back-projects.html?tab=off" style="color:var(--brand);margin-left:6px">查看已停用项目</a></div></div>';
     }
 
     renderTpls();
     renderRoles();
+    renderEnrollments();
   }
 
-  /* ---------- 任务模板(按日期维度分组的时间轴)---------- */
+  /* ---------- 项目任务(按「何时做」分组的时间轴)---------- */
   function renderTpls() {
-    var tpls = BACK_PROJ.templatesOf(proj.id);
-    document.getElementById('tplCount').textContent = tpls.length + ' 条';
+    var tasks = BACK_PROJ.tasksOf(proj.id);
+    document.getElementById('tplCount').textContent = tasks.length + ' 条';
     var box = document.getElementById('tplBody');
 
-    if (!tpls.length) {
+    if (!tasks.length) {
       box.innerHTML = '<div class="empty"><img src="assets/icons-png/icon-empty-box.png" alt="">'
-        + '<div class="e-t">该项目还没有任务模板</div>'
-        + '<div class="e-d">到「编辑项目 → 从任务库添加组件」里挑组件开始配</div></div>';
+        + '<div class="e-t">该项目还没有项目任务</div>'
+        + '<div class="e-d">到「编辑项目 → 从任务组件库添加」里挑组件开始配</div></div>';
       return;
     }
 
-    /* 分组顺序:出院前 → 每天 → 出院后第 N 天(按 N 升序) */
+    /* 分组顺序:每 N 天(按 N 升序) → 第 N 天(按 N 升序)
+     * ⚠️ 2026-11-05 执行层重新设计:旧的第三档(以出院为基准)已删除;
+     *    「每 N 天」N = 1 的条目仍显示「每天」。 */
     var groups = [
-      { key: 'pre',   title: '出院前',   items: [] },
-      { key: 'daily', title: '每天',     items: [] },
-      { key: 'dayn',  title: '出院后第 N 天', items: [] }
+      { key: 'every', title: '每 N 天(重复)', items: [] },
+      { key: 'dayn',  title: '第 N 天(单次)',  items: [] }
     ];
-    tpls.forEach(function (t) {
-      var g = groups.filter(function (x) { return x.key === (t.sched && t.sched.type); })[0];
+    tasks.forEach(function (t) {
+      var k = t.sched && t.sched.type;
+      var g = groups.filter(function (x) { return x.key === k; })[0];
       if (g) g.items.push(t);
     });
-    groups[2].items.sort(function (a, b) { return (a.sched.days || 0) - (b.sched.days || 0); });
+    groups.forEach(function (g) {
+      g.items.sort(function (a, b) { return Number(a.sched.days || 0) - Number(b.sched.days || 0); });
+    });
 
     var html = '';
     groups.forEach(function (g) {
@@ -187,18 +225,15 @@
       g.items.forEach(function (t, i) {
         var c = BACK_DATA.byId(BACK_DATA.components, t.componentId);
         var compOff = !!c && c.status === 0;
-        var bits = BACK_PROJ.targetBits(t.target || 0);
-        var tg = bits.length
-          ? bits.map(function (b) { return '<span class="chip">' + esc(b.label) + '</span>'; }).join('')
-          : '<span class="chip" style="color:var(--ink-4)">未指定目标人</span>';
         html += '<div class="tl-item' + (i === 0 ? ' hi' : '') + '">'
           + '<div class="tl-t">' + esc(BACK_PROJ.schedLabel(t.sched)) + '</div>'
           + '<div class="tl-b"><b>' + esc(c ? c.name : '(组件已删除)') + '</b>'
           + (compOff ? ' <span class="badge badge-gray">组件已停用</span>' : '')
+          + (t.manualReview ? ' <span class="badge badge-warn">需人工判读</span>' : '')
           + (t.status === 0 ? ' <span class="badge badge-gray">该条已停用</span>' : '')
           + (c ? '<span class="cell-sub">' + c.fields.length + ' 个字段</span>' : '')
           + '</div>'
-          + '<div class="tgt">' + tg + '</div>'
+          + '<div class="tgt">' + '<span class="chip">' + esc(BACK_PROJ.pairLabel(t)) + '</span>' + '</div>'
           + '</div>';
       });
       html += '</div>';
@@ -206,24 +241,123 @@
     box.innerHTML = html;
   }
 
-  /* ---------- 目标人角色位说明 ---------- */
-  function renderRoles() {
-    var used = {};
-    BACK_PROJ.templatesOf(proj.id).forEach(function (t) {
-      BACK_PROJ.targetBits(t.target || 0).forEach(function (b) { used[b.bit] = (used[b.bit] || 0) + 1; });
+  /* ---------- 已入组患者 ----------
+   * 🔴 入组唯一来源 = 患者小程序自助;后台**不提供**代加人入口(2026-11-05 用户拍板)。
+   * 🟡 2026-11-05 用户拍板:后台可对已入组患者**结管 / 停止参与**,但仍不能新增入组。
+   *    原型只改内存(BACK_DATA.patients),不做持久化。 */
+  function renderEnrollments() {
+    var rows = (BACK_DATA.patients || []).filter(function (p) {
+      return (p.projs || []).some(function (r) { return String(r.projId) === String(proj.id); });
     });
-    var html = BACK_PROJ.TARGETS.map(function (b) {
+    document.getElementById('enrollCount').textContent = rows.length + ' 人';
+    var box = document.getElementById('enrollBody');
+    if (!rows.length) {
+      box.innerHTML = '<div class="empty" style="padding:26px 10px;">'
+        + '<img src="assets/icons-png/icon-empty-box.png" alt="">'
+        + '<div class="e-t">还没有患者入组</div>'
+        + '<div class="e-d">等待患者在小程序里自行加入本项目 —— 后台不能代加。</div></div>';
+      return;
+    }
+    var html = '<div class="table-wrap"><table class="tbl"><thead><tr>'
+      + '<th>患者</th><th>入组日(D0)</th><th>主管医生</th><th>主责护士</th><th>状态</th>'
+      + '<th class="col-act" style="width:90px">操作</th>'
+      + '</tr></thead><tbody>';
+    rows.forEach(function (p) {
+      var rec = (p.projs || []).filter(function (r) { return String(r.projId) === String(proj.id); })[0];
+      var doc = rec && rec.docId ? BACK_DATA.member(rec.docId) : null;
+      var nur = rec && rec.nurId ? BACK_DATA.member(rec.nurId) : null;
+      var closed = rec && rec.status === 'closed';
+      html += '<tr>'
+        + '<td><b>' + esc(p.name || p.nickName || '—') + '</b>'
+        +   '<span class="cell-sub">住院号 ' + esc(p.inNo || '—') + '</span></td>'
+        + '<td>' + esc(rec && rec.enrole ? rec.enrole : '—') + '</td>'
+        + '<td>' + esc(doc ? doc.name : '待分配') + '</td>'
+        + '<td>' + esc(nur ? nur.name : '待分配') + '</td>'
+        + '<td>' + (closed
+            ? '<span class="badge badge-gray">已结管</span>'
+              + (rec.closeReason ? '<span class="cell-sub">' + esc(rec.closeReason) + '</span>' : '')
+            : '<span class="badge badge-ok">在管</span>') + '</td>'
+        + '<td class="col-act">' + (closed
+            ? '<span class="text-4">—</span>'
+            : '<a class="btn-text" data-close="' + p.id + '">结管</a>') + '</td>'
+        + '</tr>';
+    });
+    html += '</tbody></table></div>';
+    box.innerHTML = html;
+  }
+
+  /* ---------- 执行人 → 跟踪人 使用统计 ---------- */
+  function renderRoles() {
+    var ex = BACK_PROJ.roleUsage(proj.id, 'executor');
+    var tr = BACK_PROJ.roleUsage(proj.id, 'tracker');
+    var total = BACK_PROJ.tasksOf(proj.id).length;
+    var html = BACK_PROJ.ROLES.map(function (r) {
       return '<div class="role-row">'
-        + '<div class="role-bit">' + b.bit + '</div>'
-        + '<div><div style="font-size:13px;font-weight:500">' + esc(b.label) + '</div>'
-        + '<div class="cell-sub">' + (used[b.bit] ? ('本项目 ' + used[b.bit] + ' 条模板用到') : '本项目未使用') + '</div></div>'
+        + '<div class="role-bit">' + esc(r.label.slice(0, 1)) + '</div>'
+        + '<div><div style="font-size:13px;font-weight:500">' + esc(r.label) + '</div>'
+        + '<div class="cell-sub">执行 ' + (ex[r.key] || 0) + ' 条 · 跟踪 ' + (tr[r.key] || 0) + ' 条</div></div>'
         + '</div>';
     }).join('');
+    var noTracker = total - (tr.doctor || 0) - (tr.nurse || 0) - (tr.patient || 0);
+    html += '<div class="role-row"><div class="role-bit">—</div><div>'
+      + '<div style="font-size:13px;font-weight:500">无跟踪人</div>'
+      + '<div class="cell-sub">' + noTracker + ' 条(执行人完成即结束)</div></div></div>';
     html += '<div class="note note-gray" style="margin-top:10px"><img src="assets/icons-png/icon-info.png">'
-      + '<div><b>目标人 = 角色位,不是具体人。</b>派到某患者名下时自动解析:'
-      + '主管医生 = 该患者的主管医生;护士 = 该患者的主要联系护士;患者 = 患者本人。</div></div>';
+      + '<div>角色位,入组时解析为具体人。</div></div>';
     document.getElementById('roleBody').innerHTML = html;
   }
+
+  /* ---------- 结管(2026-11-05 用户拍板) ----------
+   * 后台可对已入组患者结管 / 停止参与;⛔ 仍不提供新增入组入口。
+   * 原型只改内存,不落库。 */
+  var closingPid = null;
+
+  function fmtToday() {
+    var d = new Date();
+    var m = String(d.getMonth() + 1); if (m.length < 2) m = '0' + m;
+    var day = String(d.getDate()); if (day.length < 2) day = '0' + day;
+    return d.getFullYear() + '-' + m + '-' + day;
+  }
+  function patientById(pid) {
+    var list = BACK_DATA.patients || [];
+    for (var i = 0; i < list.length; i++) {
+      if (String(list[i].id) === String(pid)) return list[i];
+    }
+    return null;
+  }
+
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest ? e.target.closest('[data-close]') : null;
+    if (!a) return;
+    var p = patientById(a.getAttribute('data-close'));
+    if (!p) return;
+    closingPid = p.id;
+    document.getElementById('closeWho').innerHTML =
+      '患者 <b>' + esc(p.name || p.nickName || '—') + '</b> · 项目「' + esc(proj.name) + '」';
+    document.getElementById('closeReason').value = '';
+    document.getElementById('closeNote').value = '';
+    Back.modal('closeModal', true);
+  });
+
+  document.getElementById('closeOk').addEventListener('click', function () {
+    var reason = document.getElementById('closeReason').value;
+    if (!reason) { Back.toast('请选择结管原因', 'warn'); return; }
+    var p = patientById(closingPid);
+    if (!p) { Back.modal('closeModal', false); return; }
+    var rec = (p.projs || []).filter(function (r) { return String(r.projId) === String(proj.id); })[0];
+    if (!rec || rec.status === 'closed') { Back.modal('closeModal', false); return; }
+    var note = document.getElementById('closeNote').value.trim();
+    rec.status = 'closed';
+    rec.closedAt = fmtToday();
+    rec.closeReason = note ? (reason + ' · ' + note) : reason;
+    /* 该患者已无在管项目 ⇒ 患者级状态同步为已结管(与「病患」模块口径一致) */
+    if ((p.projs || []).every(function (r) { return r.status === 'closed'; })) {
+      p.status = 'closed';
+    }
+    Back.modal('closeModal', false);
+    renderEnrollments();
+    Back.toast('已结管:' + (p.name || p.nickName || ''), 'ok');
+  });
 
   if (!Back.requireHospitalAndApply()) { document.querySelector('.back-main').innerHTML = ''; }
   else {

@@ -72,6 +72,20 @@
           </a>
         </div>
 
+        <!-- 跟踪人入口:未处理结转(2026-11-05 执行层口径)
+             跟踪人可以是护士也可以是医生 ⇒ 医生首页同样给这个入口。
+             N = 今天以前、执行人已完成、跟踪人还没处理的任务数。 -->
+        <a href="doctor-tasks.html?filter=backlog" class="cell" style="background:var(--warn-bg); margin-bottom:12px;">
+          <div class="l">
+            <div class="icon"><img src="assets/icons-png/icon-alert.png" alt="积" /></div>
+            <div class="info">
+              <b style="color:var(--warn);">未处理结转 (1)</b>
+              <span style="color:var(--warn);">今天以前、执行人已完成、您还没判读的任务</span>
+            </div>
+          </div>
+          <div class="r"><span class="badge badge-warn">1</span><span class="arrow">›</span></div>
+        </a>
+
         <!-- 紧急待办(置顶) -->
         <div class="section-title">紧急待办</div>
         <div class="group">
@@ -80,7 +94,7 @@
               <div class="icon"><img src="assets/icons-png/icon-alert.png" alt="!" /></div>
               <div class="info">
                 <b style="color:var(--block);">陈丙英 · LDL-C 1.95 需关注</b>
-                <span style="color:var(--block);">复查报告已上传 · 待判断是否调整用药</span>
+                <span style="color:var(--block);">复查报告已上传 · <b>需人工判读</b>(系统不做自动结论)</span>
               </div>
             </div>
             <div class="r"><span class="badge badge-block">需判断</span><span class="arrow">›</span></div>

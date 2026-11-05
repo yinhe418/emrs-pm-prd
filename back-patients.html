@@ -90,8 +90,8 @@
 
   <div class="note note-gray mt-12">
     <img src="assets/icons-png/icon-info.png">
-    <div><b>后台不提供病历 / 文书 / 随访记录的编辑入口</b>——临床数据归临床端,后台只读。
-      本页也<b>不提供个人预警指标的配置入口</b>:预警基线由医生在小程序端设定,后台只读展示来源。</div>
+    <div><b>后台不提供病历 / 文书 / 随访记录的编辑入口</b>——临床数据归临床端,后台仅查看。
+      本页也<b>不提供个人预警指标的配置入口</b>:预警基线由医生在小程序端设定,后台仅查看来源。</div>
   </div>
 </main>
 
@@ -127,7 +127,7 @@
         家属联系方式同为明文展示;查看同样会记录到操作日志。
       </div>
       <div class="hint" style="margin-top:6px">
-        一个患者可有 0..N 位家属。家属由<b>患者在小程序端出示二维码、家属扫码绑定</b>后自动建立,后台只读展示,不提供新增 / 编辑 / 删除。
+        一个患者可有 0..N 位家属。家属由<b>患者在小程序端出示二维码、家属扫码绑定</b>后自动建立,后台仅展示,不提供新增 / 编辑 / 删除。
       </div>
     </div>
 
@@ -150,13 +150,13 @@
       <div class="fi mt-12">
         <label><span class="req">*</span>主管医生</label>
         <select class="sel w-full" id="pDocSel"></select>
-        <span class="hint">该项目下的主管医生(硬约束),不可清空</span>
+        <span class="hint">该项目下的主管医生,不可清空</span>
         <span class="err-msg"></span>
       </div>
       <div class="fi mt-12">
         <label>主管护士</label>
         <select class="sel w-full" id="pNurSel"></select>
-        <span class="hint">可为「未分配」;病患协作护士只读展示</span>
+        <span class="hint">可为「未分配」;病患协作护士仅展示</span>
         <span class="err-msg"></span>
       </div>
       <div class="fi mt-12">
@@ -168,7 +168,7 @@
     </div>
 
     <div class="form-sec">
-      <h4>预警基线<span class="badge badge-gray" style="margin-left:6px">后台只读</span></h4>
+      <h4>预警基线<span class="badge badge-gray" style="margin-left:6px">仅查看</span></h4>
       <div id="pBase"></div>
     </div>
 
@@ -681,7 +681,7 @@
       b = '<div class="note note-pass" style="margin:0"><img src="assets/icons-png/icon-check-circle.png"><div>'
         + '当前预警基线:<b>医生个体设定</b>(医生' + p.base.by.replace('医生', '') + ' · ' + p.base.at + ' 设定)'
         + (p.base.expired ? '<br><span class="text-orange">该个体目标已到期,现按科室默认执行</span>' : '')
-        + '<br><span class="fz-11 text-3">个人目标由主管医生在小程序端设定,优先级高于科室配置。后台只读,不可编辑。</span>'
+        + '<br><span class="fz-11 text-3">个人目标由主管医生在小程序端设定,优先级高于科室配置。后台仅查看,不可编辑。</span>'
         + '</div></div>';
     } else {
       b = '<div class="note note-gray" style="margin:0"><img src="assets/icons-png/icon-info.png"><div>'
@@ -711,8 +711,7 @@
       : '<span class="text-4">—</span>';
     document.getElementById('pNameHint').style.display = p.name ? 'none' : 'block';
     document.getElementById('pNick').innerHTML = '微信授权名:'
-      + (p.nickName ? BackApi.esc(p.nickName) : '<span class="text-4">—</span>')
-      + ' <span class="badge badge-gray">只读</span>';
+      + (p.nickName ? BackApi.esc(p.nickName) : '<span class="text-4">—</span>');
   }
 
   /* ---------- 修改真实姓名(抽屉内弹窗,仅一个输入框)---------- */

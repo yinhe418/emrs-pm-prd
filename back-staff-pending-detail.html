@@ -14,7 +14,7 @@
     <!-- ========== 左:微信原始信息(只读) ========== -->
     <div style="width:330px;flex:none">
       <div class="card">
-        <div class="card-head"><h3>扫码登记信息</h3><span class="ch-desc">来自微信授权,只读</span></div>
+        <div class="card-head"><h3>扫码登记信息</h3><span class="ch-desc">来自微信授权</span></div>
 
         <div class="flex" style="gap:12px;margin-bottom:14px">
           <span class="av-sm" id="pAv" style="width:48px;height:48px;font-size:18px;background:#8A94A6">—</span>
@@ -171,7 +171,7 @@
   var days = BACK_DATA.daysSince(w.scannedAt);
   document.getElementById('pScan').textContent = fmtTime(w.scannedAt);
   document.getElementById('pDays').innerHTML = '<span class="' + (days > 3 ? 'text-red fw-5' : 'text-orange') + '">'
-    + days + ' 天</span>（超过 7 天将自动归档）';
+    + days + ' 天</span>';
   /* 来源医院:staff.hospitalId(合并后每行都带) */
   document.getElementById('pSrc').textContent = (BACK_DATA.hospital(w.hospitalId) || {}).name || '—';
   document.getElementById('pOpenid').textContent = '微信标识:' + (w.openIdMasked || '—');

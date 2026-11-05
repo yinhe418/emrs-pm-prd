@@ -56,7 +56,7 @@
            勾选 = 下发长效凭据(refresh token,7 天绝对过期)⇒ access 过期可静默换新的
            ⇒ 7 天内免登录;令牌存 localStorage。
            不勾选 = 只发 access token(8 小时)⇒ 存 sessionStorage,关掉标签页即失效。 -->
-      <label class="chk mb-12" title="勾选后 7 天内免登录:长效凭据存 localStorage(7 天绝对过期);不勾选则只存 sessionStorage,关掉标签页即失效"
+      <label class="chk mb-12" title="勾选后 7 天内免登录"
              id="rmbLabel">
         <input type="checkbox" id="rmb" checked> 记住我(7 天内免登录)
       </label>
@@ -116,9 +116,7 @@
               所以**没有**「同名跨院」这种场景,也不会再有 40104。 -->
       <div class="login-demo" style="display:none">
         <b>Demo 提示</b><br>
-        账号由后端 <code class="k">mkadmin</code> 工具创建(登录名全平台唯一,不能重名)<br>
-        登录名全平台唯一 ⇒ 不存在「同名跨院」,也不会返回 <code class="k">40104</code><br>
-        连错 5 次会锁定账号(错误码 <code class="k">40103</code>),这是后端的真实行为
+        演示账号仅用于原型演示。
       </div>
 
       <div class="divider"></div>

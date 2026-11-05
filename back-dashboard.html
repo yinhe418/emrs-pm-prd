@@ -15,13 +15,6 @@
     <div class="sub" id="dashSub">后台登录后默认落地页</div>
   </div>
 
-  <!-- 数据来源说明:哪几块是真后端、哪几块还是演示态,写清楚 -->
-  <div class="note note-info">
-    <img src="assets/icons-png/icon-info.png">
-    <div><b>顶栏的登录用户 / 当前医院,以及「待分配科室」人数来自真实后端</b>(登录会话 + <code>GET /api/adm/v1/staff</code>)。
-      「组件字段待补全」「病患待分配护士」「最近配置变更」依赖尚未交付的端点,仍是演示态。</div>
-  </div>
-
   <!-- 接口出错时的横幅(后端未连接 / 业务错误)—— 出错才显示,不占版面 -->
   <div class="note note-block" id="dashErr" style="display:none;margin-bottom:14px">
     <img src="assets/icons-png/icon-warning.png">
@@ -146,7 +139,7 @@
   <div class="card">
     <div class="card-head">
       <h3>最近配置变更</h3>
-      <span class="ch-desc">谁 · 什么时候 · 改了什么(最近 6 条,只读)</span>
+      <span class="ch-desc">谁 · 什么时候 · 改了什么(最近 6 条)</span>
       <div class="ch-right"><span class="badge badge-outline" id="auditBadge">操作审计日志 本期不做</span></div>
     </div>
     <table class="tbl">

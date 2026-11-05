@@ -135,7 +135,7 @@
     <!-- 右侧规则提示 -->
     <div style="width:300px;flex:none">
       <div class="card">
-        <div class="card-head"><h3>校验规则</h3></div>
+        <div class="card-head"><h3>填写要求</h3></div>
         <ul class="fz-12 text-2" style="line-height:2.1;padding-left:2px" id="ruleList"></ul>
       </div>
       <div class="card">
@@ -168,26 +168,24 @@
   if (type === 'hospital') {
     document.title = (isEdit ? '编辑医院' : '添加医院') + ' · 后台管理';
     document.getElementById('pageTitle').textContent = isEdit ? '编辑医院' : '添加医院';
-    document.getElementById('pageSub').textContent = '医院是租户级的组织单元,一个医院对应一个工作人员邀请码。';
+    document.getElementById('pageSub').textContent = '医院是租户级的组织单元。';
     document.getElementById('tipBox').innerHTML =
-      '<img src="assets/icons-png/icon-info.png"><div><b>停用语义</b>:停用后该医院不可新增人员,下有启用科室时无法停用。历史数据全部保留,可随时恢复。</div>';
+      '<img src="assets/icons-png/icon-info.png"><div>停用后不可新增人员。</div>';
     document.getElementById('ruleList').innerHTML =
-      '<li>医院名称 2–50 字,<b>全局唯一</b></li>'
+      '<li>医院名称 2–50 字</li>'
       + '<li>简称留空时自动取名称前 6 字</li>'
       + '<li>床位 10–10000 的整数</li>'
-      + '<li>电话校验固话 / 手机格式</li>'
+      + '<li>电话支持固话 / 手机</li>'
       + '<li>地址最多 100 字;简介最多 200 字</li>';
   } else {
     document.title = (isEdit ? '编辑科室' : '添加科室') + ' · 后台管理';
     document.getElementById('pageTitle').textContent = isEdit ? '编辑科室' : '添加科室';
-    document.getElementById('pageSub').textContent = '科室隶属医院,带责任人(科室主任),每个科室有且只有一个科室主任。';
+    document.getElementById('pageSub').textContent = '科室隶属医院。';
     document.getElementById('tipBox').innerHTML =
-      '<img src="assets/icons-png/icon-info.png"><div><b>停用语义</b>:科室下有在岗人员时<b>无法停用</b>,必须先转移人员。停用后该科室邀请码自动失效。</div>';
+      '<img src="assets/icons-png/icon-info.png"><div>有在岗人员时无法停用。</div>';
     document.getElementById('ruleList').innerHTML =
-      '<li>科室自动归属<b>当前医院</b>,不可跨院</li>'
-      + '<li>科室名称 2–30 字,同医院内唯一</li>'
-      + '<li>科室主任必须是本院「科室主任」职位</li>'
-      + '<li>同一科室不允许出现两个科室主任</li>'
+      '<li>科室归属当前医院</li>'
+      + '<li>科室名称 2–30 字</li>'
       + '<li>简介最多 200 字</li>';
   }
 

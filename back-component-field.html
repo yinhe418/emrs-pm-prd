@@ -59,10 +59,9 @@
         <div class="flex flex-wrap" id="enumOffList" style="gap:8px;margin-top:8px;display:none"></div>
       </div>
       <div class="hint" style="display:block;margin-top:10px">
-        <b>枚举值由管理员手动维护</b>,不限预设清单:点「新增枚举值」新增,点值上的 ✕ 停用。<br>
-        <b>停用 ≠ 删除</b>:行保留、<b>历史填报不受影响</b>,可随时「恢复」;
-        该 <b>code 槽位仍被占用</b>,<b>永不复用</b>给别的概念。<br>
-        <b>code 是统计聚合键,创建后不可修改</b>;label 是显示文案,医院可随时改,改名不影响统计分桶。
+        <b>枚举值可增删</b>:点「新增枚举值」新增,点值上的 ✕ 停用。<br>
+        <b>停用 ≠ 删除</b>:历史填报不受影响,可随时「恢复」。<br>
+        code 创建后不可修改;label 可随时改。
       </div>
     </div>
 
@@ -134,13 +133,6 @@
       </div>
     </div>
 
-    <div class="note note-gray" style="margin:0 16px 14px">
-      <img src="assets/icons-png/icon-info.png">
-      <div>
-        <b>临床有效区间</b>由系统内部判定、<b>不在本页展示</b>。<br>
-        实际录入值超出该区间会<b>硬阻断禁止提交</b>;本页填的标准范围不能超出它,填了会在保存时报错。
-      </div>
-    </div>
   </div>
 
   <div class="sticky-actions">
@@ -162,7 +154,7 @@
         <div class="fi" id="ecCodeFi">
           <label><span class="req">*</span>统计编码 code</label>
           <input class="ipt mono" id="ecCode" placeholder="如 SITTING" maxlength="32">
-          <span class="hint">统计聚合键,字段内唯一,自动转大写;创建后<b>不可修改</b>。</span>
+          <span class="hint">自动转大写;创建后<b>不可修改</b>。</span>
           <span class="err-msg"></span>
         </div>
         <div class="fi" id="ecLabelFi">
@@ -226,7 +218,7 @@
       document.getElementById('srcTitle').textContent =
         f.type === 'enum' ? '枚举值维护' : '药品库来源';
       document.getElementById('srcDesc').innerHTML = f.type === 'enum'
-        ? '枚举值由管理员手动维护:code 是统计聚合键(创建后不可改),label 可随时改文案。'
+        ? '枚举值由管理员手动维护;code 创建后不可改。'
         : '药名只能从药品库选择,不能手打。';
     }
 

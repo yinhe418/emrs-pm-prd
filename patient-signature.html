@@ -17,7 +17,7 @@
     <div class="page">
       <div class="banner">
         <b id="projLabel">签署知情同意</b>
-        签字仅代表同意参加此项目。医疗判断仍由主管医生负责,本软件不作治疗决策。
+        勾选同意仅代表您愿意参加此项目。医疗判断仍由主管医生负责,本软件不作治疗决策。
       </div>
 
       <div class="card">
@@ -57,26 +57,31 @@
         </label>
       </div>
 
-      <div class="section-title">签字</div>
+      <div class="section-title">确认</div>
       <div class="group">
         <div class="form-item">
-          <span class="form-label"><span class="req">*</span>本人签字</span>
-          <input class="form-input" id="signName" placeholder="请输入您的姓名">
-        </div>
-        <div class="form-item">
-          <label style="display:flex; align-items:center; gap:10px; padding:6px 0;">
-            <input type="checkbox" id="agreeBox">
-            <span>我已通读上述内容,<b>自愿参加</b>所选项目</span>
+          <label style="display:flex; align-items:flex-start; gap:10px; padding:6px 0; line-height:1.6;">
+            <input type="checkbox" id="agreeBox" style="margin-top:3px; flex-shrink:0;">
+            <span>我已通读上述内容,<b>自愿参加</b>所选项目,并同意按项目要求完成随访任务</span>
           </label>
         </div>
       </div>
 
-      <div class="notice notice-warn">
-        <b>门控</b>:签署后进入付费页;<b>未付费前该项目的任务不显示</b>。
+      <div class="card" style="background:var(--info-bg); border:none; margin-top:12px;">
+        <div style="font-size:12px; color:var(--info); line-height:1.6;">
+          <b>本期以勾选代替电子签名</b>:不采集手写签名、不做 CA 认证。
+        </div>
       </div>
 
+      <div class="notice notice-warn">
+        <b>下一步</b>:确认加入(本页为流程占位,<b>不接真实支付</b>);确认后该项目任务立即出现在首页。
+      </div>
+
+      <div id="signToast" style="display:none; margin-top:10px; padding:9px 12px; border-radius:8px;
+           background:var(--block-bg, #FFEBEE); color:var(--block, #C62828); font-size:12px;"></div>
+
       <button type="button" id="submitBtn" class="btn btn-primary btn-block" style="margin-top:20px;" onclick="return submitSign(event)">
-        提交签字并继续
+        勾选同意并继续
       </button>
     </div>
   </div>
@@ -96,27 +101,34 @@
       } catch (e) {}
       return PROJ_ID;
     }
+    /* 本页自带的轻提示(不依赖 layout.js) */
+    function showToast(msg) {
+      var el = document.getElementById('signToast');
+      if (!el) return;
+      el.textContent = msg;
+      el.style.display = 'block';
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(function () { el.style.display = 'none'; }, 2500);
+    }
     function goBack() {
-      location.href = 'patient-privacy.html?id=' + encodeURIComponent(getProjId());
+      // 回到项目详情(签署前一步)
+      location.href = 'patient-project-detail.html?id=' + encodeURIComponent(getProjId());
     }
     function submitSign(e) {
-      var name = (document.getElementById('signName').value || '').trim();
+      e.preventDefault();
       var ok = document.getElementById('agreeBox').checked;
-      if (!name) { e.preventDefault(); showToast('请输入本人姓名'); return false; }
-      if (!ok)   { e.preventDefault(); showToast('请勾选"自愿参加"'); return false; }
+      if (!ok) { showToast('请勾选「自愿参加」'); return false; }
       try {
-        // per-project signed flag(不再写全局 emrs_signed)
+        // 本期以勾选代替电子签名:只记录「已同意」事实,不采集签名 / 姓名
         var id = getProjId();
         localStorage.setItem('emrs_project_signed_' + id, '1');
-        localStorage.setItem('emrs_signed_name', name);
         localStorage.setItem('emrs_signed_time_' + id, new Date().toISOString());
       } catch (e2) {}
-      // 跳付费页,带 id
+      // 进入确认加入页(支付占位)
       location.href = 'patient-pay.html?id=' + encodeURIComponent(getProjId());
-      e.preventDefault();
       return false;
     }
-    // 启动时回填姓名 + 项目名
+    // 启动时回填项目名
     (function () {
       var id = getProjId();
       var p = PROJECT_HELPERS.getProject(id);
@@ -130,13 +142,6 @@
         var metaEl = document.getElementById('projMeta');
         if (metaEl) metaEl.textContent = p.duration + ' · ' + p.priceLabel;
       }
-      try {
-        var n = localStorage.getItem('emrs_signed_name');
-        if (n) {
-          var el = document.getElementById('signName');
-          if (el && !el.value) el.value = n;
-        }
-      } catch (e) {}
     })();
   </script>
 </body>

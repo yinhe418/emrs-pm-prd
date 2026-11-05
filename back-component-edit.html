@@ -12,19 +12,18 @@
 
   <div class="page-head">
     <h1 id="ttl">编辑组件</h1>
-    <div class="sub">字段定义后,医生「下发任务」和患者「任务中心」自动按此呈现。</div>
+    <div class="sub">字段定义后,项目任务生成到患者名下时按此呈现。</div>
   </div>
 
   <!-- ============ 基本信息 ============ -->
   <div class="card">
     <div class="card-head">
       <h3>基本信息</h3>
-      <span class="ch-desc">组件是科室级资产,不跨科室共享</span>
     </div>
     <div class="form-grid">
       <div class="fi">
         <label><span class="req">*</span>组件名称</label>
-        <input class="ipt" name="cName" placeholder="2–30 字,同科室内唯一">
+        <input class="ipt" name="cName" placeholder="2–30 字">
         <span class="err-msg"></span>
       </div>
       <div class="fi full">
@@ -53,7 +52,7 @@
       <div class="fi">
         <label><span class="req">*</span>归属科室</label>
         <select class="sel" id="cDept" name="cDept"></select>
-        <span class="hint" id="cDeptHint">只列科室,不再重复显示医院(当前医院见顶栏徽章)</span>
+        <span class="hint" id="cDeptHint">只列当前医院的科室。</span>
         <span class="err-msg"></span>
       </div>
       <div class="fi">
@@ -135,9 +134,7 @@
   <div class="note note-info">
     <img src="assets/icons-png/icon-info.png">
     <div><b>标准范围</b>= 科室在本组件上填的配置项,下限 / 上限<b>各自独立</b>,
-      留空 = 该侧不限,只填一侧也有效。<br>
-      录入值还需通过<b>临床有效区间</b>校验(系统内部判定、<b>不在本页展示</b>),超出即禁止提交;
-      标准范围不得超出该区间,填了会在保存时报错。</div>
+      留空 = 该侧不限,只填一侧也有效。</div>
   </div>
 
   <div class="sticky-actions">
@@ -170,7 +167,7 @@
   var c = id ? BACK_DATA.byId(BACK_DATA.components, id) : null;
   var isEdit = !!c;
   if (!c) {
-    /* 组件不再维护 scope:适用范围改由小程序「下发任务」时选(医生 / 护士 / 病患),
+    /* 组件不再维护 scope:适用范围改由项目任务的执行人 / 跟踪人字段决定,
        后台组件库列表页也不再展示该列,故此处不保留该字段。*/
     /* ⚠️ id 数值化:组件 id 与种子(1–8)同属一个数字空间,
        新建用 Date.now()(毫秒时间戳),保证数字且不与种子冲突。 */
@@ -230,8 +227,8 @@
     });
     d.value = c.departmentId;
     document.getElementById('cDeptHint').textContent = curH
-      ? '只列「' + curH.short + '」的科室,不再重复显示医院(医院见顶栏徽章)'
-      : '只列科室,不再重复显示医院(当前医院见顶栏徽章)';
+      ? '只列「' + curH.short + '」的科室。'
+      : '只列当前医院的科室。';
 
     var ip = document.getElementById('iconPick');
     ICONS.forEach(function (ic) {
@@ -343,7 +340,7 @@
       + '<div><b>该字段不能硬删除,只能停用</b>(系统统一软删:删了还能查到是谁删的,也能恢复)。</div></div>'
       + '<div><b>任务分配模块尚未上线</b>,本期不统计该字段的引用数与历史条数。停用后:</div>'
       + '<ul><li>小程序端<b>不再显示</b>该字段</li>'
-      + '<li>进行中任务的该字段置灰标「已停用」,历史数据只读可看</li>'
+      + '<li>进行中任务的该字段置灰标「已停用」,历史数据仍可查看</li>'
       + '<li><b>历史数据全部保留</b>,后台不提供物理删除入口</li>'
       + '<li>该字段上的医生个体目标范围全部转「挂起」</li></ul>'
       + '<div class="fz-12 text-3 mt-8">停用字段仍显示在表格中(灰底),可随时「重新启用」。</div>';

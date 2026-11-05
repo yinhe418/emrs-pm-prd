@@ -120,16 +120,6 @@
     <!-- ⚠️ 登录名全平台唯一(2026-10-30 用户拍板)的**提示**:
          登录名唯一键从「院内唯一」换成「全平台唯一」⇒ 每家医院的账号名**互相不能重名**,
          不能再家家都叫 admin。契约 §13.11.2.4 给了运维口径建议(见下),但**不是唯一方案**。 -->
-    <div class="note note-info">
-      <img src="assets/icons-png/icon-info.png">
-      <div><b>新院的后台登录名必须全平台唯一</b><br>
-        · 登录名唯一键已从「院内唯一」改成 <b>全平台唯一</b> ⇒ 新院的账号名<b>不能</b>和已有账号重名
-        (不能再直接用 <code class="k">admin</code>),得起一个<b>全局不撞名</b>的登录名。<br>
-        · 建议口径:<code class="k">&lt;医院短名拼音&gt;_admin</code>(如 <code class="k">hsyy_admin</code>)
-          —— 这是契约 §13.11.2.4 的**建议**,不是唯一方案;实际以运维规范为准。<br>
-        · 本页只建「医院」这一条档案,<b>不建管理员账号</b> —— 账号由运维用
-          <code class="k">mkadmin</code> 工具按上面那个登录名创建(且该工具按登录名 upsert,不会建出同名第二个人)。</div>
-    </div>
   </div>
   <div class="drawer-foot">
     <button class="btn btn-default" onclick="Back.drawer('newDrawer',false)">取消</button>

@@ -15,14 +15,6 @@
     <div class="sub">Tab 1「已设置」= 已有科室 + 职称,正常工作;Tab 2「待分配科室」= 已扫码但尚未设置科室与职称,无法使用小程序。</div>
   </div>
 
-  <!-- 数据来源说明:本页已接真后端,哪些字段是接口给的、哪些还没端点,写清楚,免得把「—」当成真数据 -->
-  <div class="note note-info">
-    <img src="assets/icons-png/icon-info.png">
-    <div><b>本页已接真后端</b>(<code>GET /api/adm/v1/staff</code>,三个 Tab 按 <code>status</code> 分别取数)。
-      科室名称 / 简介完整度 / 下属病患 / 设置科室与职称、归档等**写操作**依赖尚未交付的端点,页面上以「—」占位;
-      「详情 / 编辑」页本轮未接后端,仍是演示态。</div>
-  </div>
-
   <div id="scopeStrip"></div>
 
   <div class="tabs" data-tab-group="staff" data-scope="staffScope">
@@ -102,7 +94,7 @@
         <div class="kpi blue">
           <div class="k-lab">停留 &gt; 3 天</div>
           <div class="k-val" id="kLong">0</div>
-          <div class="k-sub">超过 7 天将自动归档</div>
+          <div class="k-sub">需尽快处理</div>
         </div>
         <div class="kpi green">
           <div class="k-lab">今日新扫码</div>
@@ -153,9 +145,7 @@
     <section data-pane="archived" class="hidden">
       <div class="note note-gray">
         <img src="assets/icons-png/icon-info.png">
-        <div><b>归档 ≠ 删除。</b>扫码超过 7 天未设置科室与职称、或管理员手动归档(误扫 / 非本院人员 / 重复)都会进入这里。
-          数据保留 180 天,管理员可手动恢复。<br>
-          <b>兜底:</b>若本院职工被误归档,本人可在小程序端提交工牌照片 + 本人自证,管理员在此处恢复并设置。</div>
+        <div>归档的数据保留 180 天,可手动恢复。</div>
       </div>
       <div class="card flat">
         <div class="tbl-wrap">

@@ -16,57 +16,39 @@
 
     <div class="page">
       <div class="banner banner-info">
-        <b>付款成功即开通服务</b>
+        <b>确认加入即完成入组</b>
       </div>
 
-      <div class="section-title">订单</div>
+      <div class="section-title">项目</div>
       <div class="card">
         <div class="kv"><span class="k">项目</span><span class="v" id="orderName">—</span></div>
         <div class="kv"><span class="k">周期</span><span class="v" id="orderDuration">—</span></div>
-        <div class="kv"><span class="k">单价</span><span class="v" id="orderUnitPrice">—</span></div>
+        <div class="kv"><span class="k">价格</span><span class="v" id="orderUnitPrice">—</span></div>
         <div class="divider"></div>
         <div class="kv" style="font-size:18px;">
-          <span class="k" style="color:var(--ink); font-weight:600;">应付</span>
+          <span class="k" style="color:var(--ink); font-weight:600;">费用</span>
           <span class="v" style="color:var(--block); font-weight:700;" id="orderTotal">—</span>
         </div>
       </div>
 
-      <div class="section-title">支付方式</div>
-      <div class="group">
-        <label class="cell" style="background:var(--pass-bg);">
-          <div class="l">
-            <div class="icon" style="background:white; color:var(--pass);">微</div>
-            <div class="info"><b>微信支付</b><span>推荐</span></div>
-          </div>
-          <div class="r"><input type="radio" name="pay" checked></div>
-        </label>
-        <label class="cell" style="opacity:0.55;">
-          <div class="l">
-            <div class="icon" style="background:#ECEFF1; color:#607D8B;">银</div>
-            <div class="info"><b>银行卡 / 院内账户</b></div>
-          </div>
-          <div class="r"><input type="radio" name="pay" disabled></div>
-        </label>
+      <div class="card" style="background:#FFF8E1; border:none; margin-top:12px;">
+        <div style="font-size:12px; color:#8D6E00; line-height:1.6;">
+          <b>本期不接真实支付</b>:本页为流程占位,<b>不会发起扣款</b>。<br>
+          价格仅作展示,实际费用以医院 / 科室线下告知为准。
+        </div>
       </div>
 
-      <div class="card" style="background:var(--info-bg); border:none;">
-        <div style="font-size:12px; color:var(--info);">
-          <b>付费后</b>:本项目任务将在首页显示,IM 联系 / 上传报告权限同步开通。<br>
-                  </div>
+      <div class="card" style="background:var(--info-bg); border:none; margin-top:12px;">
+        <div style="font-size:12px; color:var(--info); line-height:1.6;">
+          <b>确认加入后</b>:本项目任务会立即出现在首页(至少包含今天),IM 联系 / 上传报告权限同步开通。
+        </div>
       </div>
 
-      <button class="btn btn-primary btn-block btn-lg" style="margin-top:20px;" id="payBtn" onclick="mockPay(event)">
-        <span id="payBtnText">微信支付 —</span>
+      <button class="btn btn-primary btn-block btn-lg" style="margin-top:20px;" id="payBtn" onclick="confirmJoin(event)">
+        <span id="payBtnText">确认加入</span>
       </button>
       <div style="margin-top:10px; font-size:11px; color:var(--ink-3); text-align:center;" id="payHint">
-        请确认订单信息后点击支付
-      </div>
-
-      <div class="card" style="margin-top:16px; background:#FFF8E1; border:none;">
-        <div style="font-size:12px; color:#8D6E00;">
-          <b>价格说明</b>:90 天 = 100 元 / 180 天 = 200 元 / 365 天 = 待定。<br>
-          实际价格由医院 / 科室在使用前确定。
-        </div>
+        请确认信息后点击「确认加入」
       </div>
     </div>
   </div>
@@ -87,34 +69,37 @@
       return PROJ_ID;
     }
     function goBack() {
-      // 新流程:支付前从项目详情进入(勾选同意后),回项目详情
-      location.href = 'patient-project-detail.html?id=' + encodeURIComponent(getProjId());
+      // 回签署须知(上一步);未签署时也可回项目详情
+      location.href = 'patient-signature.html?id=' + encodeURIComponent(getProjId());
     }
-    function mockPay(e) {
+    /* 🔴 2026-11-05 用户拍板(D33):本期不接支付网关。
+     *    本页只是流程占位 —— 点「确认加入」= 入组,不发起任何扣款。 */
+    function confirmJoin(e) {
+      e.preventDefault();
       var btn = document.getElementById('payBtn');
       var txt = document.getElementById('payBtnText');
       btn.disabled = true;
       btn.style.cursor = 'wait';
-      txt.textContent = '支付中…';
+      txt.textContent = '正在加入…';
       setTimeout(function () {
         try {
           var id = getProjId();
-          // 写 per-project 付费标记
-          localStorage.setItem('emrs_project_paid_' + id, '1');
-          localStorage.setItem('emrs_project_paid_amount_' + id, '100');
-          localStorage.setItem('emrs_project_paid_time_' + id, new Date().toISOString());
-          // 加入已订阅列表(home 用它判断是否显示任务)
+          // 入组标记(本期无支付 / 无订单 / 无金额)
+          localStorage.setItem('emrs_project_joined_' + id, '1');
+          localStorage.setItem('emrs_project_joined_time_' + id, new Date().toISOString());
+          // 已入组列表(home 用它判断是否显示任务)
           PROJECT_HELPERS.subscribe(id);
         } catch (e2) {}
-        // 成功态
         btn.style.background = '#2E7D32';
-        btn.style.cursor = 'default';
-        // 倒计时 3 → 2 → 1 → 跳转
+        btn.style.cursor = 'pointer';
+        /* 成功态允许立即进入(不再扣款 / 不再触发入组) */
+        btn.disabled = false;
+        btn.onclick = function (ev) { if (ev) ev.preventDefault(); location.href = 'patient-home.html'; };
         var n = 3;
         var hint = document.getElementById('payHint');
         function tick() {
           if (n > 0) {
-            txt.textContent = '支付成功 · ' + n + ' 秒后进入首页';
+            txt.textContent = '入组成功 · ' + n + ' 秒后进入首页看今日任务';
             if (hint) hint.textContent = '点击下方按钮可立即进入';
             n--;
             setTimeout(tick, 1000);
@@ -123,7 +108,7 @@
           }
         }
         tick();
-      }, 2000);
+      }, 800);
     }
 
     // 立即进入(跳过倒计时)
@@ -139,8 +124,8 @@
         document.getElementById('orderDuration').textContent = p.duration;
         document.getElementById('orderUnitPrice').textContent = p.priceLabel;
         document.getElementById('orderTotal').textContent = p.priceLabel;
-        document.getElementById('payBtnText').textContent = '微信支付 ' + p.priceLabel;
-        document.getElementById('pageTitle').textContent = '付费 · ' + p.name;
+        document.getElementById('payBtnText').textContent = '确认加入';
+        document.getElementById('pageTitle').textContent = '确认加入 · ' + p.name;
       }
     })();
   </script>

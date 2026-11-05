@@ -59,7 +59,7 @@
 
         <!-- 浮动 CTA(JS 渲染) -->
         <div class="floating-cta" id="projCTA">
-          <!-- 购买 / 已签约按钮 -->
+          <!-- 签署 / 已入组按钮 -->
         </div>
 
         <!-- 维护说明 -->
@@ -111,7 +111,7 @@
         '<span>' + proj.duration + '</span> · <span>' + proj.tag + '</span>';
 
       var priceHtml = subscribed
-        ? '<span class="project-price-badge subscribed">已签约</span>'
+        ? '<span class="project-price-badge subscribed">已入组</span>'
         : '<span class="project-price-large">' + proj.priceLabel + '</span>';
       document.getElementById('projPrice').innerHTML = priceHtml;
 
@@ -145,7 +145,12 @@
           '<a href="patient-home.html" class="btn btn-primary btn-block btn-lg">回到首页看任务</a>';
       } else {
         ctaHtml =
-          '<div style="text-align:center; margin-bottom:10px;">'
+          '<div class="card" style="background:var(--info-bg); border:none; margin-bottom:12px;">'
+          + '<div style="font-size:12px; color:var(--info); line-height:1.6;">'
+          + '<b>加入方式</b>:由您本人在小程序里签署须知并确认加入。<b>医护 / 后台不能代您加入</b>。<br>'
+          + '本期<b>不接真实支付</b>:确认加入即可进组,不产生扣款;签署以<b>勾选确认</b>代替电子签名。'
+          + '</div></div>'
+          + '<div style="text-align:center; margin-bottom:10px;">'
           + '<a href="patient-privacy.html?id=' + encodeURIComponent(id) + '" '
           + 'style="color:var(--ink-3); font-size:12px; text-decoration:underline;">'
           + '阅读《隐私协议》</a>'
@@ -166,7 +171,7 @@
           + 'style="background:var(--line); color:var(--ink-3); '
           + 'cursor:not-allowed; border:none;" '
           + 'onclick="goBuy()">'
-          + '购买服务 ' + proj.priceLabel + ' ›</button>';
+          + '签署须知并继续 ›</button>';
       }
       document.getElementById('projCTA').innerHTML = ctaHtml;
 
@@ -191,7 +196,7 @@
       }
     }
 
-    // 购买服务 → mock 支付页
+    // 签署须知 → 确认加入(支付占位) → 入组
     function goBuy() {
       var cb = document.getElementById('agreePrivacy');
       if (cb && !cb.checked) return;
@@ -205,7 +210,7 @@
           });
         }
       } catch (e) {}
-      location.href = 'patient-pay.html?id=' + encodeURIComponent(id);
+      location.href = 'patient-signature.html?id=' + encodeURIComponent(id);
     }
   </script>
 </body>

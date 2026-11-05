@@ -19,11 +19,6 @@
     </div>
 
     <div class="page">
-      <div class="banner" id="mode-banner">
-        <b>可插拔组件</b>
-        每个任务组件定义不同的录入字段。在系统开发时定制,后续可扩展。
-      </div>
-
       <!-- 项目编辑模式下显示 -->
       <div id="project-mode-bar" style="display:none;">
         <div class="banner banner-info">
@@ -116,9 +111,6 @@
         </a>
       </div>
 
-      <div class="notice">
-        <b>扩展说明</b>:新组件可在迭代中增加,定义字段后自动出现在医生"下发任务"列表。
-      </div>
     </div>
 
     <div class="tabbar">
@@ -136,7 +128,6 @@
       var project = params.get('project');
       if (from === 'project-edit') {
         // 进入项目编辑模式
-        document.getElementById('mode-banner').style.display = 'none';
         document.getElementById('project-mode-bar').style.display = 'block';
         document.getElementById('normal-title').style.display = 'none';
         document.getElementById('project-mode-footer').style.display = 'block';

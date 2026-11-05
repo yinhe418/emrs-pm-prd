@@ -6,7 +6,7 @@
   <title>编辑项目</title>
   <link rel="stylesheet" href="assets/styles.css">
   <style>
-    /* 任务配置维度(日期 + 目标人) */
+    /* 任务配置维度(何时做 + 执行人 + 跟踪人) */
     .task-cell {
       background: white;
       border: 1px solid var(--line);
@@ -51,7 +51,7 @@
       margin-top: 2px;
     }
 
-    /* 排序(顺序即任务下发顺序)—— 用上移/下移按钮,不做拖拽 */
+    /* 排序(顺序即患者端的呈现顺序)—— 用上移/下移按钮,不做拖拽 */
     .t-order { display: flex; flex-direction: column; gap: 3px; flex-shrink: 0; }
     .t-order button {
       width: 24px; height: 20px; padding: 0; line-height: 1;
@@ -113,7 +113,7 @@
       font-weight: 500;
     }
     .dim-check:hover { border-color: var(--brand); }
-    /* 「目标人 = 角色位」说明(每个任务的目标人多选框旁一行) */
+    /* 「角色位 = 不是具体人」说明(每个任务的执行人 / 跟踪人旁一行) */
     .dim-checks .dim-hint {
       flex: 0 0 100%;
       font-size: 11px;
@@ -121,9 +121,11 @@
       line-height: 1.5;
     }
 
-    /* 日期三选项(每天 / 出院前 N 天 / 出院后第 N 天)
-     * ⚠️ 2026-11-05 用户拍板:「第N天,一般指出院的第N天」⇒ 「D N 天」措辞废弃,
-     *    统一写「出院后第 N 天」;「每天」与基准日无关,不是偏移量。 */
+    /* 日期两档(每 N 天 / 第 N 天)
+     * ⚠️ 2026-11-05 执行层重新设计:两档(每 N 天 / 第 N 天),N 以**患者入组日**为起点;
+     *    单次档统一写「第 N 天」,N 以患者入组日 D0 为起点。
+     * ⚠️ 同日 D17:「每天」→「每 N 天」(重复档,N 默认 1,N=1 显示「每天」)⇒
+     *    该档现在**自带 N 输入框**;三档互斥单选,数值框只随所选档启用。 */
     .date-pills {
       flex: 1;
       display: flex;
@@ -203,18 +205,6 @@
     </div>
 
     <div class="page">
-      <!-- 2026-11-05 对齐 PC 后台:
-           跨端分工 = PC 端管「立项与生效」(新建 / 停用 / 归属科室),
-           小程序端管「内容与编排」;
-           ⚠️ 2026-11-05 用户拍板:「周期/起止日期/定价 这几个 小程序和后台都可以修改」
-              ⇒ 这三项 **两端都能改** ⇒ 末次写入生效 + 每次写入都留审计。 -->
-      <div class="banner">
-        <b>项目内容与编排</b>
-        这里编排本项目的<b>任务模板</b>:从任务库挑组件,每个组件配「什么时候做」和「谁来做」。<br>
-        项目的<b>新建 / 停用</b>由院管在 PC 后台做,本页不能做;<b>归属科室</b>保存后也不可改。<br>
-        <b>名称 / 说明 / 主负责医生 / 定价 / 周期天数 / 起止日期 / 任务模板编排</b>——<b>两端都能改</b>(PC 后台 / 小程序端),改的是同一个项目 ⇒ <b>末次写入生效,每次写入都留审计</b>。
-      </div>
-
       <div id="field-err" style="display:none; background:var(--block-bg); border:1px solid var(--block); color:var(--block); padding:9px 12px; border-radius:10px; margin-bottom:12px; font-size:12px;"></div>
 
       <div class="section-title">基本信息</div>
@@ -222,12 +212,10 @@
         <div class="form-item">
           <span class="form-label">归属科室</span>
           <input class="form-input" value="神经内科" readonly>
-          <span class="ro-hint">项目按科室创建;一个项目归属一个科室。归属科室保存后不可修改。<span class="ro-lock">只读</span></span>
         </div>
         <div class="form-item">
           <span class="form-label"><span class="req">*</span>项目主题</span>
           <input class="form-input" value="90 天卒中连续健康管理">
-          <span class="ro-hint">同一科室下不可重名。</span>
         </div>
         <div class="form-item">
           <span class="form-label"><span class="req">*</span>主负责医生</span>
@@ -236,7 +224,6 @@
             <option>主管医生(您)</option>
             <option>医生乙</option>
           </select>
-          <span class="ro-hint">这是项目上的数据字段,不代表登录身份。</span>
         </div>
         <div class="form-item">
           <span class="form-label"><span class="req">*</span>项目周期</span>
@@ -248,19 +235,16 @@
               <option value="custom">自定义</option>
               <option value="longterm">长期</option>
             </select>
-            <input class="form-input" name="duration" type="number" min="1" max="3650" inputmode="numeric" placeholder="天数" style="flex:1;" disabled>
+            <input class="form-input" name="duration" type="number" min="1" max="3650" inputmode="numeric" style="flex:1;" disabled>
           </div>
-          <span class="ro-hint" id="durHint">周期天数(1–3650 天),用于校验模板「出院后第 N 天」的上限。<b>两端都能改</b> —— ⚠️ 改小后,「出院后第 N 天」超过新周期会被拦。</span>
         </div>
         <div class="form-item">
           <span class="form-label"><span class="req">*</span>开始日期</span>
           <input class="form-input" type="date" name="startDate" value="2026-09-01">
-          <span class="ro-hint">起止日期<b>两端都能改</b>;结束日期不得早于开始日期。</span>
         </div>
         <div class="form-item">
           <span class="form-label"><span class="req" id="endReq">*</span>结束日期</span>
           <input class="form-input" type="date" name="endDate" value="2026-11-30">
-          <span class="ro-hint" id="endHint">结束日期不得早于开始日期。</span>
         </div>
       </div>
 
@@ -274,29 +258,21 @@
             <input class="form-input" type="number" value="100" min="0" max="99999999.99" step="0.01" style="flex:1; font-size:18px; font-weight:600;">
             <span style="font-size:14px; color:var(--ink-3);">元</span>
           </div>
-          <span class="ro-hint">选填,默认 0.00,最多两位小数。<b>PC 后台与小程序端都能改</b>定价(改的是同一个项目属性)⇒ <b>末次写入生效,每次写入都留审计</b>;仅作项目属性记录,不触发任何计费。</span>
         </div>
       </div>
 
-      <!-- 任务模板(突出两个维度:日期 + 目标人) -->
-      <div class="section-title">任务模板(从任务库组合)</div>
-      <div style="background:var(--info-bg); border:1px solid rgba(2, 119, 189, 0.15); padding:10px 14px; border-radius:10px; margin-bottom:12px; font-size:12px; color:var(--info); line-height:1.6;">
-        <b>配置两个维度:</b><br>
-        📅 <b>日期</b>:<b>每天</b> / <b>出院前 N 天</b> / <b>出院后第 N 天</b>(N 以<b>出院日</b>为基准,由管理员输入,可任意)<br>
-        👥 <b>目标人</b>:主管医生 / 护士 / 患者 — <b>可多选</b>(如上传检查报告可同时分配给患者和主管医生)<br>
-        <b>目标人 = 角色位,不是具体人。</b>派到某患者名下时自动解析:主管医生 = 该患者的主管医生;护士 = 该患者的主要联系护士;患者 = 患者本人。<br>
-        <b>自上而下即任务下发顺序</b>,用 ↑ ↓ 调整。
-      </div>
+      <!-- 项目任务(突出三个要点:何时做 + 执行人 + 跟踪人) -->
+      <div class="section-title">项目任务(项目直接绑组件)</div>
 
       <div id="tpl-err" style="display:none; background:var(--block-bg); border:1px solid var(--block); color:var(--block); padding:9px 12px; border-radius:10px; margin-bottom:12px; font-size:12px;"></div>
 
       <div class="group" id="tpl-group">
 
-        <!-- 1 口述病例 · 出院前 · 主管医生 -->
+        <!-- 1 口述病例 · 第 0 天 · 执行人=主管医生 -->
         <div class="task-cell">
           <div class="head">
             <div class="icon"><img src="assets/icons-png/icon-document.png" alt="文" /></div>
-            <div class="info"><b>口述病例</b><span class="sub">出院前 · 语音录入 + 文本 + 医生整理</span></div>
+            <div class="info"><b>口述病例</b><span class="sub">第 0 天 · 语音录入 + 文本 + 医生整理</span></div>
             <div class="t-order"><button data-move="up" aria-label="上移">↑</button><button data-move="down" aria-label="下移">↓</button></div>
             <input type="checkbox" checked>
           </div>
@@ -304,28 +280,34 @@
             <div class="dim-row">
               <span class="dim-label">📅 日期</span>
               <div class="date-pills">
-                <label class="date-pill"><input type="radio" name="d1" value="daily"><span>每天</span></label>
-                <label class="date-pill"><input type="radio" name="d1" value="pre" checked><span>出院前</span><input type="number" data-kind="pre" value="0" min="0"></label>
-                <label class="date-pill"><input type="radio" name="d1" value="dayn"><span>出院后第</span><input type="number" data-kind="dayn" value="0" min="0" disabled><span>天</span></label>
+                <label class="date-pill"><input type="radio" name="d1" value="every"><span>每</span><input type="number" data-kind="every" value="1" min="1" max="3650" disabled><span>天</span></label>
+                <label class="date-pill"><input type="radio" name="d1" value="dayn" checked><span>第</span><input type="number" data-kind="dayn" value="0" min="0"><span>天</span></label>
               </div>
             </div>
             <div class="dim-row">
-              <span class="dim-label">👥 目标人</span>
+              <span class="dim-label">👤 执行人</span>
               <div class="dim-checks">
-                <label class="dim-check checked"><input type="checkbox" checked>主管医生</label>
-                <label class="dim-check"><input type="checkbox">护士</label>
-                <label class="dim-check"><input type="checkbox">患者</label>
-                <span class="dim-hint">目标人 = 角色位,不是具体人。派到某患者名下时自动解析:主管医生 = 该患者的主管医生;护士 = 该患者的主要联系护士;患者 = 患者本人。</span>
+                <label class="dim-check checked"><input type="radio" name="ex-k1" value="doctor" checked>主管医生</label>
+                <label class="dim-check"><input type="radio" name="ex-k1" value="nurse">主责护士</label>
+                <label class="dim-check"><input type="radio" name="ex-k1" value="patient">患者</label>
+              </div>
+            </div>
+            <div class="dim-row">
+              <span class="dim-label">🔁 跟踪人</span>
+              <div class="dim-checks">
+                <label class="dim-check"><input type="radio" name="tr-k1" value="doctor">主管医生</label>
+                <label class="dim-check"><input type="radio" name="tr-k1" value="nurse">主责护士</label>
+                <label class="dim-check checked"><input type="radio" name="tr-k1" value="" checked>无(执行完成即结束)</label>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- 2 建立药品清单 · 出院前 · 主管医生 -->
+        <!-- 2 建立药品清单 · 第 0 天 · 执行人=主管医生 -->
         <div class="task-cell">
           <div class="head">
             <div class="icon"><img src="assets/icons-png/icon-drug-package.png" alt="药" /></div>
-            <div class="info"><b>建立药品清单</b><span class="sub">出院前 · 多药品 + 剂量 + 频次</span></div>
+            <div class="info"><b>建立药品清单</b><span class="sub">第 0 天 · 多药品 + 剂量 + 频次</span></div>
             <div class="t-order"><button data-move="up" aria-label="上移">↑</button><button data-move="down" aria-label="下移">↓</button></div>
             <input type="checkbox" checked>
           </div>
@@ -333,28 +315,34 @@
             <div class="dim-row">
               <span class="dim-label">📅 日期</span>
               <div class="date-pills">
-                <label class="date-pill"><input type="radio" name="d2" value="daily"><span>每天</span></label>
-                <label class="date-pill"><input type="radio" name="d2" value="pre" checked><span>出院前</span><input type="number" data-kind="pre" value="0" min="0"></label>
-                <label class="date-pill"><input type="radio" name="d2" value="dayn"><span>出院后第</span><input type="number" data-kind="dayn" value="0" min="0" disabled><span>天</span></label>
+                <label class="date-pill"><input type="radio" name="d2" value="every"><span>每</span><input type="number" data-kind="every" value="1" min="1" max="3650" disabled><span>天</span></label>
+                <label class="date-pill"><input type="radio" name="d2" value="dayn" checked><span>第</span><input type="number" data-kind="dayn" value="0" min="0"><span>天</span></label>
               </div>
             </div>
             <div class="dim-row">
-              <span class="dim-label">👥 目标人</span>
+              <span class="dim-label">👤 执行人</span>
               <div class="dim-checks">
-                <label class="dim-check checked"><input type="checkbox" checked>主管医生</label>
-                <label class="dim-check"><input type="checkbox">护士</label>
-                <label class="dim-check"><input type="checkbox">患者</label>
-                <span class="dim-hint">目标人 = 角色位,不是具体人。派到某患者名下时自动解析:主管医生 = 该患者的主管医生;护士 = 该患者的主要联系护士;患者 = 患者本人。</span>
+                <label class="dim-check checked"><input type="radio" name="ex-k2" value="doctor" checked>主管医生</label>
+                <label class="dim-check"><input type="radio" name="ex-k2" value="nurse">主责护士</label>
+                <label class="dim-check"><input type="radio" name="ex-k2" value="patient">患者</label>
+              </div>
+            </div>
+            <div class="dim-row">
+              <span class="dim-label">🔁 跟踪人</span>
+              <div class="dim-checks">
+                <label class="dim-check"><input type="radio" name="tr-k2" value="doctor">主管医生</label>
+                <label class="dim-check"><input type="radio" name="tr-k2" value="nurse">主责护士</label>
+                <label class="dim-check checked"><input type="radio" name="tr-k2" value="" checked>无(执行完成即结束)</label>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- 3 上传检查报告 · 出院前 · 主管医生 + 患者 -->
+        <!-- 3 上传检查报告 · 第 0 天 · 执行人=患者 / 跟踪人=主管医生(需人工判读) -->
         <div class="task-cell">
           <div class="head">
             <div class="icon"><img src="assets/icons-png/icon-camera.png" alt="摄" /></div>
-            <div class="info"><b>上传检查报告</b><span class="sub">出院前 · 文件字段:照片 + 检查日期</span></div>
+            <div class="info"><b>上传检查报告</b><span class="sub">第 0 天 · 文件字段:照片 + 检查日期</span></div>
             <div class="t-order"><button data-move="up" aria-label="上移">↑</button><button data-move="down" aria-label="下移">↓</button></div>
             <input type="checkbox" checked>
           </div>
@@ -362,28 +350,34 @@
             <div class="dim-row">
               <span class="dim-label">📅 日期</span>
               <div class="date-pills">
-                <label class="date-pill"><input type="radio" name="d3" value="daily"><span>每天</span></label>
-                <label class="date-pill"><input type="radio" name="d3" value="pre" checked><span>出院前</span><input type="number" data-kind="pre" value="0" min="0"></label>
-                <label class="date-pill"><input type="radio" name="d3" value="dayn"><span>出院后第</span><input type="number" data-kind="dayn" value="0" min="0" disabled><span>天</span></label>
+                <label class="date-pill"><input type="radio" name="d3" value="every"><span>每</span><input type="number" data-kind="every" value="1" min="1" max="3650" disabled><span>天</span></label>
+                <label class="date-pill"><input type="radio" name="d3" value="dayn" checked><span>第</span><input type="number" data-kind="dayn" value="0" min="0"><span>天</span></label>
               </div>
             </div>
             <div class="dim-row">
-              <span class="dim-label">👥 目标人</span>
+              <span class="dim-label">👤 执行人</span>
               <div class="dim-checks">
-                <label class="dim-check checked"><input type="checkbox" checked>主管医生</label>
-                <label class="dim-check"><input type="checkbox">护士</label>
-                <label class="dim-check checked"><input type="checkbox" checked>患者</label>
-                <span class="dim-hint">目标人 = 角色位,不是具体人。派到某患者名下时自动解析:主管医生 = 该患者的主管医生;护士 = 该患者的主要联系护士;患者 = 患者本人。</span>
+                <label class="dim-check"><input type="radio" name="ex-k3" value="doctor">主管医生</label>
+                <label class="dim-check"><input type="radio" name="ex-k3" value="nurse">主责护士</label>
+                <label class="dim-check checked"><input type="radio" name="ex-k3" value="patient" checked>患者</label>
+              </div>
+            </div>
+            <div class="dim-row">
+              <span class="dim-label">🔁 跟踪人</span>
+              <div class="dim-checks">
+                <label class="dim-check checked"><input type="radio" name="tr-k3" value="doctor" checked>主管医生</label>
+                <label class="dim-check"><input type="radio" name="tr-k3" value="nurse">主责护士</label>
+                <label class="dim-check"><input type="radio" name="tr-k3" value="">无(执行完成即结束)</label>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- 4 服药反馈 · 出院前 · 患者 -->
+        <!-- 4 服药反馈 · 第 0 天 · 执行人=患者 -->
         <div class="task-cell">
           <div class="head">
             <div class="icon"><img src="assets/icons-png/icon-pill.png" alt="药" /></div>
-            <div class="info"><b>服药反馈</b><span class="sub">出院前 · 枚举字段:服药情况 + 备注</span></div>
+            <div class="info"><b>服药反馈</b><span class="sub">第 0 天 · 枚举字段:服药情况 + 备注</span></div>
             <div class="t-order"><button data-move="up" aria-label="上移">↑</button><button data-move="down" aria-label="下移">↓</button></div>
             <input type="checkbox" checked>
           </div>
@@ -391,28 +385,34 @@
             <div class="dim-row">
               <span class="dim-label">📅 日期</span>
               <div class="date-pills">
-                <label class="date-pill"><input type="radio" name="d4" value="daily"><span>每天</span></label>
-                <label class="date-pill"><input type="radio" name="d4" value="pre" checked><span>出院前</span><input type="number" data-kind="pre" value="0" min="0"></label>
-                <label class="date-pill"><input type="radio" name="d4" value="dayn"><span>出院后第</span><input type="number" data-kind="dayn" value="0" min="0" disabled><span>天</span></label>
+                <label class="date-pill"><input type="radio" name="d4" value="every"><span>每</span><input type="number" data-kind="every" value="1" min="1" max="3650" disabled><span>天</span></label>
+                <label class="date-pill"><input type="radio" name="d4" value="dayn" checked><span>第</span><input type="number" data-kind="dayn" value="0" min="0"><span>天</span></label>
               </div>
             </div>
             <div class="dim-row">
-              <span class="dim-label">👥 目标人</span>
+              <span class="dim-label">👤 执行人</span>
               <div class="dim-checks">
-                <label class="dim-check"><input type="checkbox">主管医生</label>
-                <label class="dim-check"><input type="checkbox">护士</label>
-                <label class="dim-check checked"><input type="checkbox" checked>患者</label>
-                <span class="dim-hint">目标人 = 角色位,不是具体人。派到某患者名下时自动解析:主管医生 = 该患者的主管医生;护士 = 该患者的主要联系护士;患者 = 患者本人。</span>
+                <label class="dim-check"><input type="radio" name="ex-k4" value="doctor">主管医生</label>
+                <label class="dim-check"><input type="radio" name="ex-k4" value="nurse">主责护士</label>
+                <label class="dim-check checked"><input type="radio" name="ex-k4" value="patient" checked>患者</label>
+              </div>
+            </div>
+            <div class="dim-row">
+              <span class="dim-label">🔁 跟踪人</span>
+              <div class="dim-checks">
+                <label class="dim-check"><input type="radio" name="tr-k4" value="doctor">主管医生</label>
+                <label class="dim-check"><input type="radio" name="tr-k4" value="nurse">主责护士</label>
+                <label class="dim-check checked"><input type="radio" name="tr-k4" value="" checked>无(执行完成即结束)</label>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- 5 电话回访 · 出院后第 7 天 · 护士 -->
+        <!-- 5 电话回访 · 第 7 天 · 执行人=主责护士 / 跟踪人=主管医生 -->
         <div class="task-cell">
           <div class="head">
             <div class="icon"><img src="assets/icons-png/icon-call.png" alt="电" /></div>
-            <div class="info"><b>电话回访</b><span class="sub">出院后第 7 天 · 枚举字段:接通状态 + 随访结论</span></div>
+            <div class="info"><b>电话回访</b><span class="sub">第 7 天 · 枚举字段:接通状态 + 随访结论</span></div>
             <div class="t-order"><button data-move="up" aria-label="上移">↑</button><button data-move="down" aria-label="下移">↓</button></div>
             <input type="checkbox" checked>
           </div>
@@ -420,28 +420,34 @@
             <div class="dim-row">
               <span class="dim-label">📅 日期</span>
               <div class="date-pills">
-                <label class="date-pill"><input type="radio" name="d5" value="daily"><span>每天</span></label>
-                <label class="date-pill"><input type="radio" name="d5" value="pre"><span>出院前</span><input type="number" data-kind="pre" value="0" min="0" disabled></label>
-                <label class="date-pill"><input type="radio" name="d5" value="dayn" checked><span>出院后第</span><input type="number" data-kind="dayn" value="7" min="0"><span>天</span></label>
+                <label class="date-pill"><input type="radio" name="d5" value="every"><span>每</span><input type="number" data-kind="every" value="1" min="1" max="3650" disabled><span>天</span></label>
+                <label class="date-pill"><input type="radio" name="d5" value="dayn" checked><span>第</span><input type="number" data-kind="dayn" value="7" min="0"><span>天</span></label>
               </div>
             </div>
             <div class="dim-row">
-              <span class="dim-label">👥 目标人</span>
+              <span class="dim-label">👤 执行人</span>
               <div class="dim-checks">
-                <label class="dim-check"><input type="checkbox">主管医生</label>
-                <label class="dim-check checked"><input type="checkbox" checked>护士</label>
-                <label class="dim-check"><input type="checkbox">患者</label>
-                <span class="dim-hint">目标人 = 角色位,不是具体人。派到某患者名下时自动解析:主管医生 = 该患者的主管医生;护士 = 该患者的主要联系护士;患者 = 患者本人。</span>
+                <label class="dim-check"><input type="radio" name="ex-k5" value="doctor">主管医生</label>
+                <label class="dim-check checked"><input type="radio" name="ex-k5" value="nurse" checked>主责护士</label>
+                <label class="dim-check"><input type="radio" name="ex-k5" value="patient">患者</label>
+              </div>
+            </div>
+            <div class="dim-row">
+              <span class="dim-label">🔁 跟踪人</span>
+              <div class="dim-checks">
+                <label class="dim-check checked"><input type="radio" name="tr-k5" value="doctor" checked>主管医生</label>
+                <label class="dim-check"><input type="radio" name="tr-k5" value="nurse">主责护士</label>
+                <label class="dim-check"><input type="radio" name="tr-k5" value="">无(执行完成即结束)</label>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- 6 上传检查报告 · 出院后第 30 天 · 患者 + 主管医生(多选示例) -->
+        <!-- 6 上传检查报告 · 第 30 天 · 执行人=患者 / 跟踪人=主管医生(需人工判读) -->
         <div class="task-cell" style="border-color:var(--brand);">
           <div class="head">
             <div class="icon"><img src="assets/icons-png/icon-camera.png" alt="摄" /></div>
-            <div class="info"><b>上传检查报告</b><span class="sub">出院后第 30 天 · 文件字段:照片 + 检查日期</span></div>
+            <div class="info"><b>上传检查报告</b><span class="sub">第 30 天 · 文件字段:照片 + 检查日期</span></div>
             <div class="t-order"><button data-move="up" aria-label="上移">↑</button><button data-move="down" aria-label="下移">↓</button></div>
             <input type="checkbox" checked>
           </div>
@@ -449,29 +455,34 @@
             <div class="dim-row">
               <span class="dim-label">📅 日期</span>
               <div class="date-pills">
-                <label class="date-pill"><input type="radio" name="d6" value="daily"><span>每天</span></label>
-                <label class="date-pill"><input type="radio" name="d6" value="pre"><span>出院前</span><input type="number" data-kind="pre" value="0" min="0" disabled></label>
-                <label class="date-pill"><input type="radio" name="d6" value="dayn" checked><span>出院后第</span><input type="number" data-kind="dayn" value="30" min="0"><span>天</span></label>
+                <label class="date-pill"><input type="radio" name="d6" value="every"><span>每</span><input type="number" data-kind="every" value="1" min="1" max="3650" disabled><span>天</span></label>
+                <label class="date-pill"><input type="radio" name="d6" value="dayn" checked><span>第</span><input type="number" data-kind="dayn" value="30" min="0"><span>天</span></label>
               </div>
             </div>
             <div class="dim-row">
-              <span class="dim-label">👥 目标人</span>
+              <span class="dim-label">👤 执行人</span>
               <div class="dim-checks">
-                <label class="dim-check checked"><input type="checkbox" checked>主管医生</label>
-                <label class="dim-check"><input type="checkbox">护士</label>
-                <label class="dim-check checked"><input type="checkbox" checked>患者</label>
-                <span class="dim-hint">目标人 = 角色位,不是具体人。派到某患者名下时自动解析:主管医生 = 该患者的主管医生;护士 = 该患者的主要联系护士;患者 = 患者本人。</span>
+                <label class="dim-check"><input type="radio" name="ex-k6" value="doctor">主管医生</label>
+                <label class="dim-check"><input type="radio" name="ex-k6" value="nurse">主责护士</label>
+                <label class="dim-check checked"><input type="radio" name="ex-k6" value="patient" checked>患者</label>
               </div>
             </div>
-            <div style="font-size:11px; color:var(--brand); padding-left:64px;">↑ 多选示例:上传报告由患者上传 + 主管医生复核</div>
+            <div class="dim-row">
+              <span class="dim-label">🔁 跟踪人</span>
+              <div class="dim-checks">
+                <label class="dim-check checked"><input type="radio" name="tr-k6" value="doctor" checked>主管医生</label>
+                <label class="dim-check"><input type="radio" name="tr-k6" value="nurse">主责护士</label>
+                <label class="dim-check"><input type="radio" name="tr-k6" value="">无(执行完成即结束)</label>
+              </div>
+            </div>
           </div>
         </div>
 
-        <!-- 7 电话回访 · 出院后第 30 天 · 护士 -->
+        <!-- 7 电话回访 · 第 30 天 · 执行人=主责护士 / 跟踪人=主管医生 -->
         <div class="task-cell">
           <div class="head">
             <div class="icon"><img src="assets/icons-png/icon-call.png" alt="电" /></div>
-            <div class="info"><b>电话回访</b><span class="sub">出院后第 30 天 · 枚举字段:接通状态 + 随访结论</span></div>
+            <div class="info"><b>电话回访</b><span class="sub">第 30 天 · 枚举字段:接通状态 + 随访结论</span></div>
             <div class="t-order"><button data-move="up" aria-label="上移">↑</button><button data-move="down" aria-label="下移">↓</button></div>
             <input type="checkbox" checked>
           </div>
@@ -479,18 +490,24 @@
             <div class="dim-row">
               <span class="dim-label">📅 日期</span>
               <div class="date-pills">
-                <label class="date-pill"><input type="radio" name="d7" value="daily"><span>每天</span></label>
-                <label class="date-pill"><input type="radio" name="d7" value="pre"><span>出院前</span><input type="number" data-kind="pre" value="0" min="0" disabled></label>
-                <label class="date-pill"><input type="radio" name="d7" value="dayn" checked><span>出院后第</span><input type="number" data-kind="dayn" value="30" min="0"><span>天</span></label>
+                <label class="date-pill"><input type="radio" name="d7" value="every"><span>每</span><input type="number" data-kind="every" value="1" min="1" max="3650" disabled><span>天</span></label>
+                <label class="date-pill"><input type="radio" name="d7" value="dayn" checked><span>第</span><input type="number" data-kind="dayn" value="30" min="0"><span>天</span></label>
               </div>
             </div>
             <div class="dim-row">
-              <span class="dim-label">👥 目标人</span>
+              <span class="dim-label">👤 执行人</span>
               <div class="dim-checks">
-                <label class="dim-check"><input type="checkbox">主管医生</label>
-                <label class="dim-check checked"><input type="checkbox" checked>护士</label>
-                <label class="dim-check"><input type="checkbox">患者</label>
-                <span class="dim-hint">目标人 = 角色位,不是具体人。派到某患者名下时自动解析:主管医生 = 该患者的主管医生;护士 = 该患者的主要联系护士;患者 = 患者本人。</span>
+                <label class="dim-check"><input type="radio" name="ex-k7" value="doctor">主管医生</label>
+                <label class="dim-check checked"><input type="radio" name="ex-k7" value="nurse" checked>主责护士</label>
+                <label class="dim-check"><input type="radio" name="ex-k7" value="patient">患者</label>
+              </div>
+            </div>
+            <div class="dim-row">
+              <span class="dim-label">🔁 跟踪人</span>
+              <div class="dim-checks">
+                <label class="dim-check checked"><input type="radio" name="tr-k7" value="doctor" checked>主管医生</label>
+                <label class="dim-check"><input type="radio" name="tr-k7" value="nurse">主责护士</label>
+                <label class="dim-check"><input type="radio" name="tr-k7" value="">无(执行完成即结束)</label>
               </div>
             </div>
           </div>
@@ -508,18 +525,24 @@
             <div class="dim-row">
               <span class="dim-label">📅 日期</span>
               <div class="date-pills">
-                <label class="date-pill"><input type="radio" name="d8" value="daily" checked><span>每天</span></label>
-                <label class="date-pill"><input type="radio" name="d8" value="pre"><span>出院前</span><input type="number" data-kind="pre" value="0" min="0" disabled></label>
-                <label class="date-pill"><input type="radio" name="d8" value="dayn"><span>出院后第</span><input type="number" data-kind="dayn" value="0" min="0" disabled><span>天</span></label>
+                <label class="date-pill"><input type="radio" name="d8" value="every" checked><span>每</span><input type="number" data-kind="every" value="1" min="1" max="3650"><span>天</span></label>
+                <label class="date-pill"><input type="radio" name="d8" value="dayn"><span>第</span><input type="number" data-kind="dayn" value="0" min="0" disabled><span>天</span></label>
               </div>
             </div>
             <div class="dim-row">
-              <span class="dim-label">👥 目标人</span>
+              <span class="dim-label">👤 执行人</span>
               <div class="dim-checks">
-                <label class="dim-check"><input type="checkbox">主管医生</label>
-                <label class="dim-check"><input type="checkbox">护士</label>
-                <label class="dim-check checked"><input type="checkbox" checked>患者</label>
-                <span class="dim-hint">目标人 = 角色位,不是具体人。派到某患者名下时自动解析:主管医生 = 该患者的主管医生;护士 = 该患者的主要联系护士;患者 = 患者本人。</span>
+                <label class="dim-check"><input type="radio" name="ex-k8" value="doctor">主管医生</label>
+                <label class="dim-check"><input type="radio" name="ex-k8" value="nurse">主责护士</label>
+                <label class="dim-check checked"><input type="radio" name="ex-k8" value="patient" checked>患者</label>
+              </div>
+            </div>
+            <div class="dim-row">
+              <span class="dim-label">🔁 跟踪人</span>
+              <div class="dim-checks">
+                <label class="dim-check"><input type="radio" name="tr-k8" value="doctor">主管医生</label>
+                <label class="dim-check checked"><input type="radio" name="tr-k8" value="nurse" checked>主责护士</label>
+                <label class="dim-check"><input type="radio" name="tr-k8" value="">无(执行完成即结束)</label>
               </div>
             </div>
           </div>
@@ -537,28 +560,34 @@
             <div class="dim-row">
               <span class="dim-label">📅 日期</span>
               <div class="date-pills">
-                <label class="date-pill"><input type="radio" name="d9" value="daily" checked><span>每天</span></label>
-                <label class="date-pill"><input type="radio" name="d9" value="pre"><span>出院前</span><input type="number" data-kind="pre" value="0" min="0" disabled></label>
-                <label class="date-pill"><input type="radio" name="d9" value="dayn"><span>出院后第</span><input type="number" data-kind="dayn" value="0" min="0" disabled><span>天</span></label>
+                <label class="date-pill"><input type="radio" name="d9" value="every" checked><span>每</span><input type="number" data-kind="every" value="1" min="1" max="3650"><span>天</span></label>
+                <label class="date-pill"><input type="radio" name="d9" value="dayn"><span>第</span><input type="number" data-kind="dayn" value="0" min="0" disabled><span>天</span></label>
               </div>
             </div>
             <div class="dim-row">
-              <span class="dim-label">👥 目标人</span>
+              <span class="dim-label">👤 执行人</span>
               <div class="dim-checks">
-                <label class="dim-check"><input type="checkbox">主管医生</label>
-                <label class="dim-check"><input type="checkbox">护士</label>
-                <label class="dim-check checked"><input type="checkbox" checked>患者</label>
-                <span class="dim-hint">目标人 = 角色位,不是具体人。派到某患者名下时自动解析:主管医生 = 该患者的主管医生;护士 = 该患者的主要联系护士;患者 = 患者本人。</span>
+                <label class="dim-check"><input type="radio" name="ex-k9" value="doctor">主管医生</label>
+                <label class="dim-check"><input type="radio" name="ex-k9" value="nurse">主责护士</label>
+                <label class="dim-check checked"><input type="radio" name="ex-k9" value="patient" checked>患者</label>
+              </div>
+            </div>
+            <div class="dim-row">
+              <span class="dim-label">🔁 跟踪人</span>
+              <div class="dim-checks">
+                <label class="dim-check"><input type="radio" name="tr-k9" value="doctor">主管医生</label>
+                <label class="dim-check"><input type="radio" name="tr-k9" value="nurse">主责护士</label>
+                <label class="dim-check checked"><input type="radio" name="tr-k9" value="" checked>无(执行完成即结束)</label>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- 10 康复训练打卡 · 出院后第 90 天 · 护士 + 患者 -->
+        <!-- 10 康复训练打卡 · 第 90 天 · 执行人=主责护士 / 跟踪人=主责护士 -->
         <div class="task-cell">
           <div class="head">
             <div class="icon"><img src="assets/icons-png/icon-run.png" alt="动" /></div>
-            <div class="info"><b>康复训练打卡</b><span class="sub">出院后第 90 天 · 枚举:步行 / 被动运动 / 语言训练</span></div>
+            <div class="info"><b>康复训练打卡</b><span class="sub">第 90 天 · 枚举:步行 / 被动运动 / 语言训练</span></div>
             <div class="t-order"><button data-move="up" aria-label="上移">↑</button><button data-move="down" aria-label="下移">↓</button></div>
             <input type="checkbox" checked>
           </div>
@@ -566,18 +595,24 @@
             <div class="dim-row">
               <span class="dim-label">📅 日期</span>
               <div class="date-pills">
-                <label class="date-pill"><input type="radio" name="d10" value="daily"><span>每天</span></label>
-                <label class="date-pill"><input type="radio" name="d10" value="pre"><span>出院前</span><input type="number" data-kind="pre" value="0" min="0" disabled></label>
-                <label class="date-pill"><input type="radio" name="d10" value="dayn" checked><span>出院后第</span><input type="number" data-kind="dayn" value="90" min="0"><span>天</span></label>
+                <label class="date-pill"><input type="radio" name="d10" value="every"><span>每</span><input type="number" data-kind="every" value="1" min="1" max="3650" disabled><span>天</span></label>
+                <label class="date-pill"><input type="radio" name="d10" value="dayn" checked><span>第</span><input type="number" data-kind="dayn" value="90" min="0"><span>天</span></label>
               </div>
             </div>
             <div class="dim-row">
-              <span class="dim-label">👥 目标人</span>
+              <span class="dim-label">👤 执行人</span>
               <div class="dim-checks">
-                <label class="dim-check"><input type="checkbox">主管医生</label>
-                <label class="dim-check checked"><input type="checkbox" checked>护士</label>
-                <label class="dim-check checked"><input type="checkbox" checked>患者</label>
-                <span class="dim-hint">目标人 = 角色位,不是具体人。派到某患者名下时自动解析:主管医生 = 该患者的主管医生;护士 = 该患者的主要联系护士;患者 = 患者本人。</span>
+                <label class="dim-check"><input type="radio" name="ex-k10" value="doctor">主管医生</label>
+                <label class="dim-check checked"><input type="radio" name="ex-k10" value="nurse" checked>主责护士</label>
+                <label class="dim-check"><input type="radio" name="ex-k10" value="patient">患者</label>
+              </div>
+            </div>
+            <div class="dim-row">
+              <span class="dim-label">🔁 跟踪人</span>
+              <div class="dim-checks">
+                <label class="dim-check"><input type="radio" name="tr-k10" value="doctor">主管医生</label>
+                <label class="dim-check checked"><input type="radio" name="tr-k10" value="nurse" checked>主责护士</label>
+                <label class="dim-check"><input type="radio" name="tr-k10" value="">无(执行完成即结束)</label>
               </div>
             </div>
           </div>
@@ -592,26 +627,18 @@
         </a>
       </div>
 
-      <div class="card" style="background:var(--info-bg); border:none;">
-        <div style="font-size:12px; color:var(--info);">
-          <b>任务标记规则</b>:每个事项有"完成"选项 + 负责人;<br>
-          未在指定时间完成 → 标记为<b>待处理事项</b>。
-        </div>
-      </div>
-
       <a href="admin-projects.html" class="btn btn-primary btn-block" id="saveBtn" style="margin-top:20px;">
         保存修改
       </a>
-      <div class="ro-hint" style="text-align:center; margin-top:8px;">只保存本页可编辑的内容:项目主题 / 主负责医生 / <b>周期天数 / 起止日期 / 定价</b> / 任务模板。<br>这几项<b>两端都能改</b> ⇒ 末次写入生效,每次写入都留审计。</div>
     </div>
   </div>
   <script>
     /* ==========================================================
-     * 任务模板编排区的交互(2026-11-05 与 PC 后台 back-project-edit.html 对齐)
-     *  · 目标人多选的选中态
+     * 项目任务编排区的交互(2026-11-05 与 PC 后台 back-project-edit.html 对齐)
+     *  · 执行人 / 跟踪人的单选选中态
      *  · 日期维度的 N 输入框可用性
-     *  · 上移 / 下移(顺序即任务下发顺序)
-     *  · 保存前校验:每条模板的「日期 + 目标人」必须配齐
+     *  · 上移 / 下移(顺序即患者端的呈现顺序)
+     *  · 保存前校验:每条任务的「何时做 + 执行人」必须配齐(跟踪人可为空)
      * ========================================================== */
     (function () {
       'use strict';
@@ -627,17 +654,22 @@
           var ck = g.querySelector('input[type=radio]:checked');
           var v = ck ? ck.value : '';
           g.querySelectorAll('input[type=number]').forEach(function (n) {
-            n.disabled = (n.getAttribute('data-kind') === 'pre') ? (v !== 'pre') : (v !== 'dayn');
+            /* 两档各一个数值框:「每 N 天」(data-kind=every) / 第 N 天(dayn) */
+            var kind = n.getAttribute('data-kind');
+            n.disabled = (kind !== v);
+            /* 「每 N 天」的 N 最小为 1(空 / 0 / 负数回落到 1) */
+            if (kind === 'every') {
+              var ev = Number(n.value || 1);
+              if (!Number.isInteger(ev) || ev < 1) { ev = 1; n.value = 1; }
+            }
           });
         });
       }
       function syncCell(cell) {
         var hasDate = !!cell.querySelector('.date-pills input[type=radio]:checked');
-        var hasTarget = false;
-        cell.querySelectorAll('.dim-check input[type=checkbox]').forEach(function (x) {
-          if (x.checked) hasTarget = true;
-        });
-        cell.classList.toggle('pending', !(hasDate && hasTarget));
+        /* 执行人必选;跟踪人可为空(无跟踪人 ⇒ 执行完成即结束) */
+        var hasEx = !!cell.querySelector('.dim-checks input[type=radio][name^="ex-"]:checked');
+        cell.classList.toggle('pending', !(hasDate && hasEx));
         cell.classList.toggle('off', !cell.querySelector('.head input[type=checkbox]').checked);
       }
       function syncAll() {
@@ -677,7 +709,7 @@
 
       /* 周期:预设 ↔ 自定义 ↔ 长期(与 PC 后台 back-project-edit.html 同款)
        * ⚠️ 2026-11-05 用户提:「项目周期 …可以增加一个长期 …就没有结束时间,只能手动结束」
-       * 长期 ⇒ 天数禁用 / 结束日期禁用并清空 / 不校验 1–3650 / 模板天数不再受周期上限约束。
+       * 长期 ⇒ 天数禁用 / 结束日期禁用并清空 / 不校验 1–3650 / 条目天数不再受周期上限约束。
        * ⚠️ 「长期」在 DB / API 怎么存由 AR 定,原型只表达产品语义。 */
       function syncDurPreset() {
         var preset = document.querySelector('[name="durPreset"]');
@@ -689,18 +721,6 @@
         if (preset.value !== 'custom') num.value = '';
         if (ed) {
           if (lt) { ed.disabled = true; ed.value = ''; } else { ed.disabled = false; }
-        }
-        var dh = document.getElementById('durHint');
-        if (dh) {
-          dh.innerHTML = lt
-            ? '<b>长期项目没有结束时间,只能手动结束</b>(不会自动到期 / 不自动停用);模板「出院后第 N 天」<b>不再受周期上限约束</b>。'
-            : '周期天数(1–3650 天),用于校验模板「出院后第 N 天」的上限。<b>两端都能改</b> —— ⚠️ 改小后,「出院后第 N 天」超过新周期会被拦。';
-        }
-        var eh = document.getElementById('endHint');
-        if (eh) {
-          eh.innerHTML = lt
-            ? '<b>长期项目没有结束日期</b>;要让它有终点,请先取消「长期」、选一个有限周期天数并填写结束日期。'
-            : '结束日期不得早于开始日期。';
         }
         var er = document.getElementById('endReq');
         if (er) er.style.display = lt ? 'none' : '';
@@ -727,7 +747,7 @@
           : (preset.value === 'custom' ? Number(durNum.value || 0) : Number(preset.value || 0));
         if (!longTerm && (!dur || dur < 1 || dur > 3650)) {
           fieldErr.style.display = 'block';
-          fieldErr.innerHTML = '<b>项目周期不合法</b>:周期天数需在 1–3650 天之间(选「自定义」时填天数)。';
+          fieldErr.innerHTML = '<b>项目周期不合法</b>,请重新填写。';
           fieldErr.scrollIntoView({ block: 'center' });
           return;
         }
@@ -755,41 +775,59 @@
         for (var i = 0; i < cells.length; i++) {
           var c = cells[i];
           var hasDate = !!c.querySelector('.date-pills input[type=radio]:checked');
-          var hasTarget = false;
-          c.querySelectorAll('.dim-check input[type=checkbox]').forEach(function (x) {
-            if (x.checked) hasTarget = true;
-          });
-          if (!hasDate || !hasTarget) { bad = c; break; }
+          var hasEx = !!c.querySelector('.dim-checks input[type=radio][name^="ex-"]:checked');
+          if (!hasDate || !hasEx) { bad = c; break; }
         }
         if (bad) {
           err.style.display = 'block';
-          err.innerHTML = '<b>还有模板没配齐</b>:' + (bad.querySelector('.info b') || {}).textContent
-            + ' —— 「日期」与「目标人」两个维度都要选,才能保存。';
+          err.innerHTML = '<b>还有项目任务没配齐</b>:' + (bad.querySelector('.info b') || {}).textContent
+            + ' —— 「何时做」与「执行人」都要选,才能保存(跟踪人可以为空)。';
           bad.scrollIntoView({ block: 'center' });
           bad.classList.add('pending');
           return;
         }
         err.style.display = 'none';
 
-        /* ---- 「出院后第 N 天」不得超出项目周期(周期现在两端都能改 ⇒ 这里要拦)
-               ⚠️ 长期项目**没有周期上限** ⇒ 不受此约束 ---- */
+        /* ---- 「每 N 天」/「第 N 天」不得超出项目周期(周期两端都能改 ⇒ 这里要拦)
+               ⚠️ 长期项目**没有周期上限** ⇒ 只受静态上限 3650 约束(D17 / D16) ---- */
         var over = null;
         for (var k = 0; k < cells.length; k++) {
           var cc = cells[k];
-          var dayn = cc.querySelector('.date-pills input[type=radio][value="dayn"]:checked');
-          if (!dayn) continue;
+          var ck2 = cc.querySelector('.date-pills input[type=radio]:checked');
+          if (!ck2) continue;
+          if (ck2.value === 'every') {
+            var evIn = cc.querySelector('.date-pills input[data-kind="every"]');
+            var evN = Number(evIn ? evIn.value : 1);
+            if (!Number.isInteger(evN) || evN < 1 || evN > 3650) {
+              over = { cell: cc, n: evN, every: true, bad: true };
+              break;
+            }
+            if (!longTerm && Number.isInteger(evN) && evN > dur) {
+              over = { cell: cc, n: evN, every: true };
+              break;
+            }
+            continue;
+          }
+          if (ck2.value !== 'dayn') continue;
           var nIn = cc.querySelector('.date-pills input[data-kind="dayn"]');
           var n = Number(nIn ? nIn.value : 0);
-          if (!longTerm && Number.isInteger(n) && n > dur) {
+          if (!Number.isInteger(n) || n < 0 || n > 3650) {
+            over = { cell: cc, n: n, bad: true };
+            break;
+          }
+          if (!longTerm && n > dur) {
             over = { cell: cc, n: n };
             break;
           }
         }
         if (over) {
           fieldErr.style.display = 'block';
-          fieldErr.innerHTML = '<b>模板超出项目周期</b>:「' +
-            ((over.cell.querySelector('.info b') || {}).textContent || '某条模板') +
-            '」的「出院后第 ' + over.n + ' 天」超过项目周期(' + dur + ' 天)⇒ 请把周期调大或改这条模板。';
+          var who = (over.cell.querySelector('.info b') || {}).textContent || '某条项目任务';
+          fieldErr.innerHTML = over.bad
+            ? '<b>条目天数不合法</b>:「' + who + '」请「每 N 天」填正整数、「第 N 天」填非负整数。'
+            : '<b>条目超出项目周期</b>:「' + who + '」的「'
+              + (over.every ? ('每 ' + over.n + ' 天') : ('第 ' + over.n + ' 天'))
+              + '」超过项目周期(' + dur + ' 天)⇒ 请把周期调大或改这条条目。';
           over.cell.scrollIntoView({ block: 'center' });
           return;
         }

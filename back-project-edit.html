@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="assets/back.css">
   <style>
     /* ==========================================================
-     * 任务模板编排区(PC 版)
+     * 项目任务编排区(PC 版)
      * 产品形态对齐移动端 admin-project-edit.html 的「任务卡 + 两个维度」,
      * 但按 PC 宽度重排:组件信息在左,两个维度同排在一行里。
      * ⚠️ 只用 back.css 的设计令牌,不自造颜色体系。
@@ -68,26 +68,23 @@
 
   <div class="page-head">
     <h1 id="ttl">新建项目</h1>
-    <div class="sub">项目归属<b>一个科室</b>；项目里的<b>任务模板</b>从本科室的任务组件库挑组件，
-      每条模板配「<b>什么时候做</b>」和「<b>谁来做</b>」两个维度。</div>
+    <div class="sub">项目归属<b>一个科室</b>;项目任务在患者入组后自动生成。</div>
   </div>
 
   <div id="scopeStrip"></div>
 
   <!-- ============ 基本信息 ============ -->
   <div class="card">
-    <div class="card-head"><h3>基本信息</h3><span class="ch-desc">归属科室保存后不可修改</span></div>
+    <div class="card-head"><h3>基本信息</h3></div>
     <div class="form-grid">
       <div class="fi">
         <label><span class="req">*</span>归属科室</label>
         <select class="sel" name="dept"></select>
-        <span class="hint" id="deptHint">项目的一切配置都以此为界:任务模板只能挑本科室的组件</span>
         <span class="err-msg">请选择归属科室</span>
       </div>
       <div class="fi">
         <label><span class="req">*</span>项目主题</label>
         <input class="ipt" name="name" placeholder="2–100 字,例:90 天卒中连续健康管理">
-        <span class="hint">同科室下不可重名;跨科室可以同名</span>
         <span class="err-msg">项目主题 2–100 字</span>
       </div>
       <div class="fi">
@@ -96,12 +93,10 @@
           <option value="管理">管理</option>
           <option value="研究">研究</option>
         </select>
-        <span class="hint">只作分类标签,两类项目在本模块行为一致</span>
       </div>
       <div class="fi">
         <label><span class="req">*</span>主负责医生</label>
         <select class="sel" name="lead"></select>
-        <span class="hint" id="leadHint">仅限归属科室内在职、具备医生角色位的人员。<b>这是数据字段,不是登录身份</b>——他本人没有本模块的后台权限</span>
         <span class="err-msg">请选择主负责医生</span>
       </div>
       <div class="fi">
@@ -114,58 +109,45 @@
             <option value="custom">自定义</option>
             <option value="longterm">长期</option>
           </select>
-          <input class="ipt" name="duration" type="number" min="1" max="3650" placeholder="天数" style="flex:1;" disabled>
+          <input class="ipt" name="duration" type="number" min="1" max="3650" style="flex:1;" disabled>
         </div>
-        <span class="hint" id="durHint">周期天数用于校验模板「出院后第 N 天」的上限。<b>两端都能改</b>(PC 后台 / 小程序端)</span>
-        <span class="err-msg">项目周期需在 1–3650 天之间</span>
+        <span class="err-msg">项目周期不合法,请重新填写</span>
       </div>
       <div class="fi">
         <label><span class="req">*</span>开始日期</label>
         <input class="ipt" name="startDate" type="date">
-        <span class="hint">起止日期<b>两端都能改</b>(PC 后台 / 小程序端)⇒ 末次写入生效,每次写入都留审计</span>
         <span class="err-msg">请选择开始日期</span>
       </div>
       <div class="fi">
         <label><span class="req" id="endReq">*</span>结束日期</label>
         <input class="ipt" name="endDate" type="date">
-        <span class="hint" id="endHint">结束日期不得早于开始日期</span>
         <span class="err-msg">结束日期不得早于开始日期</span>
       </div>
       <div class="fi">
         <label>定价(元)</label>
-        <input class="ipt" name="price" type="number" min="0" max="99999999.99" step="0.01" placeholder="选填,默认 0.00">
-        <span class="hint">选填,最多两位小数(基线 <code>DECIMAL(10,2)</code>);仅作项目属性记录,<b>不触发任何计费</b>。<br><b>PC 后台与小程序端都能改这一项</b>(改的是同一个项目属性)⇒ <b>末次写入生效,每次写入都留审计</b></span>
+        <input class="ipt" name="price" type="number" min="0" max="99999999.99" step="0.01" placeholder="0.00">
         <span class="err-msg">定价不能为负数</span>
       </div>
     </div>
   </div>
 
-  <!-- ============ 任务模板 ============ -->
+  <!-- ============ 项目任务 ============ -->
   <div class="card" id="templates">
     <div class="card-head">
-      <h3>任务模板(从任务库组合)</h3>
+      <h3>项目任务(项目直接绑组件)</h3>
       <span class="ch-desc" id="tplCount">0 条</span>
       <div class="ch-right">
-        <button class="btn btn-default btn-sm" id="pickBtn"><img src="assets/icons-png/icon-plus.png" alt="">从任务库添加组件</button>
+        <button class="btn btn-default btn-sm" id="pickBtn"><img src="assets/icons-png/icon-plus.png" alt="">从任务组件库添加</button>
       </div>
     </div>
 
     <div class="note note-info">
       <img src="assets/icons-png/icon-info.png">
-      <div>
-        <b>配置两个维度:</b>
-        <b>日期</b> —— 每天 / <b>出院前 N 天</b> / <b>出院后第 N 天</b>(N 以<b>出院日</b>为基准,由管理员输入,可任意)。<b>顺序即任务下发顺序</b>,用上移 / 下移调整。<br>
-        <b>目标人</b> —— 主管医生 / 护士 / 患者,可多选(如上传检查报告可同时分配给患者和主管医生)。<br>
-        <b>目标人 = 角色位,不是具体人。</b>派到某患者名下时自动解析:主管医生 = 该患者的主管医生;护士 = 该患者的主要联系护士;患者 = 患者本人。
-      </div>
+      <div>患者入组后按此配置<b>自动生成</b>任务;顺序即患者端展示顺序。</div>
     </div>
 
     <div id="tplList"></div>
 
-    <div class="note note-gray" style="margin:12px 0 0;">
-      <img src="assets/icons-png/icon-info.png">
-      <div><b>任务标记规则</b>:每个事项有「完成」选项 + 负责人;未在指定时间完成 → 标记为<b>待处理事项</b>。</div>
-    </div>
   </div>
 
   <div class="sticky-actions">
@@ -183,11 +165,6 @@
     <button class="d-close">×</button>
   </div>
   <div class="drawer-body">
-    <div class="note note-info" style="margin-bottom:12px;">
-      <img src="assets/icons-png/icon-info.png">
-      <div>只能选择<b>归属科室</b>的组件;跨科室组件不可选(组件的字段口径由科室自己定义)。</div>
-    </div>
-
     <div class="filters" style="margin-bottom:12px;">
       <div class="search-wrap">
         <img src="assets/icons-png/icon-search.png" alt="">
@@ -224,12 +201,12 @@
   </div>
 </div>
 
-<!-- ========== 移除模板 弹窗 ========== -->
+<!-- ========== 移除项目任务 弹窗 ========== -->
 <div class="modal-mask" id="delModal">
   <div class="modal">
     <div class="modal-head">
       <img src="assets/icons-png/icon-warning.png" alt="">
-      <h3>移除任务模板</h3>
+      <h3>移除项目任务</h3>
     </div>
     <div class="modal-body" id="delBody"></div>
     <div class="modal-foot">
@@ -249,8 +226,8 @@
   var proj = id ? BACK_PROJ.byId(id) : null;
   var isEdit = !!proj;
 
-  /* 模板编辑态(改完保存才落库) */
-  var tpls = isEdit ? JSON.parse(JSON.stringify(BACK_PROJ.templatesOf(proj.id))) : [];
+  /* 项目任务编辑态(改完保存才落库) */
+  var tpls = isEdit ? JSON.parse(JSON.stringify(BACK_PROJ.tasksOf(proj.id))) : [];
   var picked = {};   /* 抽屉里勾选的组件 id */
 
   function esc(s) {
@@ -266,7 +243,7 @@
    * ⚠️ 2026-11-05 用户提:「项目周期 是不是可以增加一个长期 …就没有结束时间,只能手动结束」
    * 产品语义:周期取值 = 「1–3650 天」| 「长期」
    *    · 长期 ⇒ **没有结束时间**、**不会自动到期 / 不自动停用** ⇒ 要有终点只能**手动结束**
-   *    · 长期 ⇒ 模板「出院后第 N 天」**不再受周期上限约束**
+   *    · 长期 ⇒ 单次档「第 N 天」**不再受周期上限约束**
    *    · 转换路径:取消「长期」+ 选一个有限周期天数 + 填结束日期 ⇒ 回到普通项目规则
    * ⚠️ 「长期」在 DB / API 怎么存(0 / NULL / 加列)**由 AR 定** —— 原型只表达产品语义,
    *    页面一律按 `longTerm` 标记判定,不做「0 = 长期」之类的假设。 */
@@ -289,12 +266,6 @@
     num.disabled = preset.value !== 'custom';
     if (preset.value !== 'custom') num.value = '';
     if (lt) { ed.disabled = true; ed.value = ''; } else { ed.disabled = false; }
-    document.getElementById('durHint').innerHTML = lt
-      ? '<b>长期项目没有结束时间,只能手动结束</b>(不会自动到期 / 不自动停用);模板「出院后第 N 天」<b>不再受周期上限约束</b>。'
-      : '周期天数用于校验模板「出院后第 N 天」的上限。<b>两端都能改</b>(PC 后台 / 小程序端)';
-    document.getElementById('endHint').innerHTML = lt
-      ? '<b>长期项目没有结束日期</b>;要让它有终点,请先取消「长期」、选一个有限周期天数并填写结束日期。'
-      : '结束日期不得早于开始日期';
     document.getElementById('endReq').style.display = lt ? 'none' : '';
   }
   /* ---------- 归属科室下拉 ---------- */
@@ -309,8 +280,6 @@
       sel.value = String(proj.departmentId);
       /* 归属科室保存后不可修改 ⇒ 编辑态锁定 */
       sel.disabled = true;
-      document.getElementById('deptHint').innerHTML =
-        '<b>已锁定</b>:项目归属科室保存后不可修改。如需更换,请停用本项目并在目标科室新建。';
     }
   })();
 
@@ -364,8 +333,26 @@
   }
 
   /* ==========================================================
-   * 任务模板编排区
+   * 项目任务编排区
    * ========================================================== */
+  /* 角色位单选组(执行人 / 下一步跟踪人)
+   * ⚠️ 2026-11-05 执行层重新设计:原来是「目标人三选多」,现改为两个**单选**字段。
+   *    跟踪人额外多一个「无」= 执行完成即结束,不产生跟踪环节、不发跟踪通知。 */
+  function roleRadios(kind, tid, cur) {
+    var name = kind + '-' + tid;   /* kind: ex 执行人 / tr 跟踪人 */
+    /* 🔴 2026-11-05:执行人三选一(必填);跟踪人**只列医生 / 护士**(⛔ 不含患者),另加「无」。 */
+    var list = kind === 'tr' ? BACK_PROJ.TRACKER_ROLES : BACK_PROJ.EXECUTOR_ROLES;
+    var html = list.map(function (r) {
+      return '<label class="chip"><input type="radio" name="' + name + '" data-' + kind + '="' + tid + '"'
+        + ' value="' + r.key + '"' + (cur === r.key ? ' checked' : '') + '><span>' + r.label + '</span></label>';
+    }).join('');
+    if (kind === 'tr') {
+      html += '<label class="chip"><input type="radio" name="' + name + '" data-tr="' + tid + '"'
+        + ' value=""' + (!cur ? ' checked' : '') + '><span>无(执行完成即结束)</span></label>';
+    }
+    return html;
+  }
+
   function tplHtml(t) {
     var c = BACK_DATA.byId(BACK_DATA.components, t.componentId);
     var compOff = !!c && c.status === 0;
@@ -375,37 +362,31 @@
     var opt = c ? c.fields.filter(function (f) { return f.req === 'optional'; }).length : 0;
     var aut = c ? c.fields.filter(function (f) { return f.req === 'auto'; }).length : 0;
     var dept = c ? BACK_DATA.dept(c.departmentId) : null;
-    var pending = !t.sched || !t.sched.type || !t.target;
+    /* 待配置 = 没选档位 或 没选执行人(跟踪人允许为空) 或 两个角色相同(D30 阻断) */
+    var pending = !t.sched || !t.sched.type || !t.executor || BACK_PROJ.roleConflict(t);
     var cls = 'tmpl' + (t.status === 0 ? ' off' : '') + (pending && t.status === 1 ? ' pending' : '');
     var st = t.sched || { type: '', days: 0 };
-    var bits = BACK_PROJ.targetBits(t.target || 0);
 
-    /* 日期维度三态(PRD D7):
-     *   每天          —— 不带次数(基线 frequency_type 无 times_per_day,每天就是每天);
-     *                   ⚠️ 「每天」与基准日**无关**(不是相对出院日的偏移量)
-     *   出院前 N 天   —— N 默认 0(出院当天);相对**出院日**往前数
-     *   出院后第 N 天 —— N 非负整数;相对**出院日**往后数(2026-11-05 用户拍板:
-     *                   「第N天,一般指出院的第N天」⇒ 原来的「D N 天」措辞已废弃)
-     * ⚠️ 新增条目**不预选**任何一个,标「待配置」(见 pickOk)。 */
+    /* 什么时候做 —— 两档互斥(PRD D7 / D17 / D21):
+     *   每 N 天 —— 重复档,**以患者入组日 D0 为起点**,D0 起每 N 天一次;N 默认 1(N = 1 显示「每天」)
+     *   第 N 天 —— 单次档,N = 0 就是**入组当天**;D0 + N 只生成一条
+     * ⛔ 旧的第三档(以出院为基准)已于 2026-11-05 删除。一天多次靠拆组件,不设时间点。
+     * ⚠️ 新增条目**不预选**任何一档,标「待配置」;「每 N 天」档内的 N 默认 1,不代表已选档位。 */
+    var isEvery = st.type === 'every';
+    var isDayn = st.type === 'dayn';
+    var everyN = isEvery ? (st.days == null ? 1 : Number(st.days)) : 1;
+    var daynN = isDayn ? Number(st.days || 0) : 0;
     var pills =
-      '<label class="pill"><input type="radio" name="sch-' + t.id + '" value="daily"'
-        + (st.type === 'daily' ? ' checked' : '') + '><span>每天</span></label>'
-      + '<label class="pill"><input type="radio" name="sch-' + t.id + '" value="pre"'
-        + (st.type === 'pre' ? ' checked' : '') + '><span>出院前</span>'
-        + '<input class="ipt dayn" type="number" min="0" step="1" data-days-pre="' + t.id + '"'
-        + ' value="' + (st.days != null ? st.days : 0) + '"'
-        + (st.type === 'pre' ? '' : ' disabled') + '><span>天</span></label>'
+      '<label class="pill"><input type="radio" name="sch-' + t.id + '" value="every"'
+        + (isEvery ? ' checked' : '') + '><span>每</span>'
+        + '<input class="ipt dayn" type="number" min="1" max="3650" step="1" data-days-every="' + t.id + '"'
+        + ' value="' + everyN + '"'
+        + (isEvery ? '' : ' disabled') + '><span>天</span></label>'
       + '<label class="pill"><input type="radio" name="sch-' + t.id + '" value="dayn"'
-        + (st.type === 'dayn' ? ' checked' : '') + '><span>出院后第</span>'
-        + '<input class="ipt dayn" type="number" min="0" step="1" data-days="' + t.id + '"'
-        + ' value="' + (st.days != null ? st.days : 0) + '"'
-        + (st.type === 'dayn' ? '' : ' disabled') + '><span>天</span></label>';
-
-    var chips = BACK_PROJ.TARGETS.map(function (tg) {
-      var on = (t.target || 0) & tg.bit;
-      return '<label class="chip"><input type="checkbox" data-bit="' + tg.bit + '" data-tid="' + t.id + '"'
-        + (on ? ' checked' : '') + '><span>' + tg.label + '</span></label>';
-    }).join('');
+        + (isDayn ? ' checked' : '') + '><span>第</span>'
+        + '<input class="ipt dayn" type="number" min="0" max="3650" step="1" data-days="' + t.id + '"'
+        + ' value="' + daynN + '"'
+        + (isDayn ? '' : ' disabled') + '><span>天</span></label>';
 
     return '<div class="' + cls + '" data-tid="' + t.id + '">'
       + '<div class="tmpl-head">'
@@ -416,6 +397,7 @@
       +     '<div class="cell-sub">' + (dept ? esc(dept.name) : '—') + ' · ' + flds + ' 个字段'
       +     (flds ? '(必填 ' + req + ' · 选填 ' + opt + ' · 自动 ' + aut + ')' : '') + '</div></div>'
       +   (compOff ? '<span class="badge badge-gray">组件已停用</span>' : '')
+      +   (t.manualReview ? '<span class="badge badge-warn">需人工判读</span>' : '')
       +   (pending && t.status === 1 ? '<span class="badge badge-warn tmpl-pending">待配置</span>' : '')
       +   '<span class="badge badge-info tmpl-sched">' + esc(BACK_PROJ.schedLabel(t.sched)) + '</span>'
       +   '<div class="tmpl-acts">'
@@ -427,10 +409,9 @@
       +   '</div>'
       + '</div>'
       + '<div class="tmpl-dims">'
-      +   '<div class="dim-row"><span class="dim-lab">日期</span>' + pills + '</div>'
-      +   '<div class="dim-row"><span class="dim-lab">目标人</span>' + chips
-      +     '<span class="dim-hint">目标人 = 角色位,不是具体人。派到某患者名下时自动解析:主管医生 = 该患者的主管医生;护士 = 该患者的主要联系护士;患者 = 患者本人。</span>'
-      +   '</div>'
+      +   '<div class="dim-row"><span class="dim-lab">何时做</span>' + pills + '</div>'
+      +   '<div class="dim-row"><span class="dim-lab">执行人</span>' + roleRadios('ex', t.id, t.executor) + '</div>'
+      +   '<div class="dim-row"><span class="dim-lab">跟踪人</span>' + roleRadios('tr', t.id, t.tracker) + '</div>'
       + '</div>'
       + '</div>';
   }
@@ -440,8 +421,8 @@
     document.getElementById('tplCount').textContent = tpls.length + ' 条';
     if (!tpls.length) {
       box.innerHTML = '<div class="empty"><img src="assets/icons-png/icon-empty-box.png" alt="">'
-        + '<div class="e-t">本项目还没有任务模板</div>'
-        + '<div class="e-d">点右上角「从任务库添加组件」,从本科室的任务组件库挑组件开始</div></div>';
+        + '<div class="e-t">本项目还没有项目任务</div>'
+        + '<div class="e-d">点右上角「从任务组件库添加」,从本科室挑组件开始配</div></div>';
       return;
     }
     box.innerHTML = tpls.map(tplHtml).join('');
@@ -455,7 +436,7 @@
   /* ⚠️ 新条目 id 必须**本页唯一**:
    *   BACK_PROJ.nextId 只扫「已持久化」的 projects,本页连续加两条会拿到同一个 id
    *   ⇒ data-tid 重复 ⇒ document.querySelector('.tmpl[data-tid=…]') 永远命中第一行
-   *   ⇒ 第二行的「出院后第 N 天」输入框不会被启用(实测:勾了该档,天数框仍是灰的,点不动)。
+   *   ⇒ 第二行的单次档天数框不会被启用(实测:勾了该档,天数框仍是灰的,点不动)。
    *   这里在 nextId 基础上顺延,直到本页不撞号。 */
   function newTplId() {
     var base = String(BACK_PROJ.nextId('pt'));
@@ -474,7 +455,7 @@
     if (!t) return;
     var node = document.querySelector('.tmpl[data-tid="' + t.id + '"]');
     if (!node) return;
-    var pending = !t.sched || !t.sched.type || !t.target;
+    var pending = !t.sched || !t.sched.type || !t.executor || BACK_PROJ.roleConflict(t);
 
     var b = node.querySelector('.tmpl-sched');
     if (b) b.textContent = BACK_PROJ.schedLabel(t.sched);
@@ -483,11 +464,15 @@
     if (pb) pb.style.display = (pending && t.status === 1) ? '' : 'none';
     node.classList.toggle('pending', pending && t.status === 1);
 
-    /* 天数输入框的可用性跟着「日期维度」走 */
-    node.querySelectorAll('input[data-days], input[data-days-pre]').forEach(function (inp) {
-      var isPre = inp.hasAttribute('data-days-pre');
-      inp.disabled = !((isPre && t.sched.type === 'pre') ||
-                       (!isPre && t.sched.type === 'dayn'));
+    /* 天数输入框的可用性跟着「何时做」走(两档各一个输入框) */
+    node.querySelectorAll('input[data-days], input[data-days-every]').forEach(function (inp) {
+      var kind = inp.hasAttribute('data-days-every') ? 'every' : 'dayn';
+      inp.disabled = (t.sched.type !== kind);
+      /* 「每 N 天」的 N 最小为 1(空 / 0 / 负数一律回落到 1) */
+      if (kind === 'every') {
+        var n = Number(inp.value || 1);
+        if (!Number.isInteger(n) || n < 1) { n = 1; inp.value = 1; }
+      }
     });
 
     var sw = node.querySelector('.tmpl-off-label');
@@ -503,32 +488,57 @@
       if (t) { t.status = el.checked ? 1 : 0; syncTplCell(t.id); }
       return;
     }
-    /* 日期维度:单选(每天 / 出院前 N 天 / 出院后第 N 天) */
+    /* 何时做:单选(每 N 天 / 第 N 天) */
     if (el.type === 'radio' && el.name.indexOf('sch-') === 0) {
       var tid = el.name.replace('sch-', '');
       var t2 = tplById(tid);
       if (!t2) return;
-      /* 切到「每天」不带天数;pre / dayn 沿用当前 N,方便来回切换不丢 */
-      t2.sched = { type: el.value, days: el.value === 'daily' ? 0 : Number(t2.sched.days || 0) };
+      /* 切换档位时沿用当前 N(便于来回切换不丢);
+       * 「每 N 天」的 N 小于 1 时回落到 1(最小 1 天)。 */
+      var n2 = Number(t2.sched.days || 0);
+      if (el.value === 'every' && (!Number.isInteger(n2) || n2 < 1)) n2 = 1;
+      if (el.value === 'dayn' && (!Number.isInteger(n2) || n2 < 0)) n2 = 0;
+      t2.sched = { type: el.value, days: n2 };
       syncTplCell(t2.id);
       return;
     }
-    /* 目标人维度:多选(位掩码) */
-    if (el.type === 'checkbox' && el.getAttribute('data-bit')) {
-      var t3 = tplById(el.getAttribute('data-tid'));
+    /* 执行人:单选(角色位) */
+    if (el.type === 'radio' && el.hasAttribute('data-ex')) {
+      var t3 = tplById(el.getAttribute('data-ex'));
       if (!t3) return;
-      var bit = Number(el.getAttribute('data-bit'));
-      t3.target = el.checked ? ((t3.target || 0) | bit) : ((t3.target || 0) & ~bit);
+      t3.executor = el.value;
       syncTplCell(t3.id);
+      if (BACK_PROJ.roleConflict(t3)) Back.toast('执行人与跟踪人不能是同一类角色', 'err');
       return;
     }
-    /* 天数 N(出院前 N 天 / 出院后第 N 天 共用一个 days 字段,含义由 type 决定) */
-    var dPre = el.getAttribute('data-days-pre');
+    /* 下一步跟踪人:单选(角色位 / 无) */
+    if (el.type === 'radio' && el.hasAttribute('data-tr')) {
+      var t6 = tplById(el.getAttribute('data-tr'));
+      if (!t6) return;
+      t6.tracker = el.value;   /* '' = 无跟踪人 */
+      syncTplCell(t6.id);
+      if (BACK_PROJ.roleConflict(t6)) Back.toast('执行人与跟踪人不能是同一类角色', 'err');
+      return;
+    }
+    /* 「每 N 天」的间隔 N(1–3650;空 / 0 / 负数回落到 1) */
+    var dEvery = el.getAttribute('data-days-every');
+    if (dEvery) {
+      var t5 = tplById(dEvery);
+      if (!t5) return;
+      var n5 = Number(el.value || 1);
+      if (!Number.isInteger(n5) || n5 < 1) n5 = 1;
+      t5.sched = { type: 'every', days: n5 };
+      syncTplCell(t5.id);
+      return;
+    }
+    /* 「第 N 天」的 N(0–3650;0 = 入组当天) */
     var dDay = el.getAttribute('data-days');
-    if (dPre || dDay) {
-      var t4 = tplById(dPre || dDay);
+    if (dDay) {
+      var t4 = tplById(dDay);
       if (!t4) return;
-      t4.sched.days = Number(el.value || 0);
+      var n4 = Number(el.value || 0);
+      if (!Number.isInteger(n4) || n4 < 0) n4 = 0;
+      t4.sched.days = n4;
       syncTplCell(t4.id);
       return;
     }
@@ -554,12 +564,12 @@
       var t = tplById(del);
       var c = t ? BACK_DATA.byId(BACK_DATA.components, t.componentId) : null;
       document.getElementById('delBody').innerHTML =
-        '确认移除「' + esc(c ? c.name : '') + '」这条任务模板?<br>'
-        + '移除后该模板不再参与后续下发。<b>历史填报记录全部保留</b>,随时可以重新添加。';
+        '确认移除「' + esc(c ? c.name : '') + '」这条项目任务?<br>'
+        + '移除后<b>不再为它生成新任务</b>;<b>已生成的任务与填报记录全部保留</b>,随时可以重新添加。';
       document.getElementById('delOk').onclick = function () {
         tpls = tpls.filter(function (x) { return String(x.id) !== String(del); });
         Back.modal('delModal', false); renderTpls();
-        Back.toast('已移除任务模板', 'warn');
+        Back.toast('已移除项目任务', 'warn');
       };
       Back.modal('delModal', true);
     }
@@ -631,17 +641,20 @@
       tpls.push({
         id: newTplId(),
         componentId: Number(cid),
-        /* ⚠️ 新条目**不预选**两个维度(与 back-drug-edit 的必填项口径一致):
-         *   预选「每天 / 患者」会把「出院前·完成药物清单」这类模板配错。 */
+        /* ⚠️ 新条目**不预选档位、不预选执行人**(与 back-drug-edit 的必填项口径一致):
+         *   预选「每 1 天 / 患者」会把「第 0 天·完成药物清单」这类配置配错。
+         *   跟踪人允许为空(= 执行完成即结束)。 */
         sched: { type: '', days: 0 },
-        target: 0,
+        executor: '',
+        tracker: '',
+        manualReview: false,
         status: 1
       });
     });
     picked = {};
     renderTpls();
     Back.drawer('pickDrawer', false);
-    Back.toast('已添加 ' + ids.length + ' 条任务模板,请配置两个维度', 'ok');
+    Back.toast('已添加 ' + ids.length + ' 条项目任务,请配置何时做与执行人', 'ok');
   });
 
   /* ==========================================================
@@ -677,7 +690,7 @@
     if (!longTerm && (dur < 1 || dur > 3650)) {
       var fi2 = document.querySelector('[name="durPreset"]').closest('.fi');
       fi2.classList.add('has-err');
-      fi2.querySelector('.err-msg').textContent = '项目周期需在 1–3650 天之间';
+      fi2.querySelector('.err-msg').textContent = '项目周期不合法,请重新填写';
       ok = false;
     }
     /* 起止日期(长期 ⇒ 没有结束日期,不校验) */
@@ -705,27 +718,42 @@
       ok = false;
     }
 
-    /* 模板两个维度必须配齐 */
+    /* 何时做 + 执行人必须配齐(跟踪人允许为空) */
     var bad = null;
     for (var i = 0; i < tpls.length; i++) {
       var t = tpls[i];
-      if (!t.sched || !t.sched.type) { bad = { t: t, why: '未选日期维度' }; break; }
-      if (!t.target) { bad = { t: t, why: '未选目标人' }; break; }
-      /* 天数校验:出院前 N 天 / 出院后第 N 天 都受项目周期约束(PRD D7)
-         ⚠️ 长期项目**没有周期上限** ⇒ 不受此约束 */
-      if (t.sched.type === 'dayn' || t.sched.type === 'pre') {
+      if (!t.sched || !t.sched.type) { bad = { t: t, why: '未选「何时做」' }; break; }
+      if (!t.executor) { bad = { t: t, why: '未选执行人' }; break; }
+      /* 🔴 D30:执行人与跟踪人不能是同一类角色(performer_role <> tracker_role) */
+      if (t.tracker && t.executor === t.tracker) {
+        bad = { t: t, why: '执行人与跟踪人不能是同一类角色' }; break;
+      }
+      /* 天数校验(PRD D7 / D17 / D21):
+       *   「每 N 天」—— N 是 1–3650 的整数,且有限项目下 N ≤ 项目周期
+       *   「第 N 天」—— N 是 0–3650 的整数,且有限项目下 N ≤ 项目周期
+       * ⚠️ 长期项目**没有周期上限** ⇒ 只受静态上限 3650 约束 */
+      if (t.sched.type === 'every') {
+        var ne = Number(t.sched.days);
+        if (!Number.isInteger(ne) || ne < 1 || ne > 3650) {
+          bad = { t: t, why: '「每 N 天」需填写正整数' }; break;
+        }
+        if (!longTerm && dur && ne > dur) {
+          bad = { t: t, why: '每 ' + ne + ' 天超出项目周期(' + dur + ' 天)' }; break;
+        }
+      } else if (t.sched.type === 'dayn') {
         var n = Number(t.sched.days);
-        var lbl = t.sched.type === 'pre' ? ('出院前 ' + n + ' 天') : ('出院后第 ' + n + ' 天');
+        var lbl = '第 ' + n + ' 天';
         if (!Number.isInteger(n) || n < 0) { bad = { t: t, why: '天数必须是非负整数' }; break; }
         if (!longTerm && dur && n > dur) {
           bad = { t: t, why: lbl + '超出项目周期(' + dur + ' 天)' }; break;
         }
+        if (n > 3650) { bad = { t: t, why: lbl + '超出上限' }; break; }
       }
     }
     if (bad) {
       var node = document.querySelector('.tmpl[data-tid="' + bad.t.id + '"]');
       if (node) { node.scrollIntoView({ block: 'center' }); node.style.borderColor = 'var(--block)'; }
-      Back.toast('任务模板「' + bad.why + '」,请补齐后再保存', 'err');
+      Back.toast('项目任务「' + bad.why + '」,请补齐后再保存', 'err');
       ok = false;
     }
 
@@ -749,9 +777,9 @@
     };
     if (isEdit) {
       BACK_PROJ.updateProject(proj.id, payload);
-      /* 模板整表替换(顺序重排) */
+      /* 项目任务整表替换(顺序重排) */
       tpls.forEach(function (t, i) { t.order = i + 1; });
-      proj.templates = tpls;
+      proj.tasks = tpls;
       BACK_PROJ.save();
       Back.toast('已保存项目', 'ok');
       setTimeout(function () { location.href = 'back-projects.html'; }, 700);
@@ -767,7 +795,7 @@
         status: 1,
         icon: 'assets/icons-png/icon-tab-projects.png',
         summary: '',
-        templates: tpls.map(function (t, i) { t.order = i + 1; return t; })
+        tasks: tpls.map(function (t, i) { t.order = i + 1; return t; })
       };
       BACK_PROJ.addProject(np);
       Back.toast('已新建项目:' + name, 'ok');
@@ -776,7 +804,7 @@
   });
 
   if (!Back.requireHospitalAndApply()) { document.querySelector('.back-main').innerHTML = ''; }
-  else { document.getElementById('scopeStrip').innerHTML = Back.scopeStrip('项目按科室创建:本科室的项目只有本科室能配模板'); }
+  else { document.getElementById('scopeStrip').innerHTML = Back.scopeStrip('项目按科室创建:本科室的项目由本科室配项目任务'); }
   renderTpls();
   if (location.hash === '#templates') {
     setTimeout(function () {

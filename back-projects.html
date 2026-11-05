@@ -12,20 +12,10 @@
 
   <div class="page-head">
     <h1>项目管理</h1>
-    <div class="sub">项目按<b>归属科室</b>创建 —— 一个项目归属一个科室,科室用来归属、筛选、分组,<b>不产生额外权限</b>。
-      项目里的<b>任务模板</b>从本科室的任务组件库挑选,每条模板配「什么时候做」和「谁来做」。</div>
+    <div class="sub">项目按<b>归属科室</b>管理;项目任务在患者入组后自动生成。</div>
   </div>
 
   <div id="scopeStrip"></div>
-
-  <div class="note note-info">
-    <img src="assets/icons-png/icon-info.png">
-    <div>
-      <b>本期范围</b>:只做「建项目」与「配任务模板」两件事。<b>患者入组、任务下发、填报记录本期不做</b>。<br>
-      <b>访问主体</b>:院管(本院全部科室)与平台超管。<b>科室主任 / 科室医生 / 护士没有后台登录身份</b>,
-      本模块的「科室」是数据组织维度,不是权限维度。
-    </div>
-  </div>
 
   <div class="tabs" data-tab-group="p" data-scope="pScope">
     <button data-tab="all" class="active">全部项目 <span class="cnt grey" id="cntAll">0</span></button>
@@ -52,7 +42,7 @@
             <th style="width:130px">归属科室</th>
             <th style="width:170px">主负责医生</th>
             <th style="width:170px">周期 / 起止</th>
-            <th style="width:110px">任务模板</th>
+            <th style="width:110px">项目任务</th>
             <th style="width:90px">状态</th>
             <th class="col-act" style="width:190px">操作</th>
           </tr>
@@ -62,7 +52,6 @@
     </div>
     <div class="pager">
       <span>共 <b id="n">0</b> 个项目</span>
-      <span class="pg-right">院管可管本院全部科室的项目 · 科室只是归属维度</span>
     </div>
   </div>
 </main>
@@ -135,7 +124,7 @@
     document.getElementById('body').innerHTML = rows.length ? rows.map(function (p) {
       var d = BACK_DATA.dept(p.departmentId);
       var doc = p.leadDoctorId ? BACK_DATA.member(p.leadDoctorId) : null;
-      var tpls = BACK_PROJ.templatesOf(p.id);
+      var tpls = BACK_PROJ.tasksOf(p.id);
       var on = tpls.filter(function (t) { return t.status === 1; }).length;
       /* 主负责医生是**数据字段**,不是登录身份 —— 他本人没有本模块的后台权限 */
       return '<tr' + (p.status === 0 ? ' class="row-muted"' : '') + '>'
@@ -157,7 +146,7 @@
         + '<td>' + Back.onOff(p.status) + '</td>'
         + '<td class="col-act">'
         +   '<a class="btn-text" href="back-project-edit.html?id=' + p.id + '">编辑</a>'
-        +   '<a class="btn-text" href="back-project-edit.html?id=' + p.id + '#templates">任务模板</a>'
+        +   '<a class="btn-text" href="back-project-edit.html?id=' + p.id + '#templates">项目任务</a>'
         +   (p.status === 1
               ? '<a class="btn-text danger" data-stop="' + p.id + '">停用</a>'
               : '<a class="btn-text" data-en="' + p.id + '">启用</a>')
@@ -187,14 +176,15 @@
     if (g('data-stop')) {
       var p = BACK_PROJ.byId(g('data-stop'));
       if (!p) return;
-      var tpls = BACK_PROJ.templatesOf(p.id).length;
+      var tpls = BACK_PROJ.tasksOf(p.id).length;
       document.getElementById('offTitle').textContent = '停用「' + p.name + '」';
       document.getElementById('offBody').innerHTML =
         '<div>停用后该项目:</div><ul>'
-        + '<li>不再出现在可入组 / 可下发清单</li>'
-        + '<li>已配置的 <b>' + tpls + '</b> 条任务模板<b>全部保留</b>(只读),重新启用后原样恢复</li>'
+        + '<li><b>停止生成新任务</b> —— 患者不会再收到这个项目下的新任务</li>'
+        + '<li><b>已生成未完成的任务(待执行 / 待跟踪)全部置「已取消」</b>;已完成的任务不动</li>'
+        + '<li>已配置的 <b>' + tpls + '</b> 条项目任务<b>全部保留</b>,重新启用后原样恢复</li>'
         + '<li>已存在的患者参与关系<b>照常展示</b>(参与关系是历史事实)</li>'
-        + '<li>历史数据<b>全部保留</b>,可随时恢复</li></ul>'
+        + '<li>历史数据<b>全部保留</b>,可随时恢复;⛔ 不会自动复活已取消的任务</li></ul>'
         + '<div class="note note-gray" style="margin-top:10px"><img src="assets/icons-png/icon-info.png">'
         + '<div>项目<b>只停用、不物理删除</b>,全站不提供任何删除入口。</div></div>';
       document.getElementById('offOk').onclick = function () {

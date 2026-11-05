@@ -21,10 +21,23 @@
         <b>护士甲(您) · 随访岗</b>
         <span>2025-12-27 周六 · 工作时段 8:00-17:00</span>
         <div style="margin-top:10px; display:flex; gap:8px;">
-          <span class="badge" style="background:rgba(255,255,255,0.3); color:white;">今日任务 5</span>
-          <span class="badge" style="background:rgba(255,255,255,0.3); color:white;">逾期 1</span>
+          <span class="badge" style="background:rgba(255,255,255,0.3); color:white;">今日待跟踪 5</span>
+          <span class="badge" style="background:rgba(255,255,255,0.3); color:white;">未处理结转 2</span>
         </div>
       </div>
+
+      <!-- 跟踪人首页:只看今天 + 「未处理结转 (N)」入口(2026-11-05 执行层口径)
+           N = 今天以前、执行人已完成、跟踪人还没处理的任务数;点进去才看历史。 -->
+      <a href="nurse-tasks.html?filter=backlog" class="cell" style="background:var(--warn-bg); margin-bottom:12px;">
+        <div class="l">
+          <div class="icon"><img src="assets/icons-png/icon-alert.png" alt="积" /></div>
+          <div class="info">
+            <b style="color:var(--warn);">未处理结转 (2)</b>
+            <span style="color:var(--warn);">今天以前、执行人已完成、您还没跟进的任务</span>
+          </div>
+        </div>
+        <div class="r"><span class="badge badge-warn">2</span><span class="arrow">›</span></div>
+      </a>
 
       <!-- 紧急状态分区(用户硬约束) -->
         <div class="section-title section-block">紧急 · 立即处理(2)</div>
@@ -52,7 +65,7 @@
         </div>
 
         <!-- 重要:今日待办 -->
-        <div class="section-title section-warn">今日待办(3)</div>
+        <div class="section-title section-warn">今日待跟踪(3)</div>
         <div class="group">
           <a href="nurse-task-detail.html" class="cell">
             <div class="l">
