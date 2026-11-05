@@ -1,4 +1,4 @@
-# 原型索引（80 页）
+# 原型索引（83 页）
 
 > **本目录是 PM / UI 的产品原型（静态可点击 demo），不是前端代码。**
 > 真前端在仓 C `emrs/frontend/`（React + Next.js），由 FE 参照本目录**重写**。
@@ -11,9 +11,9 @@
 
 ---
 
-## 一、后台管理（28 页）
+## 一、后台管理（31 页）
 
-### 1.1 现行版本 `back-*`（22 页）
+### 1.1 现行版本 `back-*`（25 页）
 
 | 文件 | 标题 | 真前端路由 | 状态 |
 |---|---|---|---|
@@ -32,6 +32,9 @@
 | `back-component-lib.html` | 任务组件库 | `/components` | ✅ |
 | `back-component-edit.html` | 编辑组件 | `/components/new` · `/components/[id]/edit` | ✅ |
 | `back-component-field.html` | 字段配置 | `/components/[id]/fields/[fieldId]` | ✅ |
+| `back-projects.html` | 项目管理 | `/projects` | ✅ |
+| `back-project-edit.html` | 新建 / 编辑项目 | `/projects/new` · `/projects/[id]/edit` | ✅ |
+| `back-project-detail.html` | 项目详情（只读） | `/projects/[id]` | ✅ |
 | `back-drugs.html` | 药品库 | `/drugs` | ✅ |
 | `back-drug-edit.html` | 编辑药品 | `/drugs/new` · `/drugs/[id]/edit` | ✅ |
 | `back-edu.html` | 健康教育 | `/edu` | ✅ |
@@ -42,6 +45,9 @@
 
 > ⚠️ **口径差异**：原型叫「组织架构」，真前端收敛为 `/departments`（科室管理）。
 > ⚠️ **原型没有但真前端有**：`/hospitals`（医院列表）、`/hospitals/[id]/edit` —— 由步骤 4 / 5 交付，原型未覆盖。
+> 🆕 **项目管理**（2026-11-05 新增）：项目按**归属科室**创建；项目里的**任务模板**从任务组件库挑组件，
+> 每条模板配「日期」与「目标人」两个维度。设计见 `emrs/docs/prd/prd-project-module/`（仓 A）。
+> 导航归**医院视图**、排在「任务」组「任务组件库」之后；平台视图的灰项「项目设置」已撤掉。
 
 ### 1.2 旧世代 `admin-*`（6 页，🗄 已被 `back-*` 取代）
 
@@ -55,6 +61,12 @@
 | `admin-drug-edit.html` | 编辑药品 | 🗄 |
 
 > 这一组是早期后台形态，仅作历史参考。新页面一律照 `back-*`。
+>
+> 📌 **2026-11-05 勘误**：这一组虽然沿用 `admin-` 命名，但**实际是移动端壳形态**（不是 PC 后台壳），
+> 与本目录 `back-*` 的 PC 形态并不同源。`admin-projects.html` / `admin-project-edit.html` /
+> `admin-task-lib.html` 现被**小程序侧**「科室主任设定项目 + 任务模板」复用，
+> 并作为后台 PC 侧项目模块的**产品形态口径来源**（字段集、两个维度、目标人角色位解析口径）。
+> ⛔ 本轮**不改动**这三个文件；已知的一处措辞不自洽记在 `emrs/docs/prd/prd-project-module/open-questions.md` Q3。
 
 ---
 
@@ -152,6 +164,8 @@
 | `assets/back.css` | 后台样式（55 KB，含 `min-width:1280px` PC 壳） |
 | `assets/back-layout.js` | 后台壳层 |
 | `assets/back-data.js` | 后台演示数据 + 字段归一层（`drugView` / `drugWrite`） |
+| `assets/back-project-data.js` | 后台 PC 侧「项目」数据层（归属科室 + 任务模板；持久化到 localStorage） |
+| `assets/projects.js` | 项目主档（移动端与后台 PC 侧共用；PC 侧只读不写） |
 | `assets/edu-data.js` | 健康教育内容库（后台 ↔ 患者端共享） |
 | `assets/sample-hospital.svg` | 占位图 |
 | `styles.css` | 移动端样式 |

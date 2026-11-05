@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>项目管理 · 后台管理</title>
+  <link rel="stylesheet" href="assets/back.css">
+</head>
+<body data-page="projects" data-crumb='[{"name":"后台管理"},{"name":"任务"},{"name":"项目管理"}]'>
+
+<main class="back-main">
+
+  <div class="page-head">
+    <h1>项目管理</h1>
+    <div class="sub">项目按<b>归属科室</b>创建 —— 一个项目归属一个科室,科室用来归属、筛选、分组,<b>不产生额外权限</b>。
+      项目里的<b>任务模板</b>从本科室的任务组件库挑选,每条模板配「什么时候做」和「谁来做」。</div>
+  </div>
+
+  <div id="scopeStrip"></div>
+
+  <div class="note note-info">
+    <img src="assets/icons-png/icon-info.png">
+    <div>
+      <b>本期范围</b>:只做「建项目」与「配任务模板」两件事。<b>患者入组、任务下发、填报记录本期不做</b>。<br>
+      <b>访问主体</b>:院管(本院全部科室)与平台超管。<b>科室主任 / 科室医生 / 护士没有后台登录身份</b>,
+      本模块的「科室」是数据组织维度,不是权限维度。
+    </div>
+  </div>
+
+  <div class="tabs" data-tab-group="p" data-scope="pScope">
+    <button data-tab="all" class="active">全部项目 <span class="cnt grey" id="cntAll">0</span></button>
+    <button data-tab="off">已停用 <span class="cnt grey" id="cntOff">0</span></button>
+  </div>
+
+  <div class="filters">
+    <div class="search-wrap">
+      <img src="assets/icons-png/icon-search.png" alt="">
+      <input class="ipt search-ipt" id="kw" placeholder="项目主题">
+    </div>
+    <select class="sel" id="fDept"><option value="">归属科室:全部</option></select>
+    <select class="sel" id="fTag"><option value="">类型:全部</option><option value="管理">管理</option><option value="研究">研究</option></select>
+    <span class="ml-auto"></span>
+    <a class="btn btn-primary" href="back-project-edit.html"><img src="assets/icons-png/icon-plus.png" alt="">新建项目</a>
+  </div>
+
+  <div class="card flat">
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th style="width:260px">项目主题</th>
+            <th style="width:130px">归属科室</th>
+            <th style="width:170px">主负责医生</th>
+            <th style="width:170px">周期 / 起止</th>
+            <th style="width:110px">任务模板</th>
+            <th style="width:90px">状态</th>
+            <th class="col-act" style="width:190px">操作</th>
+          </tr>
+        </thead>
+        <tbody id="body"></tbody>
+      </table>
+    </div>
+    <div class="pager">
+      <span>共 <b id="n">0</b> 个项目</span>
+      <span class="pg-right">院管可管本院全部科室的项目 · 科室只是归属维度</span>
+    </div>
+  </div>
+</main>
+
+<!-- ========== 停用确认 弹窗 ========== -->
+<div class="modal-mask" id="offModal">
+  <div class="modal">
+    <div class="modal-head">
+      <img src="assets/icons-png/icon-warning.png" alt="">
+      <h3 id="offTitle">停用确认</h3>
+    </div>
+    <div class="modal-body" id="offBody"></div>
+    <div class="modal-foot">
+      <button class="btn btn-default" onclick="Back.modal('offModal',false)">取消</button>
+      <button class="btn btn-danger" id="offOk">确认停用</button>
+    </div>
+  </div>
+</div>
+
+<script src="assets/back-api.js"></script>
+<script src="assets/back-data.js"></script>
+<script src="assets/projects.js"></script>
+<script src="assets/back-project-data.js"></script>
+<script src="assets/back-layout.js"></script>
+<script>
+  Back.bindTabs('[data-tab-group="p"]');
+  var tab = '';
+
+  /* 归属科室下拉:本院科室(院管可管本院全部科室) */
+  (function () {
+    var s = document.getElementById('fDept');
+    BACK_PROJ.projects.forEach(function (p) {
+      var d = BACK_DATA.dept(p.departmentId);
+      if (!d) return;
+      if (s.querySelector('option[value="' + d.id + '"]')) return;
+      s.insertAdjacentHTML('beforeend', '<option value="' + d.id + '">' + d.name + '</option>');
+    });
+  })();
+
+  function filtered() {
+    var kw = document.getElementById('kw').value.trim();
+    var fd = document.getElementById('fDept').value;
+    var ft = document.getElementById('fTag').value;
+    var pool = BACK_PROJ.ofHospital((Back.currentHospital() || {}).id);
+    return pool.filter(function (p) {
+      if (kw && p.name.indexOf(kw) < 0) return false;
+      /* ⚠️ id 数值化:<select>.value 是字符串,departmentId 是数字,必须容错比较 */
+      if (fd && String(p.departmentId) !== String(fd)) return false;
+      if (ft && p.tag !== ft) return false;
+      /* ⚠️ tab === 'off' 是 **Tab 标签 id**,不是 status —— status 才是数字:1 启用 / 0 停用 */
+      if (tab === 'off' && p.status !== 0) return false;
+      if (tab !== 'off' && p.status === 0) return false;
+      return true;
+    }).sort(function (a, b) {
+      /* 排序:归属科室 → 项目主题(同科室的排在一起,跨科室同名也不会看混) */
+      var da = (BACK_DATA.dept(a.departmentId) || {}).name || '';
+      var db = (BACK_DATA.dept(b.departmentId) || {}).name || '';
+      if (da !== db) return da < db ? -1 : 1;
+      return a.name < b.name ? -1 : 1;
+    });
+  }
+
+  function render() {
+    var pool = BACK_PROJ.ofHospital((Back.currentHospital() || {}).id);
+    var rows = filtered();
+    document.getElementById('n').textContent = rows.length;
+    document.getElementById('cntAll').textContent = pool.filter(function (p) { return p.status === 1; }).length;
+    document.getElementById('cntOff').textContent = pool.filter(function (p) { return p.status === 0; }).length;
+
+    document.getElementById('body').innerHTML = rows.length ? rows.map(function (p) {
+      var d = BACK_DATA.dept(p.departmentId);
+      var doc = p.leadDoctorId ? BACK_DATA.member(p.leadDoctorId) : null;
+      var tpls = BACK_PROJ.templatesOf(p.id);
+      var on = tpls.filter(function (t) { return t.status === 1; }).length;
+      /* 主负责医生是**数据字段**,不是登录身份 —— 他本人没有本模块的后台权限 */
+      return '<tr' + (p.status === 0 ? ' class="row-muted"' : '') + '>'
+        + '<td><a href="back-project-detail.html?id=' + p.id + '" style="color:var(--brand-dark);font-weight:500">'
+        +   esc(p.name) + '</a>'
+        +   '<div class="cell-sub"><span class="badge ' + (p.tag === '研究' ? 'badge-purple' : 'badge-info') + '">'
+        +   p.tag + '</span>' + (p.summary ? ' ' + esc(p.summary) : '') + '</div></td>'
+        + '<td class="fz-12">' + (d ? esc(d.name) : '—')
+        +   (d && d.status === 0 ? '<div class="cell-sub"><span class="badge badge-gray">科室已停用</span></div>' : '') + '</td>'
+        + '<td>' + (doc
+              ? '<div class="cell-user">' + Back.staffAv(doc) + '<div><div class="cell-main">' + esc(doc.name) + '</div>'
+                + '<div class="cell-sub">' + ((BACK_DATA.pos(doc.positionId) || {}).name || '') + '</div></div></div>'
+              : '<span class="text-4">—</span>') + '</td>'
+        + '<td class="fz-12">' + p.durationDays + ' 天'
+        +   '<div class="cell-sub">' + (p.startDate || '—') + ' ~ ' + (p.endDate || '—') + '</div></td>'
+        + '<td class="fz-12 num-cell">' + tpls.length + ' 条'
+        +   (tpls.length ? '<div class="cell-sub">启用 ' + on + '</div>' : '<div class="cell-sub">未配置</div>') + '</td>'
+        + '<td>' + Back.onOff(p.status) + '</td>'
+        + '<td class="col-act">'
+        +   '<a class="btn-text" href="back-project-edit.html?id=' + p.id + '">编辑</a>'
+        +   '<a class="btn-text" href="back-project-edit.html?id=' + p.id + '#templates">任务模板</a>'
+        +   (p.status === 1
+              ? '<a class="btn-text danger" data-stop="' + p.id + '">停用</a>'
+              : '<a class="btn-text" data-en="' + p.id + '">启用</a>')
+        + '</td></tr>';
+    }).join('')
+    : '<tr><td colspan="7"><div class="empty"><img src="assets/icons-png/icon-empty-box.png" alt="">'
+      + '<div class="e-t">' + (tab === 'off' ? '没有已停用的项目' : '本院还没有项目') + '</div>'
+      + '<div class="e-d">' + (tab === 'off'
+          ? '项目只会停用、不会物理删除,停用后会出现在这里'
+          : '点右上角「新建项目」,先选一个归属科室开始') + '</div></div></td></tr>';
+  }
+
+  /* HTML 转义(项目主题 / 摘要来自数据层) */
+  function esc(s) {
+    if (s === null || s === undefined) return '';
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  document.querySelector('[data-tab-group="p"]').addEventListener('click', function () {
+    var b = this.querySelector('button.active');
+    if (b) { tab = b.getAttribute('data-tab'); render(); }
+  });
+
+  document.body.addEventListener('click', function (e) {
+    var g = function (a) { return e.target.getAttribute && e.target.getAttribute(a); };
+    if (g('data-stop')) {
+      var p = BACK_PROJ.byId(g('data-stop'));
+      if (!p) return;
+      var tpls = BACK_PROJ.templatesOf(p.id).length;
+      document.getElementById('offTitle').textContent = '停用「' + p.name + '」';
+      document.getElementById('offBody').innerHTML =
+        '<div>停用后该项目:</div><ul>'
+        + '<li>不再出现在可入组 / 可下发清单</li>'
+        + '<li>已配置的 <b>' + tpls + '</b> 条任务模板<b>全部保留</b>(只读),重新启用后原样恢复</li>'
+        + '<li>已存在的患者参与关系<b>照常展示</b>(参与关系是历史事实)</li>'
+        + '<li>历史数据<b>全部保留</b>,可随时恢复</li></ul>'
+        + '<div class="note note-gray" style="margin-top:10px"><img src="assets/icons-png/icon-info.png">'
+        + '<div>项目<b>只停用、不物理删除</b>,全站不提供任何删除入口。</div></div>';
+      document.getElementById('offOk').onclick = function () {
+        BACK_PROJ.updateProject(p.id, { status: 0 });
+        Back.modal('offModal', false); render();
+        Back.toast('已停用项目:' + p.name, 'warn');
+      };
+      Back.modal('offModal', true);
+    }
+    if (g('data-en')) {
+      var p2 = BACK_PROJ.byId(g('data-en'));
+      if (!p2) return;
+      BACK_PROJ.updateProject(p2.id, { status: 1 });
+      render(); Back.toast('已启用项目:' + p2.name, 'ok');
+    }
+  });
+
+  ['kw', 'fDept', 'fTag'].forEach(function (id) {
+    var el = document.getElementById(id);
+    el.addEventListener('input', render);
+    el.addEventListener('change', render);
+  });
+
+  if (Back.qs('tab')) {
+    tab = Back.qs('tab');
+    /* ⚠️ 先清掉默认的 active,否则「全部项目」和「已停用」会同时高亮 */
+    document.querySelectorAll('[data-tab-group="p"] [data-tab]').forEach(function (x) {
+      x.classList.toggle('active', x.getAttribute('data-tab') === tab);
+    });
+  }
+
+  if (!Back.requireHospitalAndApply()) { document.querySelector('.back-main').innerHTML = ''; }
+  else { document.getElementById('scopeStrip').innerHTML = Back.scopeStrip('项目列表按本院过滤,再按归属科室筛选'); }
+  render();
+</script>
+</body>
+</html>

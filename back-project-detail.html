@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>项目详情 · 后台管理</title>
+  <link rel="stylesheet" href="assets/back.css">
+  <style>
+    .ro { padding: 8px 11px; border: 1px solid var(--line); border-radius: var(--r-base);
+          background: var(--bg-3); font-size: 13px; color: var(--ink); min-height: 36px; }
+    .grp-t { font-size: 12px; font-weight: 600; color: var(--ink-2); margin: 14px 0 8px;
+             display: flex; align-items: center; gap: 8px; }
+    .grp-t:first-child { margin-top: 0; }
+    .grp-t .n { font-weight: 400; color: var(--ink-3); }
+    .tgt { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 5px; }
+    .tgt .chip { cursor: default; }
+    .role-row { display: flex; gap: 10px; padding: 10px 0; border-top: 1px dashed var(--line); }
+    .role-row:first-child { border-top: 0; }
+    .role-bit { width: 26px; height: 26px; border-radius: var(--r-md); background: var(--brand-light);
+                color: var(--brand-dark); font-size: 11px; font-weight: 600; display: grid; place-items: center; flex: none; }
+  </style>
+</head>
+<body data-page="projects" data-crumb='[{"name":"后台管理"},{"name":"任务"},{"href":"back-projects.html","name":"项目管理"},{"name":"项目详情"}]'>
+
+<main class="back-main">
+
+  <div class="page-head">
+    <h1 id="ttl">项目详情</h1>
+    <div class="sub" id="sub"></div>
+  </div>
+
+  <div id="scopeStrip"></div>
+
+  <div class="flex" style="margin-bottom:14px;">
+    <a class="btn btn-default" href="back-projects.html">返回列表</a>
+    <span class="ml-auto"></span>
+    <a class="btn btn-primary" id="editBtn" href="back-project-edit.html">编辑项目</a>
+  </div>
+
+  <div id="offTip"></div>
+
+  <div class="split">
+    <div class="grow">
+
+      <!-- ============ 基本信息 ============ -->
+      <div class="card">
+        <div class="card-head"><h3>基本信息</h3><span class="ch-desc">只读</span></div>
+        <div class="form-grid">
+          <div class="fi"><label>归属科室</label><div class="ro" id="fDept">—</div>
+            <span class="hint">项目的一切配置以此为界;归属科室保存后不可修改</span></div>
+          <div class="fi"><label>项目主题</label><div class="ro" id="fName">—</div></div>
+          <div class="fi"><label>项目类型</label><div class="ro" id="fTag">—</div></div>
+          <div class="fi"><label>主负责医生</label><div class="ro" id="fLead">—</div>
+            <span class="hint">这是数据字段,不是登录身份 —— 他本人没有本模块的后台权限</span></div>
+          <div class="fi"><label>项目周期</label><div class="ro" id="fDur">—</div></div>
+          <div class="fi"><label>起止日期</label><div class="ro" id="fDate">—</div></div>
+          <div class="fi"><label>定价</label><div class="ro" id="fPrice">—</div>
+            <span class="hint">仅作项目属性记录,不触发计费</span></div>
+          <div class="fi"><label>状态</label><div class="ro" id="fStatus">—</div></div>
+        </div>
+      </div>
+
+      <!-- ============ 任务模板 ============ -->
+      <div class="card" style="margin-top:16px;">
+        <div class="card-head"><h3>任务模板</h3><span class="ch-desc" id="tplCount">0 条</span></div>
+        <div class="note note-info">
+          <img src="assets/icons-png/icon-info.png">
+          <div><b>自上而下即任务下发顺序</b>。每条模板配两个维度:<b>日期</b>(什么时候做)与 <b>目标人</b>(谁来做)。</div>
+        </div>
+        <div id="tplBody"></div>
+      </div>
+    </div>
+
+    <!-- ============ 右栏 ============ -->
+    <div style="width:300px; flex:none;">
+      <div class="card">
+        <div class="card-head"><h3>目标人角色位</h3></div>
+        <div id="roleBody"></div>
+      </div>
+
+      <div class="card" style="margin-top:16px;">
+        <div class="card-head"><h3>本模块本期范围</h3></div>
+        <div class="note note-gray">
+          <img src="assets/icons-png/icon-info.png">
+          <div>
+            <b>本期做</b>:建项目、配任务模板、停用 / 启用。<br>
+            <b>本期不做</b>:患者入组、任务下发、填报记录。<br>
+            <b>访问主体</b>:院管(本院全部科室)与平台超管;科室侧无后台身份。
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script src="assets/back-api.js"></script>
+<script src="assets/back-data.js"></script>
+<script src="assets/projects.js"></script>
+<script src="assets/back-project-data.js"></script>
+<script src="assets/back-layout.js"></script>
+<script>
+  var id = Back.qs('id');
+  var proj = BACK_PROJ.byId(id);
+
+  function esc(s) {
+    if (s === null || s === undefined) return '';
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  if (!proj) {
+    document.querySelector('.back-main').innerHTML =
+      '<div class="page-head"><h1>项目不存在</h1></div>'
+      + '<div class="card"><div class="empty"><img src="assets/icons-png/icon-empty-box.png" alt="">'
+      + '<div class="e-t">找不到这个项目</div>'
+      + '<div class="e-d">它可能已被停用并从当前医院的可见范围里移除。<a href="back-projects.html" style="color:var(--brand)">返回项目列表</a></div>'
+      + '</div></div>';
+  } else {
+    render();
+  }
+
+  function render() {
+    var d = BACK_DATA.dept(proj.departmentId);
+    var doc = proj.leadDoctorId ? BACK_DATA.member(proj.leadDoctorId) : null;
+
+    document.title = proj.name + ' · 项目详情 · 后台管理';
+    document.getElementById('ttl').textContent = proj.name;
+    document.getElementById('sub').innerHTML =
+      '归属科室 <b>' + esc(d ? d.name : '—') + '</b> · 周期 <b>' + proj.durationDays + ' 天</b> · '
+      + (proj.startDate || '—') + ' ~ ' + (proj.endDate || '—');
+    document.getElementById('editBtn').href = 'back-project-edit.html?id=' + proj.id;
+
+    document.getElementById('fDept').textContent = d ? d.name : '—';
+    document.getElementById('fName').textContent = proj.name;
+    document.getElementById('fTag').textContent = proj.tag || '管理';
+    document.getElementById('fLead').textContent = doc ? doc.name : '—';
+    document.getElementById('fDur').textContent = proj.durationDays + ' 天';
+    document.getElementById('fDate').textContent = (proj.startDate || '—') + ' ~ ' + (proj.endDate || '—');
+    document.getElementById('fPrice').textContent = proj.price ? proj.price + ' 元' : '未定价';
+    document.getElementById('fStatus').innerHTML = Back.onOff(proj.status);
+
+    if (proj.status === 0) {
+      document.getElementById('offTip').innerHTML =
+        '<div class="note note-warn"><img src="assets/icons-png/icon-warning.png">'
+        + '<div><b>该项目已停用</b>:任务模板全部保留(只读),重新启用后原样恢复;'
+        + '已存在的患者参与关系照常展示;历史数据全部保留。'
+        + '<a href="back-projects.html?tab=off" style="color:var(--brand);margin-left:6px">查看已停用项目</a></div></div>';
+    }
+
+    renderTpls();
+    renderRoles();
+  }
+
+  /* ---------- 任务模板(按日期维度分组的时间轴)---------- */
+  function renderTpls() {
+    var tpls = BACK_PROJ.templatesOf(proj.id);
+    document.getElementById('tplCount').textContent = tpls.length + ' 条';
+    var box = document.getElementById('tplBody');
+
+    if (!tpls.length) {
+      box.innerHTML = '<div class="empty"><img src="assets/icons-png/icon-empty-box.png" alt="">'
+        + '<div class="e-t">该项目还没有任务模板</div>'
+        + '<div class="e-d">到「编辑项目 → 从任务库添加组件」里挑组件开始配</div></div>';
+      return;
+    }
+
+    /* 分组顺序:出院前 → 每天 → D N 天(D N 按 N 升序) */
+    var groups = [
+      { key: 'pre',   title: '出院前',   items: [] },
+      { key: 'daily', title: '每天',     items: [] },
+      { key: 'dayn',  title: 'D N 天',   items: [] }
+    ];
+    tpls.forEach(function (t) {
+      var g = groups.filter(function (x) { return x.key === (t.sched && t.sched.type); })[0];
+      if (g) g.items.push(t);
+    });
+    groups[2].items.sort(function (a, b) { return (a.sched.days || 0) - (b.sched.days || 0); });
+
+    var html = '';
+    groups.forEach(function (g) {
+      if (!g.items.length) return;
+      html += '<div class="grp-t">' + g.title + '<span class="n">' + g.items.length + ' 条</span></div>';
+      html += '<div class="timeline">';
+      g.items.forEach(function (t, i) {
+        var c = BACK_DATA.byId(BACK_DATA.components, t.componentId);
+        var compOff = !!c && c.status === 0;
+        var bits = BACK_PROJ.targetBits(t.target || 0);
+        var tg = bits.length
+          ? bits.map(function (b) { return '<span class="chip">' + esc(b.label) + '</span>'; }).join('')
+          : '<span class="chip" style="color:var(--ink-4)">未指定目标人</span>';
+        html += '<div class="tl-item' + (i === 0 ? ' hi' : '') + '">'
+          + '<div class="tl-t">' + esc(BACK_PROJ.schedLabel(t.sched)) + '</div>'
+          + '<div class="tl-b"><b>' + esc(c ? c.name : '(组件已删除)') + '</b>'
+          + (compOff ? ' <span class="badge badge-gray">组件已停用</span>' : '')
+          + (t.status === 0 ? ' <span class="badge badge-gray">该条已停用</span>' : '')
+          + (c ? '<span class="cell-sub">' + c.fields.length + ' 个字段</span>' : '')
+          + '</div>'
+          + '<div class="tgt">' + tg + '</div>'
+          + '</div>';
+      });
+      html += '</div>';
+    });
+    box.innerHTML = html;
+  }
+
+  /* ---------- 目标人角色位说明 ---------- */
+  function renderRoles() {
+    var used = {};
+    BACK_PROJ.templatesOf(proj.id).forEach(function (t) {
+      BACK_PROJ.targetBits(t.target || 0).forEach(function (b) { used[b.bit] = (used[b.bit] || 0) + 1; });
+    });
+    var html = BACK_PROJ.TARGETS.map(function (b) {
+      return '<div class="role-row">'
+        + '<div class="role-bit">' + b.bit + '</div>'
+        + '<div><div style="font-size:13px;font-weight:500">' + esc(b.label) + '</div>'
+        + '<div class="cell-sub">' + (used[b.bit] ? ('本项目 ' + used[b.bit] + ' 条模板用到') : '本项目未使用') + '</div></div>'
+        + '</div>';
+    }).join('');
+    html += '<div class="note note-gray" style="margin-top:10px"><img src="assets/icons-png/icon-info.png">'
+      + '<div><b>目标人 = 角色位,不是具体人。</b>派到某患者名下时自动解析:'
+      + '主管医生 = 该患者的主管医生;护士 = 该患者的主要联系护士;患者 = 患者本人。</div></div>';
+    document.getElementById('roleBody').innerHTML = html;
+  }
+
+  if (!Back.requireHospitalAndApply()) { document.querySelector('.back-main').innerHTML = ''; }
+  else {
+    var ss = document.getElementById('scopeStrip');
+    /* ⚠️ 项目不存在时上面的分支已把 .back-main 整块换掉,scopeStrip 已不在 DOM 里 */
+    if (ss) ss.innerHTML = Back.scopeStrip('项目按本院过滤,再按归属科室筛选');
+  }
+</script>
+</body>
+</html>

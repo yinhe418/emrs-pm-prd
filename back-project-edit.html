@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>新建项目 · 后台管理</title>
+  <link rel="stylesheet" href="assets/back.css">
+  <style>
+    /* ==========================================================
+     * 任务模板编排区(PC 版)
+     * 产品形态对齐移动端 admin-project-edit.html 的「任务卡 + 两个维度」,
+     * 但按 PC 宽度重排:组件信息在左,两个维度同排在一行里。
+     * ⚠️ 只用 back.css 的设计令牌,不自造颜色体系。
+     * ========================================================== */
+    .tmpl {
+      border: 1px solid var(--line);
+      border-radius: var(--r-lg);
+      background: var(--bg-2);
+      padding: 12px 14px;
+      margin-bottom: 10px;
+    }
+    .tmpl.pending { border-color: var(--warn-border); background: var(--warn-bg); }
+    .tmpl.off      { background: var(--bg-3); }
+    .tmpl.off .tmpl-info b { color: var(--ink-3); text-decoration: line-through; }
+    .tmpl-head { display: flex; align-items: center; gap: 10px; }
+    .tmpl-ic {
+      width: 32px; height: 32px; border-radius: var(--r-md); background: var(--brand-light);
+      display: grid; place-items: center; flex: none; overflow: hidden;
+    }
+    .tmpl-ic img { width: 20px; height: 20px; }
+    .tmpl-info { flex: 1; min-width: 0; }
+    .tmpl-info b { display: block; font-size: 13.5px; font-weight: 600; color: var(--ink); }
+    .tmpl-acts { display: flex; align-items: center; gap: 12px; flex: none; }
+    .tmpl-dims {
+      margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--line);
+      display: flex; gap: 26px; flex-wrap: wrap; align-items: flex-start;
+    }
+    .dim-row { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+    .dim-lab { width: 46px; flex: none; font-size: 12px; color: var(--ink-3); }
+    .pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 11px; border: 1px solid var(--line); border-radius: var(--r-pill);
+      font-size: 12px; color: var(--ink-2); cursor: pointer; background: #fff;
+      transition: all .12s ease;
+    }
+    .pill:hover { border-color: var(--brand); }
+    .pill:has(input:checked) { background: var(--brand-light); border-color: var(--brand); color: var(--brand-dark); font-weight: 500; }
+    .pill input[type=radio] { margin: 0; accent-color: var(--brand); cursor: pointer; }
+    .pill .dayn { width: 48px; height: 24px; padding: 0 6px; text-align: center; }
+    .chip {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 11px; border: 1px solid var(--line); border-radius: var(--r-pill);
+      font-size: 12px; color: var(--ink-2); cursor: pointer; background: #fff;
+      transition: all .12s ease;
+    }
+    .chip:hover { border-color: var(--brand); }
+    .chip:has(input:checked) { background: var(--brand-light); border-color: var(--brand); color: var(--brand-dark); font-weight: 500; }
+    .chip input { margin: 0; accent-color: var(--brand); cursor: pointer; }
+    .dim-hint { flex: 0 0 100%; font-size: 11.5px; color: var(--ink-3); line-height: 1.55; }
+    .tmpl-err { font-size: 11.5px; color: var(--block-ink); font-weight: 500; }
+    /* 抽屉里的多选表格 */
+    .pick-note { font-size: 11.5px; color: var(--ink-3); margin-top: 4px; }
+  </style>
+</head>
+<body data-page="projects" data-crumb='[{"name":"后台管理"},{"name":"任务"},{"href":"back-projects.html","name":"项目管理"},{"name":"新建项目"}]'>
+
+<main class="back-main has-sticky">
+
+  <div class="page-head">
+    <h1 id="ttl">新建项目</h1>
+    <div class="sub">项目归属<b>一个科室</b>；项目里的<b>任务模板</b>从本科室的任务组件库挑组件，
+      每条模板配「<b>什么时候做</b>」和「<b>谁来做</b>」两个维度。</div>
+  </div>
+
+  <div id="scopeStrip"></div>
+
+  <!-- ============ 基本信息 ============ -->
+  <div class="card">
+    <div class="card-head"><h3>基本信息</h3><span class="ch-desc">归属科室保存后不可修改</span></div>
+    <div class="form-grid">
+      <div class="fi">
+        <label><span class="req">*</span>归属科室</label>
+        <select class="sel" name="dept"></select>
+        <span class="hint" id="deptHint">项目的一切配置都以此为界:任务模板只能挑本科室的组件</span>
+        <span class="err-msg">请选择归属科室</span>
+      </div>
+      <div class="fi">
+        <label><span class="req">*</span>项目主题</label>
+        <input class="ipt" name="name" placeholder="2–100 字,例:90 天卒中连续健康管理">
+        <span class="hint">同科室下不可重名;跨科室可以同名</span>
+        <span class="err-msg">项目主题 2–100 字</span>
+      </div>
+      <div class="fi">
+        <label><span class="req">*</span>项目类型</label>
+        <select class="sel" name="tag">
+          <option value="管理">管理</option>
+          <option value="研究">研究</option>
+        </select>
+        <span class="hint">只作分类标签,两类项目在本模块行为一致</span>
+      </div>
+      <div class="fi">
+        <label><span class="req">*</span>主负责医生</label>
+        <select class="sel" name="lead"></select>
+        <span class="hint" id="leadHint">仅限归属科室内在职、具备医生角色位的人员。<b>这是数据字段,不是登录身份</b>——他本人没有本模块的后台权限</span>
+        <span class="err-msg">请选择主负责医生</span>
+      </div>
+      <div class="fi">
+        <label><span class="req">*</span>项目周期</label>
+        <div style="display:flex; gap:8px;">
+          <select class="sel" name="durPreset" style="flex:none; width:120px;">
+            <option value="90">90 天</option>
+            <option value="180">180 天</option>
+            <option value="365">365 天</option>
+            <option value="custom">自定义</option>
+          </select>
+          <input class="ipt" name="duration" type="number" min="1" max="3650" placeholder="天数" style="flex:1;" disabled>
+        </div>
+        <span class="hint">周期天数用于校验模板「D N 天」的上限</span>
+        <span class="err-msg">项目周期需在 1–3650 天之间</span>
+      </div>
+      <div class="fi">
+        <label><span class="req">*</span>开始日期</label>
+        <input class="ipt" name="startDate" type="date">
+        <span class="err-msg">请选择开始日期</span>
+      </div>
+      <div class="fi">
+        <label><span class="req">*</span>结束日期</label>
+        <input class="ipt" name="endDate" type="date">
+        <span class="hint">结束日期不得早于开始日期</span>
+        <span class="err-msg">结束日期不得早于开始日期</span>
+      </div>
+      <div class="fi">
+        <label>定价(元)</label>
+        <input class="ipt" name="price" type="number" min="0" step="1" placeholder="选填">
+        <span class="hint">仅作项目属性记录,<b>不触发任何计费</b></span>
+        <span class="err-msg">定价不能为负数</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 任务模板 ============ -->
+  <div class="card" id="templates">
+    <div class="card-head">
+      <h3>任务模板(从任务库组合)</h3>
+      <span class="ch-desc" id="tplCount">0 条</span>
+      <div class="ch-right">
+        <button class="btn btn-default btn-sm" id="pickBtn"><img src="assets/icons-png/icon-plus.png" alt="">从任务库添加组件</button>
+      </div>
+    </div>
+
+    <div class="note note-info">
+      <img src="assets/icons-png/icon-info.png">
+      <div>
+        <b>配置两个维度:</b>
+        <b>日期</b> —— 每天 / 出院前 / D N 天(N 由管理员输入,可任意)。<b>顺序即任务下发顺序</b>,用上移 / 下移调整。<br>
+        <b>目标人</b> —— 主管医生 / 护士 / 患者,可多选(如上传检查报告可同时分配给患者和主管医生)。<br>
+        <b>目标人 = 角色位,不是具体人。</b>派到某患者名下时自动解析:主管医生 = 该患者的主管医生;护士 = 该患者的主要联系护士;患者 = 患者本人。
+      </div>
+    </div>
+
+    <div id="tplList"></div>
+
+    <div class="note note-gray" style="margin:12px 0 0;">
+      <img src="assets/icons-png/icon-info.png">
+      <div><b>任务标记规则</b>:每个事项有「完成」选项 + 负责人;未在指定时间完成 → 标记为<b>待处理事项</b>。</div>
+    </div>
+  </div>
+
+  <div class="sticky-actions">
+    <a class="btn btn-default" href="back-projects.html">取消</a>
+    <span class="ml-auto"></span>
+    <button class="btn btn-primary" id="saveBtn">保存项目</button>
+  </div>
+</main>
+
+<!-- ========== 从任务库添加组件 抽屉 ========== -->
+<div class="drawer-mask" id="pickMask"></div>
+<div class="drawer wide" id="pickDrawer" data-mask="pickMask">
+  <div class="drawer-head">
+    <h3>从任务库添加组件</h3>
+    <button class="d-close">×</button>
+  </div>
+  <div class="drawer-body">
+    <div class="note note-info" style="margin-bottom:12px;">
+      <img src="assets/icons-png/icon-info.png">
+      <div>只能选择<b>归属科室</b>的组件;跨科室组件不可选(组件的字段口径由科室自己定义)。</div>
+    </div>
+
+    <div class="filters" style="margin-bottom:12px;">
+      <div class="search-wrap">
+        <img src="assets/icons-png/icon-search.png" alt="">
+        <input class="ipt search-ipt" id="pickKw" placeholder="组件名称">
+      </div>
+      <label class="switch" style="margin-left:4px;">
+        <input type="checkbox" id="onlyMine" checked><span class="sw-track"></span><span class="sw-lab">仅本科室组件</span>
+      </label>
+    </div>
+
+    <div class="card flat">
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th style="width:34px"></th>
+              <th style="width:180px">组件名称</th>
+              <th style="width:120px">归属科室</th>
+              <th>字段构成</th>
+              <th style="width:80px">状态</th>
+            </tr>
+          </thead>
+          <tbody id="pickBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="drawer-foot">
+    <span class="fz-12 text-3" id="pickCount">已选 0 个</span>
+    <div class="df-right">
+      <button class="btn btn-default" onclick="Back.drawer('pickDrawer',false)">取消</button>
+      <button class="btn btn-primary" id="pickOk">确定添加</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 移除模板 弹窗 ========== -->
+<div class="modal-mask" id="delModal">
+  <div class="modal">
+    <div class="modal-head">
+      <img src="assets/icons-png/icon-warning.png" alt="">
+      <h3>移除任务模板</h3>
+    </div>
+    <div class="modal-body" id="delBody"></div>
+    <div class="modal-foot">
+      <button class="btn btn-default" onclick="Back.modal('delModal',false)">取消</button>
+      <button class="btn btn-danger" id="delOk">确认移除</button>
+    </div>
+  </div>
+</div>
+
+<script src="assets/back-api.js"></script>
+<script src="assets/back-data.js"></script>
+<script src="assets/projects.js"></script>
+<script src="assets/back-project-data.js"></script>
+<script src="assets/back-layout.js"></script>
+<script>
+  var id = Back.qs('id');
+  var proj = id ? BACK_PROJ.byId(id) : null;
+  var isEdit = !!proj;
+
+  /* 模板编辑态(改完保存才落库) */
+  var tpls = isEdit ? JSON.parse(JSON.stringify(BACK_PROJ.templatesOf(proj.id))) : [];
+  var picked = {};   /* 抽屉里勾选的组件 id */
+
+  function esc(s) {
+    if (s === null || s === undefined) return '';
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+  function curDeptId() {
+    var el = document.querySelector('[name="dept"]');
+    return el && el.value ? String(el.value) : '';
+  }
+  function durationDays() {
+    var preset = document.querySelector('[name="durPreset"]').value;
+    if (preset === 'custom') return Number(document.querySelector('[name="duration"]').value || 0);
+    return Number(preset || 0);
+  }
+
+  /* ---------- 归属科室下拉 ---------- */
+  (function () {
+    var sel = document.querySelector('[name="dept"]');
+    sel.insertAdjacentHTML('afterbegin', '<option value="">请选择归属科室…</option>');
+    BACK_DATA.deptListByHospital((Back.currentHospital() || {}).id).forEach(function (d) {
+      if (d.status !== 1) return;
+      sel.insertAdjacentHTML('beforeend', '<option value="' + d.id + '">' + esc(d.name) + '</option>');
+    });
+    if (isEdit) {
+      sel.value = String(proj.departmentId);
+      /* 归属科室保存后不可修改 ⇒ 编辑态锁定 */
+      sel.disabled = true;
+      document.getElementById('deptHint').innerHTML =
+        '<b>已锁定</b>:项目归属科室保存后不可修改。如需更换,请停用本项目并在目标科室新建。';
+    }
+  })();
+
+  /* ---------- 主负责医生下拉(限归属科室) ---------- */
+  function fillLead(keep) {
+    var sel = document.querySelector('[name="lead"]');
+    var did = curDeptId();
+    sel.innerHTML = '<option value="">请选择主负责医生…</option>';
+    if (!did) return;
+    BACK_DATA.staffWithRole('doctor').forEach(function (s) {
+      if (s.status !== 1) return;                       /* 在职 */
+      if (String(s.departmentId) !== String(did)) return; /* 本科室 */
+      sel.insertAdjacentHTML('beforeend', '<option value="' + s.id + '">' + esc(s.name) + '</option>');
+    });
+    if (keep) sel.value = keep;
+  }
+  document.querySelector('[name="dept"]').addEventListener('change', function () { fillLead(''); });
+
+  /* ---------- 周期 ---------- */
+  (function () {
+    var preset = document.querySelector('[name="durPreset"]');
+    var num = document.querySelector('[name="duration"]');
+    preset.addEventListener('change', function () {
+      num.disabled = preset.value !== 'custom';
+      if (preset.value !== 'custom') num.value = '';
+    });
+    if (isEdit) {
+      preset.value = String(proj.durationDays);
+      if (['90', '180', '365'].indexOf(preset.value) < 0) {
+        preset.value = 'custom'; num.disabled = false; num.value = proj.durationDays;
+      }
+    }
+  })();
+
+  /* ---------- 回填 ---------- */
+  if (isEdit) {
+    document.getElementById('ttl').textContent = '编辑项目 · ' + proj.name;
+    document.querySelector('[name="name"]').value = proj.name;
+    document.querySelector('[name="tag"]').value = proj.tag || '管理';
+    document.querySelector('[name="startDate"]').value = proj.startDate || '';
+    document.querySelector('[name="endDate"]').value = proj.endDate || '';
+    document.querySelector('[name="price"]').value = proj.price != null ? proj.price : '';
+    fillLead(String(proj.leadDoctorId || ''));
+  } else {
+    document.getElementById('ttl').textContent = '新建项目';
+    var ps = document.querySelector('[name="startDate"]');
+    var pe = document.querySelector('[name="endDate"]');
+    ps.value = '2026-11-01'; pe.value = '2027-01-30';
+  }
+
+  /* ==========================================================
+   * 任务模板编排区
+   * ========================================================== */
+  function tplHtml(t) {
+    var c = BACK_DATA.byId(BACK_DATA.components, t.componentId);
+    var compOff = !!c && c.status === 0;
+    var nm = c ? c.name : '(组件已删除)';
+    var flds = c ? c.fields.length : 0;
+    var req = c ? c.fields.filter(function (f) { return f.req === 'required'; }).length : 0;
+    var opt = c ? c.fields.filter(function (f) { return f.req === 'optional'; }).length : 0;
+    var aut = c ? c.fields.filter(function (f) { return f.req === 'auto'; }).length : 0;
+    var dept = c ? BACK_DATA.dept(c.departmentId) : null;
+    var pending = !t.sched || !t.sched.type || !t.target;
+    var cls = 'tmpl' + (t.status === 0 ? ' off' : '') + (pending && t.status === 1 ? ' pending' : '');
+    var st = t.sched || { type: '', days: 0 };
+    var bits = BACK_PROJ.targetBits(t.target || 0);
+
+    /* 日期维度三态(PRD D7):
+     *   每天          —— 不带次数(基线 frequency_type 无 times_per_day,每天就是每天)
+     *   出院前 N 天   —— N 默认 0(出院当天)
+     *   D N 天        —— N 非负整数
+     * ⚠️ 新增条目**不预选**任何一个,标「待配置」(见 pickOk)。 */
+    var pills =
+      '<label class="pill"><input type="radio" name="sch-' + t.id + '" value="daily"'
+        + (st.type === 'daily' ? ' checked' : '') + '><span>每天</span></label>'
+      + '<label class="pill"><input type="radio" name="sch-' + t.id + '" value="pre"'
+        + (st.type === 'pre' ? ' checked' : '') + '><span>出院前</span>'
+        + '<input class="ipt dayn" type="number" min="0" step="1" data-days-pre="' + t.id + '"'
+        + ' value="' + (st.days != null ? st.days : 0) + '"'
+        + (st.type === 'pre' ? '' : ' disabled') + '><span>天</span></label>'
+      + '<label class="pill"><input type="radio" name="sch-' + t.id + '" value="dayn"'
+        + (st.type === 'dayn' ? ' checked' : '') + '><span>D</span>'
+        + '<input class="ipt dayn" type="number" min="0" step="1" data-days="' + t.id + '"'
+        + ' value="' + (st.days != null ? st.days : 0) + '"'
+        + (st.type === 'dayn' ? '' : ' disabled') + '><span>天</span></label>';
+
+    var chips = BACK_PROJ.TARGETS.map(function (tg) {
+      var on = (t.target || 0) & tg.bit;
+      return '<label class="chip"><input type="checkbox" data-bit="' + tg.bit + '" data-tid="' + t.id + '"'
+        + (on ? ' checked' : '') + '><span>' + tg.label + '</span></label>';
+    }).join('');
+
+    return '<div class="' + cls + '" data-tid="' + t.id + '">'
+      + '<div class="tmpl-head">'
+      +   '<div class="tmpl-ic">' + (c
+            ? '<img src="assets/icons-png/' + c.icon + '.png" alt="">'
+            : '<span style="font-size:11px;color:var(--ink-3)">?</span>') + '</div>'
+      +   '<div class="tmpl-info"><b>' + esc(nm) + '</b>'
+      +     '<div class="cell-sub">' + (dept ? esc(dept.name) : '—') + ' · ' + flds + ' 个字段'
+      +     (flds ? '(必填 ' + req + ' · 选填 ' + opt + ' · 自动 ' + aut + ')' : '') + '</div></div>'
+      +   (compOff ? '<span class="badge badge-gray">组件已停用</span>' : '')
+      +   (pending && t.status === 1 ? '<span class="badge badge-warn tmpl-pending">待配置</span>' : '')
+      +   '<span class="badge badge-info tmpl-sched">' + esc(BACK_PROJ.schedLabel(t.sched)) + '</span>'
+      +   '<div class="tmpl-acts">'
+      +     '<label class="switch"><input type="checkbox" data-on="' + t.id + '"' + (t.status === 1 ? ' checked' : '') + '>'
+      +       '<span class="sw-track"></span><span class="sw-lab tmpl-off-label">' + (t.status === 1 ? '启用' : '停用') + '</span></label>'
+      +     '<a class="btn-text" data-up="' + t.id + '">上移</a>'
+      +     '<a class="btn-text" data-down="' + t.id + '">下移</a>'
+      +     '<a class="btn-text danger" data-del="' + t.id + '">移除</a>'
+      +   '</div>'
+      + '</div>'
+      + '<div class="tmpl-dims">'
+      +   '<div class="dim-row"><span class="dim-lab">日期</span>' + pills + '</div>'
+      +   '<div class="dim-row"><span class="dim-lab">目标人</span>' + chips
+      +     '<span class="dim-hint">目标人 = 角色位,不是具体人。派到某患者名下时自动解析:主管医生 = 该患者的主管医生;护士 = 该患者的主要联系护士;患者 = 患者本人。</span>'
+      +   '</div>'
+      + '</div>'
+      + '</div>';
+  }
+
+  function renderTpls() {
+    var box = document.getElementById('tplList');
+    document.getElementById('tplCount').textContent = tpls.length + ' 条';
+    if (!tpls.length) {
+      box.innerHTML = '<div class="empty"><img src="assets/icons-png/icon-empty-box.png" alt="">'
+        + '<div class="e-t">本项目还没有任务模板</div>'
+        + '<div class="e-d">点右上角「从任务库添加组件」,从本科室的任务组件库挑组件开始</div></div>';
+      return;
+    }
+    box.innerHTML = tpls.map(tplHtml).join('');
+  }
+
+  function tplById(tid) {
+    for (var i = 0; i < tpls.length; i++) if (String(tpls[i].id) === String(tid)) return tpls[i];
+    return null;
+  }
+
+  /* ⚠️ 新条目 id 必须**本页唯一**:
+   *   BACK_PROJ.nextId 只扫「已持久化」的 projects,本页连续加两条会拿到同一个 id
+   *   ⇒ data-tid 重复 ⇒ document.querySelector('.tmpl[data-tid=…]') 永远命中第一行
+   *   ⇒ 第二行的「D N 天」输入框不会被启用(实测:勾了 D 档,天数框仍是灰的,点不动)。
+   *   这里在 nextId 基础上顺延,直到本页不撞号。 */
+  function newTplId() {
+    var base = String(BACK_PROJ.nextId('pt'));
+    var n = parseInt(base.replace(/^[a-z]+_?/, ''), 10);
+    if (isNaN(n) || n < 1) n = 1;
+    var id;
+    do { id = 'pt' + n; n++; } while (tplById(id));
+    return id;
+  }
+
+  /* ---------- 编排区交互(事件委托) ----------
+   * ⚠️ 改维度**不整块重绘**:重绘会把刚点中的 radio 从 DOM 里换掉,
+   *    焦点丢失、正在输入的天数被冲掉(实测会打断连续配置)。改为就地同步。 */
+  function syncTplCell(tid) {
+    var t = tplById(tid);
+    if (!t) return;
+    var node = document.querySelector('.tmpl[data-tid="' + t.id + '"]');
+    if (!node) return;
+    var pending = !t.sched || !t.sched.type || !t.target;
+
+    var b = node.querySelector('.tmpl-sched');
+    if (b) b.textContent = BACK_PROJ.schedLabel(t.sched);
+
+    var pb = node.querySelector('.tmpl-pending');
+    if (pb) pb.style.display = (pending && t.status === 1) ? '' : 'none';
+    node.classList.toggle('pending', pending && t.status === 1);
+
+    /* 天数输入框的可用性跟着「日期维度」走 */
+    node.querySelectorAll('input[data-days], input[data-days-pre]').forEach(function (inp) {
+      var isPre = inp.hasAttribute('data-days-pre');
+      inp.disabled = !((isPre && t.sched.type === 'pre') ||
+                       (!isPre && t.sched.type === 'dayn'));
+    });
+
+    var sw = node.querySelector('.tmpl-off-label');
+    if (sw) sw.textContent = t.status === 1 ? '启用' : '停用';
+    node.classList.toggle('off', t.status === 0);
+  }
+
+  document.getElementById('tplList').addEventListener('change', function (e) {
+    var el = e.target;
+    /* 启用 / 停用开关 */
+    if (el.getAttribute('data-on')) {
+      var t = tplById(el.getAttribute('data-on'));
+      if (t) { t.status = el.checked ? 1 : 0; syncTplCell(t.id); }
+      return;
+    }
+    /* 日期维度:单选(每天 / 出院前 N 天 / D N 天) */
+    if (el.type === 'radio' && el.name.indexOf('sch-') === 0) {
+      var tid = el.name.replace('sch-', '');
+      var t2 = tplById(tid);
+      if (!t2) return;
+      /* 切到「每天」不带天数;pre / dayn 沿用当前 N,方便来回切换不丢 */
+      t2.sched = { type: el.value, days: el.value === 'daily' ? 0 : Number(t2.sched.days || 0) };
+      syncTplCell(t2.id);
+      return;
+    }
+    /* 目标人维度:多选(位掩码) */
+    if (el.type === 'checkbox' && el.getAttribute('data-bit')) {
+      var t3 = tplById(el.getAttribute('data-tid'));
+      if (!t3) return;
+      var bit = Number(el.getAttribute('data-bit'));
+      t3.target = el.checked ? ((t3.target || 0) | bit) : ((t3.target || 0) & ~bit);
+      syncTplCell(t3.id);
+      return;
+    }
+    /* 天数 N(出院前 N 天 / D N 天 共用一个 days 字段,含义由 type 决定) */
+    var dPre = el.getAttribute('data-days-pre');
+    var dDay = el.getAttribute('data-days');
+    if (dPre || dDay) {
+      var t4 = tplById(dPre || dDay);
+      if (!t4) return;
+      t4.sched.days = Number(el.value || 0);
+      syncTplCell(t4.id);
+      return;
+    }
+  });
+
+  document.getElementById('tplList').addEventListener('click', function (e) {
+    var g = function (a) { return e.target.getAttribute && e.target.getAttribute(a); };
+    var up = g('data-up'), down = g('data-down'), del = g('data-del');
+    if (up || down) {
+      var tid = up || down;
+      var idx = -1;
+      tpls.forEach(function (t, i) { if (String(t.id) === String(tid)) idx = i; });
+      var to = idx + (up ? -1 : 1);
+      if (idx < 0 || to < 0 || to >= tpls.length) {
+        Back.toast(up ? '已经是第一条' : '已经是最后一条', 'warn');
+        return;
+      }
+      var tmp = tpls[idx]; tpls[idx] = tpls[to]; tpls[to] = tmp;
+      renderTpls();
+      return;
+    }
+    if (del) {
+      var t = tplById(del);
+      var c = t ? BACK_DATA.byId(BACK_DATA.components, t.componentId) : null;
+      document.getElementById('delBody').innerHTML =
+        '确认移除「' + esc(c ? c.name : '') + '」这条任务模板?<br>'
+        + '移除后该模板不再参与后续下发。<b>历史填报记录全部保留</b>,随时可以重新添加。';
+      document.getElementById('delOk').onclick = function () {
+        tpls = tpls.filter(function (x) { return String(x.id) !== String(del); });
+        Back.modal('delModal', false); renderTpls();
+        Back.toast('已移除任务模板', 'warn');
+      };
+      Back.modal('delModal', true);
+    }
+  });
+
+  /* ==========================================================
+   * 从任务库添加组件(抽屉 · PC 侧不整页跳转)
+   * ========================================================== */
+  function renderPick() {
+    var did = curDeptId();
+    var onlyMine = document.getElementById('onlyMine').checked;
+    var kw = document.getElementById('pickKw').value.trim();
+    /* 组件按**当前医院**过滤(Back.hospFilter 的 'components' 口径 = 组件所属科室属本院) */
+    var rows = Back.hospFilter(BACK_DATA.components, 'components').filter(function (c) {
+      if (onlyMine && String(c.departmentId) !== String(did)) return false;
+      if (kw && c.name.indexOf(kw) < 0) return false;
+      return true;
+    });
+
+    var tb = document.getElementById('pickBody');
+    tb.innerHTML = rows.length ? rows.map(function (c) {
+      var d = BACK_DATA.dept(c.departmentId);
+      var cross = String(c.departmentId) !== String(did);
+      var used = tpls.filter(function (t) { return t.componentId === c.id; }).length;
+      var req = c.fields.filter(function (f) { return f.req === 'required'; }).length;
+      var opt = c.fields.filter(function (f) { return f.req === 'optional'; }).length;
+      var aut = c.fields.filter(function (f) { return f.req === 'auto'; }).length;
+      return '<tr' + (cross ? ' class="row-muted"' : '') + '>'
+        + '<td><input type="checkbox" data-pick="' + c.id + '"' + (picked[c.id] ? ' checked' : '') + (cross ? ' disabled' : '') + '></td>'
+        + '<td><div class="cell-user"><span class="av-xs" style="background:var(--brand-light)">'
+        +   '<img src="assets/icons-png/' + c.icon + '.png" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover"></span>'
+        +   '<div><div class="cell-main">' + esc(c.name) + '</div>'
+        +   (used ? '<div class="cell-sub">该项目已引用 ' + used + ' 条</div>' : '') + '</div></div></td>'
+        + '<td class="fz-12">' + (d ? esc(d.name) : '—') + (cross ? '<div class="cell-sub">跨科室,不可选</div>' : '') + '</td>'
+        + '<td class="fz-12">' + c.fields.length + ' 个字段<span class="cell-sub">必填 ' + req + ' · 选填 ' + opt + ' · 自动 ' + aut + '</span></td>'
+        + '<td>' + (c.status === 1 ? '<span class="badge badge-pass">启用</span>' : '<span class="badge badge-gray">已停用</span>') + '</td>'
+        + '</tr>';
+    }).join('')
+    : '<tr><td colspan="5"><div class="empty"><img src="assets/icons-png/icon-empty-box.png" alt="">'
+      + '<div class="e-t">' + (onlyMine ? '本科室还没有任务组件' : '没有符合条件的组件') + '</div>'
+      + '<div class="e-d">' + (onlyMine
+          ? '请先到「任务组件库」为本科室配置组件,或关掉「仅本科室组件」查看全院组件'
+          : '试试调整搜索词') + '</div></div></td></tr>';
+
+    document.getElementById('pickCount').textContent = '已选 ' + Object.keys(picked).filter(function (k) { return picked[k]; }).length + ' 个';
+  }
+
+  document.getElementById('pickBtn').addEventListener('click', function () {
+    if (!curDeptId()) {
+      Back.toast('请先选择归属科室', 'warn');
+      return;
+    }
+    renderPick();
+    Back.drawer('pickDrawer', true);
+  });
+  document.getElementById('pickKw').addEventListener('input', renderPick);
+  document.getElementById('onlyMine').addEventListener('change', renderPick);
+  document.getElementById('pickBody').addEventListener('change', function (e) {
+    var pid = e.target.getAttribute && e.target.getAttribute('data-pick');
+    if (!pid) return;
+    picked[pid] = e.target.checked;
+    document.getElementById('pickCount').textContent =
+      '已选 ' + Object.keys(picked).filter(function (k) { return picked[k]; }).length + ' 个';
+  });
+  document.getElementById('pickOk').addEventListener('click', function () {
+    var ids = Object.keys(picked).filter(function (k) { return picked[k]; });
+    if (!ids.length) { Back.toast('还没有勾选组件', 'warn'); return; }
+    ids.forEach(function (cid) {
+      tpls.push({
+        id: newTplId(),
+        componentId: Number(cid),
+        /* ⚠️ 新条目**不预选**两个维度(与 back-drug-edit 的必填项口径一致):
+         *   预选「每天 / 患者」会把「出院前·完成药物清单」这类模板配错。 */
+        sched: { type: '', days: 0 },
+        target: 0,
+        status: 1
+      });
+    });
+    picked = {};
+    renderTpls();
+    Back.drawer('pickDrawer', false);
+    Back.toast('已添加 ' + ids.length + ' 条任务模板,请配置两个维度', 'ok');
+  });
+
+  /* ==========================================================
+   * 保存
+   * ========================================================== */
+  document.getElementById('saveBtn').addEventListener('click', function () {
+    var ok = Back.validate(document.body, {
+      dept:     { required: true, msg: '请选择归属科室' },
+      name:     { required: true, minLen: 2, maxLen: 100, msg: '项目主题 2–100 字' },
+      lead:     { required: true, msg: '请选择主负责医生' },
+      startDate:{ required: true, msg: '请选择开始日期' },
+      endDate:  { required: true, msg: '请选择结束日期' }
+    });
+
+    var name = document.querySelector('[name="name"]').value.trim();
+    var did = curDeptId();
+    /* 同科室重名校验(跨科室同名允许) */
+    if (ok && did) {
+      var dup = BACK_PROJ.ofHospital((Back.currentHospital() || {}).id).filter(function (p) {
+        return String(p.departmentId) === String(did) && p.name === name && (!isEdit || String(p.id) !== String(proj.id));
+      })[0];
+      if (dup) {
+        var fi = document.querySelector('[name="name"]').closest('.fi');
+        fi.classList.add('has-err');
+        fi.querySelector('.err-msg').textContent = '该科室下已存在同名项目';
+        ok = false;
+      }
+    }
+
+    /* 周期 */
+    var dur = durationDays();
+    if (dur < 1 || dur > 3650) {
+      var fi2 = document.querySelector('[name="durPreset"]').closest('.fi');
+      fi2.classList.add('has-err');
+      fi2.querySelector('.err-msg').textContent = '项目周期需在 1–3650 天之间';
+      ok = false;
+    }
+    /* 起止日期 */
+    var sd = document.querySelector('[name="startDate"]').value;
+    var ed = document.querySelector('[name="endDate"]').value;
+    if (sd && ed && ed < sd) {
+      var fi3 = document.querySelector('[name="endDate"]').closest('.fi');
+      fi3.classList.add('has-err');
+      fi3.querySelector('.err-msg').textContent = '结束日期不得早于开始日期';
+      ok = false;
+    }
+    /* 定价 */
+    var price = document.querySelector('[name="price"]').value;
+    if (price !== '' && Number(price) < 0) {
+      var fi4 = document.querySelector('[name="price"]').closest('.fi');
+      fi4.classList.add('has-err');
+      fi4.querySelector('.err-msg').textContent = '定价不能为负数';
+      ok = false;
+    }
+
+    /* 模板两个维度必须配齐 */
+    var bad = null;
+    for (var i = 0; i < tpls.length; i++) {
+      var t = tpls[i];
+      if (!t.sched || !t.sched.type) { bad = { t: t, why: '未选日期维度' }; break; }
+      if (!t.target) { bad = { t: t, why: '未选目标人' }; break; }
+      /* 天数校验:出院前 N 天 / D N 天 都受项目周期约束(PRD D7) */
+      if (t.sched.type === 'dayn' || t.sched.type === 'pre') {
+        var n = Number(t.sched.days);
+        var lbl = t.sched.type === 'pre' ? ('出院前 ' + n + ' 天') : ('D ' + n + ' 天');
+        if (!Number.isInteger(n) || n < 0) { bad = { t: t, why: '天数必须是非负整数' }; break; }
+        if (dur && n > dur) {
+          bad = { t: t, why: lbl + '超出项目周期(' + dur + ' 天)' }; break;
+        }
+      }
+    }
+    if (bad) {
+      var node = document.querySelector('.tmpl[data-tid="' + bad.t.id + '"]');
+      if (node) { node.scrollIntoView({ block: 'center' }); node.style.borderColor = 'var(--block)'; }
+      Back.toast('任务模板「' + bad.why + '」,请补齐后再保存', 'err');
+      ok = false;
+    }
+
+    if (!ok) return;
+
+    /* ---- 落库 ---- */
+    var payload = {
+      name: name,
+      tag: document.querySelector('[name="tag"]').value,
+      durationDays: dur,
+      startDate: sd,
+      endDate: ed,
+      price: price === '' ? 0 : Number(price),
+      leadDoctorId: Number(document.querySelector('[name="lead"]').value)
+    };
+    if (isEdit) {
+      BACK_PROJ.updateProject(proj.id, payload);
+      /* 模板整表替换(顺序重排) */
+      tpls.forEach(function (t, i) { t.order = i + 1; });
+      proj.templates = tpls;
+      BACK_PROJ.save();
+      Back.toast('已保存项目', 'ok');
+      setTimeout(function () { location.href = 'back-projects.html'; }, 700);
+    } else {
+      var np = {
+        id: 'p_' + Date.now(),
+        hospitalId: (Back.currentHospital() || {}).id,
+        departmentId: Number(did),
+        name: name, tag: payload.tag, durationDays: dur,
+        price: payload.price, startDate: sd, endDate: ed,
+        leadDoctorId: payload.leadDoctorId,
+        status: 1,
+        icon: 'assets/icons-png/icon-tab-projects.png',
+        summary: '',
+        templates: tpls.map(function (t, i) { t.order = i + 1; return t; })
+      };
+      BACK_PROJ.addProject(np);
+      Back.toast('已新建项目:' + name, 'ok');
+      setTimeout(function () { location.href = 'back-projects.html'; }, 700);
+    }
+  });
+
+  if (!Back.requireHospitalAndApply()) { document.querySelector('.back-main').innerHTML = ''; }
+  else { document.getElementById('scopeStrip').innerHTML = Back.scopeStrip('项目按科室创建:本科室的项目只有本科室能配模板'); }
+  renderTpls();
+  if (location.hash === '#templates') {
+    setTimeout(function () {
+      var el = document.getElementById('templates');
+      if (el) el.scrollIntoView({ block: 'start' });
+    }, 120);
+  }
+</script>
+</body>
+</html>

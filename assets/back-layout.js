@@ -19,6 +19,13 @@
     { type: 'item', page: 'qrcode',   icon: 'icon-tab-tasks',   name: '二维码中心',   href: 'back-qrcode.html',   sub: true },
     { type: 'group', name: '任务' },
     { type: 'item', page: 'component',icon: 'icon-tab-tasklib', name: '任务组件库',   href: 'back-component-lib.html' },
+    /* 项目管理(2026-11-05 新增,PM 产出 back-project*.html):
+     * 归**任务组**、排在「任务组件库」之后 —— 项目是任务的编排载体,
+     * 项目里的任务模板就是从任务组件库挑组件拼出来的,同组相邻能表达上下游。
+     * ⚠️ 口径已拍板:项目模块归**医院视图**(超管未选院的平台视图不出现),
+     *    真前端路由 /projects(不带 /admin 前缀),平台视图的灰项「项目设置」撤掉。
+     *    本原型侧栏只有医院视图一套(没有平台视图),故此处直接挂上。 */
+    { type: 'item', page: 'projects',icon: 'icon-tab-projects', name: '项目管理',     href: 'back-projects.html' },
     { type: 'group', name: '主数据' },
     { type: 'item', page: 'drugs',    icon: 'icon-tab-drugs',   name: '药品库',       href: 'back-drugs.html' },
     { type: 'item', page: 'edu',       icon: 'icon-document', name: '健康教育',     href: 'back-edu.html' },
@@ -236,18 +243,45 @@
   };
   document.addEventListener('click', function (e) {
     var t = e.target;
-    if (t.classList && t.classList.contains('drawer-mask')) t.classList.remove('on');
-    if (t.classList && t.classList.contains('modal-mask')) t.classList.remove('on');
+    /* 点遮罩关闭:遮罩与抽屉**一起**关。
+     * ⚠️ 2026-11-05 修:原来只摘遮罩的 on,抽屉还开着 → 遮罩没了、抽屉盖在页面上,
+     *    点哪儿都点不到后面的按钮。 */
+    if (t.classList && t.classList.contains('drawer-mask')) {
+      t.classList.remove('on');
+      var dd = t.id ? document.querySelector('.drawer[data-mask="' + t.id + '"]') : null;
+      if (dd) dd.classList.remove('on');
+      document.body.style.overflow = '';
+    }
+    if (t.classList && t.classList.contains('modal-mask')) {
+      t.classList.remove('on');
+      document.body.style.overflow = '';
+    }
     if (t.classList && (t.classList.contains('d-close') || t.classList.contains('m-close'))) {
       var box = t.closest('.drawer, .modal');
-      if (box) { box.classList.remove('on'); document.body.style.overflow = ''; }
+      if (box) {
+        box.classList.remove('on');
+        /* 抽屉的遮罩是独立元素(有 data-mask 指回来),必须一起关,
+         * 否则会留一层 pointer-events:auto 的透明遮罩挡住整页。 */
+        var mkId = box.getAttribute('data-mask');
+        var mk = mkId ? document.getElementById(mkId) : null;
+        if (mk) mk.classList.remove('on');
+        /* 弹窗的 on 类在**遮罩**上(Back.modal 切的就是遮罩),这里补切一次 */
+        var pm = box.parentElement;
+        if (pm && pm.classList && pm.classList.contains('modal-mask')) pm.classList.remove('on');
+        document.body.style.overflow = '';
+      }
     }
   });
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') {
       document.querySelectorAll('.drawer.on, .modal-mask.on').forEach(function (x) {
         x.classList.remove('on');
+        /* 抽屉的遮罩一起关 */
+        var mkId = x.getAttribute && x.getAttribute('data-mask');
+        var mk = mkId ? document.getElementById(mkId) : null;
+        if (mk) mk.classList.remove('on');
       });
+      document.querySelectorAll('.drawer-mask.on').forEach(function (x) { x.classList.remove('on'); });
       document.body.style.overflow = '';
     }
   });
@@ -268,7 +302,9 @@
     t.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:400;'
       + 'background:#fff;border:1px solid ' + color + ';border-left:4px solid ' + color + ';'
       + 'background:' + bg + ';color:' + color + ';padding:9px 16px;border-radius:8px;'
-      + 'font-size:12.5px;font-weight:500;box-shadow:0 6px 20px rgba(15,23,42,.16);max-width:60vw;';
+      + 'font-size:12.5px;font-weight:500;box-shadow:0 6px 20px rgba(15,23,42,.16);max-width:60vw;'
+      /* ⛔ toast 是被动提示,**不许拦点击** —— 否则它正好压住表单顶部的必填项 */
+      + 'pointer-events:none;';
     t.textContent = msg;
     document.body.appendChild(t);
     setTimeout(function () { t.style.transition = 'opacity .25s'; t.style.opacity = '0';
