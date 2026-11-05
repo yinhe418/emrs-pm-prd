@@ -246,10 +246,11 @@
               <option value="180">180 天</option>
               <option value="365">365 天</option>
               <option value="custom">自定义</option>
+              <option value="longterm">长期</option>
             </select>
             <input class="form-input" name="duration" type="number" min="1" max="3650" inputmode="numeric" placeholder="天数" style="flex:1;" disabled>
           </div>
-          <span class="ro-hint">周期天数(1–3650 天),用于校验模板「出院后第 N 天」的上限。<b>两端都能改</b> —— ⚠️ 改小后,「出院后第 N 天」超过新周期会被拦。</span>
+          <span class="ro-hint" id="durHint">周期天数(1–3650 天),用于校验模板「出院后第 N 天」的上限。<b>两端都能改</b> —— ⚠️ 改小后,「出院后第 N 天」超过新周期会被拦。</span>
         </div>
         <div class="form-item">
           <span class="form-label"><span class="req">*</span>开始日期</span>
@@ -257,8 +258,9 @@
           <span class="ro-hint">起止日期<b>两端都能改</b>;结束日期不得早于开始日期。</span>
         </div>
         <div class="form-item">
-          <span class="form-label"><span class="req">*</span>结束日期</span>
+          <span class="form-label"><span class="req" id="endReq">*</span>结束日期</span>
           <input class="form-input" type="date" name="endDate" value="2026-11-30">
+          <span class="ro-hint" id="endHint">结束日期不得早于开始日期。</span>
         </div>
       </div>
 
@@ -273,31 +275,6 @@
             <span style="font-size:14px; color:var(--ink-3);">元</span>
           </div>
           <span class="ro-hint">选填,默认 0.00,最多两位小数。<b>PC 后台与小程序端都能改</b>定价(改的是同一个项目属性)⇒ <b>末次写入生效,每次写入都留审计</b>;仅作项目属性记录,不触发任何计费。</span>
-        </div>
-      </div>
-
-      <!-- 最后修改(只读) -->
-      <!-- ⚠️ 2026-11-05:两端都能改 ⇒ 要能看出「谁 / 什么时候 / 从哪一端」改的。
-           ⚠️ 审计表结构与字段名归 AR 定,这里只用中文字段名占位。 -->
-      <div class="section-title">最后修改(只读)</div>
-      <div class="group">
-        <div class="form-item">
-          <span class="form-label">最后修改人</span>
-          <input class="form-input" value="科室管理员甲" readonly>
-          <span class="ro-hint">小程序端修改时,来源描述写在下面一行。</span>
-        </div>
-        <div class="form-item">
-          <span class="form-label">最后修改时间</span>
-          <input class="form-input" value="2026-11-05 16:20" readonly>
-        </div>
-        <div class="form-item">
-          <span class="form-label">最后修改来源</span>
-          <input class="form-input" value="小程序端" readonly>
-          <span class="ro-hint">「后台」/「小程序端」;⚠️ 不做「两人同时改」的冲突拦截 —— 末次写入生效。</span>
-        </div>
-        <div class="form-item">
-          <span class="form-label">来源描述</span>
-          <input class="form-input" value="通过小程序端「科室管理」修改(来源描述:调整定价与项目周期)" readonly>
         </div>
       </div>
 
@@ -698,13 +675,35 @@
         });
       });
 
-      /* 周期:预设 ↔ 自定义(与 PC 后台 back-project-edit.html 同款) */
+      /* 周期:预设 ↔ 自定义 ↔ 长期(与 PC 后台 back-project-edit.html 同款)
+       * ⚠️ 2026-11-05 用户提:「项目周期 …可以增加一个长期 …就没有结束时间,只能手动结束」
+       * 长期 ⇒ 天数禁用 / 结束日期禁用并清空 / 不校验 1–3650 / 模板天数不再受周期上限约束。
+       * ⚠️ 「长期」在 DB / API 怎么存由 AR 定,原型只表达产品语义。 */
       function syncDurPreset() {
         var preset = document.querySelector('[name="durPreset"]');
         var num = document.querySelector('[name="duration"]');
+        var ed = document.querySelector('[name="endDate"]');
         if (!preset || !num) return;
+        var lt = preset.value === 'longterm';
         num.disabled = preset.value !== 'custom';
         if (preset.value !== 'custom') num.value = '';
+        if (ed) {
+          if (lt) { ed.disabled = true; ed.value = ''; } else { ed.disabled = false; }
+        }
+        var dh = document.getElementById('durHint');
+        if (dh) {
+          dh.innerHTML = lt
+            ? '<b>长期项目没有结束时间,只能手动结束</b>(不会自动到期 / 不自动停用);模板「出院后第 N 天」<b>不再受周期上限约束</b>。'
+            : '周期天数(1–3650 天),用于校验模板「出院后第 N 天」的上限。<b>两端都能改</b> —— ⚠️ 改小后,「出院后第 N 天」超过新周期会被拦。';
+        }
+        var eh = document.getElementById('endHint');
+        if (eh) {
+          eh.innerHTML = lt
+            ? '<b>长期项目没有结束日期</b>;要让它有终点,请先取消「长期」、选一个有限周期天数并填写结束日期。'
+            : '结束日期不得早于开始日期。';
+        }
+        var er = document.getElementById('endReq');
+        if (er) er.style.display = lt ? 'none' : '';
       }
       document.addEventListener('change', function (e) {
         if (e.target && e.target.name === 'durPreset') syncDurPreset();
@@ -720,27 +719,31 @@
         var err = document.getElementById('tpl-err');
         var fieldErr = document.getElementById('field-err');
 
-        /* ---- 周期天数 ---- */
+        /* ---- 周期天数(长期 = 没有固定天数 ⇒ 不校验 1–3650)---- */
         var preset = document.querySelector('[name="durPreset"]');
         var durNum = document.querySelector('[name="duration"]');
-        var dur = preset.value === 'custom' ? Number(durNum.value || 0) : Number(preset.value || 0);
-        if (!dur || dur < 1 || dur > 3650) {
+        var longTerm = preset.value === 'longterm';
+        var dur = longTerm ? 0
+          : (preset.value === 'custom' ? Number(durNum.value || 0) : Number(preset.value || 0));
+        if (!longTerm && (!dur || dur < 1 || dur > 3650)) {
           fieldErr.style.display = 'block';
           fieldErr.innerHTML = '<b>项目周期不合法</b>:周期天数需在 1–3650 天之间(选「自定义」时填天数)。';
           fieldErr.scrollIntoView({ block: 'center' });
           return;
         }
 
-        /* ---- 起止日期 ---- */
+        /* ---- 起止日期(长期 ⇒ 没有结束日期,不校验)---- */
         var sd = document.querySelector('[name="startDate"]').value;
-        var ed = document.querySelector('[name="endDate"]').value;
-        if (!sd || !ed) {
+        var ed = longTerm ? '' : document.querySelector('[name="endDate"]').value;
+        if (!sd || (!longTerm && !ed)) {
           fieldErr.style.display = 'block';
-          fieldErr.innerHTML = '<b>起止日期不能为空</b>:开始日期与结束日期都要填。';
+          fieldErr.innerHTML = longTerm
+            ? '<b>开始日期不能为空</b>:长期项目没有结束日期,只需填开始日期。'
+            : '<b>起止日期不能为空</b>:开始日期与结束日期都要填。';
           fieldErr.scrollIntoView({ block: 'center' });
           return;
         }
-        if (ed < sd) {
+        if (!longTerm && ed < sd) {
           fieldErr.style.display = 'block';
           fieldErr.innerHTML = '<b>结束日期早于开始日期</b>:请调整后再保存。';
           fieldErr.scrollIntoView({ block: 'center' });
@@ -768,7 +771,8 @@
         }
         err.style.display = 'none';
 
-        /* ---- 「出院后第 N 天」不得超出项目周期(周期现在两端都能改 ⇒ 这里要拦)---- */
+        /* ---- 「出院后第 N 天」不得超出项目周期(周期现在两端都能改 ⇒ 这里要拦)
+               ⚠️ 长期项目**没有周期上限** ⇒ 不受此约束 ---- */
         var over = null;
         for (var k = 0; k < cells.length; k++) {
           var cc = cells[k];
@@ -776,7 +780,7 @@
           if (!dayn) continue;
           var nIn = cc.querySelector('.date-pills input[data-kind="dayn"]');
           var n = Number(nIn ? nIn.value : 0);
-          if (Number.isInteger(n) && n > dur) {
+          if (!longTerm && Number.isInteger(n) && n > dur) {
             over = { cell: cc, n: n };
             break;
           }
@@ -806,6 +810,7 @@
         syncAll();
       });
       syncAll();
+      syncDurPreset();
     })();
   </script>
   <script src="assets/layout.js"></script>

@@ -126,16 +126,19 @@
     document.title = proj.name + ' · 项目详情 · 后台管理';
     document.getElementById('ttl').textContent = proj.name;
     document.getElementById('sub').innerHTML =
-      '归属科室 <b>' + esc(d ? d.name : '—') + '</b> · 周期 <b>' + proj.durationDays + ' 天</b> · '
-      + (proj.startDate || '—') + ' ~ ' + (proj.endDate || '—');
+      '归属科室 <b>' + esc(d ? d.name : '—') + '</b> · 周期 <b>'
+      + (proj.longTerm ? '长期' : proj.durationDays + ' 天') + '</b> · '
+      + (proj.startDate || '—') + ' ~ '
+      + (proj.longTerm ? '长期(只能手动结束)' : (proj.endDate || '—'));
     document.getElementById('editBtn').href = 'back-project-edit.html?id=' + proj.id;
 
     document.getElementById('fDept').textContent = d ? d.name : '—';
     document.getElementById('fName').textContent = proj.name;
     document.getElementById('fTag').textContent = proj.tag || '管理';
     document.getElementById('fLead').textContent = doc ? doc.name : '—';
-    document.getElementById('fDur').textContent = proj.durationDays + ' 天';
-    document.getElementById('fDate').textContent = (proj.startDate || '—') + ' ~ ' + (proj.endDate || '—');
+    document.getElementById('fDur').textContent = proj.longTerm ? '长期(无结束时间,只能手动结束)' : proj.durationDays + ' 天';
+    document.getElementById('fDate').textContent = (proj.startDate || '—') + ' ~ '
+      + (proj.longTerm ? '长期(只能手动结束)' : (proj.endDate || '—'));
     document.getElementById('fPrice').textContent = proj.price ? proj.price + ' 元' : '未定价';
     document.getElementById('fStatus').innerHTML = Back.onOff(proj.status);
 

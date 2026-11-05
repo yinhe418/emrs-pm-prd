@@ -149,8 +149,9 @@
               ? '<div class="cell-user">' + Back.staffAv(doc) + '<div><div class="cell-main">' + esc(doc.name) + '</div>'
                 + '<div class="cell-sub">' + ((BACK_DATA.pos(doc.positionId) || {}).name || '') + '</div></div></div>'
               : '<span class="text-4">—</span>') + '</td>'
-        + '<td class="fz-12">' + p.durationDays + ' 天'
-        +   '<div class="cell-sub">' + (p.startDate || '—') + ' ~ ' + (p.endDate || '—') + '</div></td>'
+        + '<td class="fz-12">' + (p.longTerm ? '长期' : p.durationDays + ' 天')
+        +   '<div class="cell-sub">' + (p.startDate || '—') + ' ~ '
+        +   (p.longTerm ? '长期(只能手动结束)' : (p.endDate || '—')) + '</div></td>'
         + '<td class="fz-12 num-cell">' + tpls.length + ' 条'
         +   (tpls.length ? '<div class="cell-sub">启用 ' + on + '</div>' : '<div class="cell-sub">未配置</div>') + '</td>'
         + '<td>' + Back.onOff(p.status) + '</td>'

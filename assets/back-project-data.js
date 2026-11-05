@@ -96,9 +96,27 @@
     }
   };
 
-  /* ---- PC 侧独有的两条(演示「另一个科室」与「已停用」两种状态)----
-   * ⚠️ 这两条**只存在于后台 PC 侧**,不进 window.PROJECTS(移动端不显示)。 */
+  /* ---- PC 侧独有的三条(演示「另一个科室」/「已停用」/「长期项目」三种状态)----
+   * ⚠️ 这几条**只存在于后台 PC 侧**,不进 window.PROJECTS(移动端不显示)。 */
   var EXTRA = [
+    {
+      /* ⚠️ 2026-11-05 用户提:「项目周期 是不是可以增加一个长期 …就没有结束时间,只能手动结束」
+       * 产品语义:长期 = 没有结束时间 + 不会自动到期 / 不自动停用 + 模板天数不再受周期上限约束。
+       * ⚠️ `longTerm: true` + `durationDays: 0` + `endDate: ''` **只是 mock 写法**,
+       *    **不是存储口径** —— 「长期」在 DB / API 怎么存(0 / NULL / 加列)由 AR 定。
+       *    页面一律按 `longTerm` 标记判定,不假设「0 = 长期」。 */
+      id: 'lt_evergreen', hospitalId: 1, departmentId: 1,
+      name: '长期随访 · 卒中二级预防', tag: '管理',
+      durationDays: 0, longTerm: true, price: 0,
+      startDate: '2026-11-01', endDate: '',
+      leadDoctorId: 2, status: 1,
+      icon: 'assets/icons-png/icon-tab-projects.png',
+      summary: '长期项目 · 没有结束时间,只能手动结束',
+      /* 「出院后第 365 天」在长期项目里**不被周期卡住**(普通项目会被拦) */
+      templates: [
+        { id: 'lt1', componentId: 1, sched: { type: 'dayn', days: 365 }, target: 1, status: 1 }
+      ]
+    },
     {
       id: 'nsurg_30d', hospitalId: 1, departmentId: 2,
       name: '神经外科 · 术后 30 天随访', tag: '管理',
@@ -121,37 +139,6 @@
     }
   ];
 
-  /* ---- 最后修改(演示数据)----
-   * ⚠️ 2026-11-05 用户拍板:「周期/起止日期/定价 这几个 小程序和后台都可以修改」
-   *    ⇒ 这三项 + 名称/说明/主负责医生/任务模板编排,**两端都能改**
-   *    ⇒ 覆盖规则:**末次写入生效 + 每次写入都留审计**(不做乐观锁 / 不做冲突拦截)
-   * ⚠️ **审计表结构与字段名归 AR 定**,原型只用中文字段名占位,不要照抄这里的 key。
-   *    source: 'backend' = 后台管理员改的;'mini' = 小程序端科室管理员改的
-   *    (小程序端那侧:「管理员 id」按用户口径记 0 + 附一句来源描述) */
-  var LASTMOD = {
-    '90d_health':  { by: '科室管理员甲', at: '2026-11-05 16:20', source: 'mini',
-                     note: '通过小程序端「科室管理」修改(来源描述:调整定价与项目周期)' },
-    'carotid':     { by: '院管甲', at: '2026-10-18 09:05', source: 'backend',
-                     note: '在 PC 后台修改(来源描述:调整起止日期)' },
-    '365d_health': { by: '院管甲', at: '2026-09-02 14:40', source: 'backend',
-                     note: '在 PC 后台修改(来源描述:配置任务模板)' },
-    'nsurg_30d':   { by: '院管甲', at: '2026-10-01 10:12', source: 'backend',
-                     note: '在 PC 后台创建' },
-    'old_60d':     { by: '院管甲', at: '2026-01-03 08:30', source: 'backend',
-                     note: '在 PC 后台停用' }
-  };
-  function lastModOf(id) {
-    return LASTMOD[id] || { by: '—', at: '—', source: 'backend', note: '—' };
-  }
-  function attachLastMod(p) {
-    var lm = lastModOf(p.id);
-    p.lastModifiedBy = lm.by;
-    p.lastModifiedAt = lm.at;
-    p.lastModifiedSource = lm.source;
-    p.lastModifiedNote = lm.note;
-    return p;
-  }
-
   /* ---- 组装种子 ---- */
   function seed() {
     var list = baseProjects();
@@ -169,7 +156,7 @@
                  status: t.status, order: i + 1 };
       });
       return p;
-    })).map(attachLastMod);
+    }));
   }
 
   var projects = seed();
@@ -191,19 +178,9 @@
     try { obj = JSON.parse(raw); } catch (e) { return false; }
     if (!obj || obj.v !== FORMAT_V || !Array.isArray(obj.rows) || !obj.rows.length) return false;
     var map = {};
-    var seedMap = {};
-    projects.forEach(function (p) { map[p.id] = p; seedMap[p.id] = p; });
+    projects.forEach(function (p) { map[p.id] = p; });
     obj.rows.forEach(function (p) {
       if (!p || p.id == null) return;
-      /* ⚠️ 演示态持久化是**旧版本**存的行,可能没有「最后修改」字段
-       * ⇒ 从种子补齐,免得编辑页出现空白块 */
-      var base = seedMap[p.id];
-      if (base && !p.lastModifiedBy) {
-        p.lastModifiedBy = base.lastModifiedBy;
-        p.lastModifiedAt = base.lastModifiedAt;
-        p.lastModifiedSource = base.lastModifiedSource;
-        p.lastModifiedNote = base.lastModifiedNote;
-      }
       map[p.id] = p;
     });
     var ids = Object.keys(map);

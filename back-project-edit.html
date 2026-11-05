@@ -112,10 +112,11 @@
             <option value="180">180 天</option>
             <option value="365">365 天</option>
             <option value="custom">自定义</option>
+            <option value="longterm">长期</option>
           </select>
           <input class="ipt" name="duration" type="number" min="1" max="3650" placeholder="天数" style="flex:1;" disabled>
         </div>
-        <span class="hint">周期天数用于校验模板「出院后第 N 天」的上限。<b>两端都能改</b>(PC 后台 / 小程序端)</span>
+        <span class="hint" id="durHint">周期天数用于校验模板「出院后第 N 天」的上限。<b>两端都能改</b>(PC 后台 / 小程序端)</span>
         <span class="err-msg">项目周期需在 1–3650 天之间</span>
       </div>
       <div class="fi">
@@ -125,9 +126,9 @@
         <span class="err-msg">请选择开始日期</span>
       </div>
       <div class="fi">
-        <label><span class="req">*</span>结束日期</label>
+        <label><span class="req" id="endReq">*</span>结束日期</label>
         <input class="ipt" name="endDate" type="date">
-        <span class="hint">结束日期不得早于开始日期</span>
+        <span class="hint" id="endHint">结束日期不得早于开始日期</span>
         <span class="err-msg">结束日期不得早于开始日期</span>
       </div>
       <div class="fi">
@@ -135,37 +136,6 @@
         <input class="ipt" name="price" type="number" min="0" max="99999999.99" step="0.01" placeholder="选填,默认 0.00">
         <span class="hint">选填,最多两位小数(基线 <code>DECIMAL(10,2)</code>);仅作项目属性记录,<b>不触发任何计费</b>。<br><b>PC 后台与小程序端都能改这一项</b>(改的是同一个项目属性)⇒ <b>末次写入生效,每次写入都留审计</b></span>
         <span class="err-msg">定价不能为负数</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- ============ 最后修改(只读) ============ -->
-  <!-- ⚠️ 2026-11-05 用户拍板:「周期/起止日期/定价 这几个 小程序和后台都可以修改」
-       ⇒ 这几项 + 名称/说明/主负责医生/任务模板编排 **两端都能改**
-       ⇒ 覆盖规则:**末次写入生效 + 每次写入都留审计**(不做乐观锁 / 不做冲突拦截)
-       ⚠️ 审计表结构与字段名归 AR 定,本区块只用中文字段名占位。 -->
-  <div class="card" id="lastModCard">
-    <div class="card-head"><h3>最后修改</h3><span class="ch-desc">只读 · 两端都能改,所以要能看出「谁 / 什么时候 / 从哪一端」改的</span></div>
-    <div class="form-grid">
-      <div class="fi">
-        <label>最后修改人</label>
-        <input class="ipt" id="lmBy" readonly>
-        <span class="hint">后台修改 = 后台管理员;小程序端修改 = 科室管理员(该侧「管理员 id」记 0 + 一句来源描述)</span>
-      </div>
-      <div class="fi">
-        <label>最后修改时间</label>
-        <input class="ipt" id="lmAt" readonly>
-        <span class="hint">精确到分钟</span>
-      </div>
-      <div class="fi">
-        <label>最后修改来源</label>
-        <input class="ipt" id="lmSrc" readonly>
-        <span class="hint">「后台」/「小程序端」;两端都能改 ⇒ 末次写入生效,每次写入都留审计</span>
-      </div>
-      <div class="fi" style="grid-column:1 / -1;">
-        <label>来源描述</label>
-        <input class="ipt" id="lmNote" readonly>
-        <span class="hint">小程序端那侧的「一句话描述」;⚠️ <b>不在本页做「两人同时改」的冲突拦截</b>(按覆盖规则:末次写入生效)</span>
       </div>
     </div>
   </div>
@@ -292,19 +262,41 @@
     var el = document.querySelector('[name="dept"]');
     return el && el.value ? String(el.value) : '';
   }
+  /* ---------- 周期(预设 / 自定义 / 长期)----------
+   * ⚠️ 2026-11-05 用户提:「项目周期 是不是可以增加一个长期 …就没有结束时间,只能手动结束」
+   * 产品语义:周期取值 = 「1–3650 天」| 「长期」
+   *    · 长期 ⇒ **没有结束时间**、**不会自动到期 / 不自动停用** ⇒ 要有终点只能**手动结束**
+   *    · 长期 ⇒ 模板「出院后第 N 天」**不再受周期上限约束**
+   *    · 转换路径:取消「长期」+ 选一个有限周期天数 + 填结束日期 ⇒ 回到普通项目规则
+   * ⚠️ 「长期」在 DB / API 怎么存(0 / NULL / 加列)**由 AR 定** —— 原型只表达产品语义,
+   *    页面一律按 `longTerm` 标记判定,不做「0 = 长期」之类的假设。 */
+  function isLongTerm() {
+    var el = document.querySelector('[name="durPreset"]');
+    return !!el && el.value === 'longterm';
+  }
   function durationDays() {
     var preset = document.querySelector('[name="durPreset"]').value;
+    if (preset === 'longterm') return 0;          /* 长期 = 没有固定天数 */
     if (preset === 'custom') return Number(document.querySelector('[name="duration"]').value || 0);
     return Number(preset || 0);
   }
-  /* 「最后修改时间」占位时间戳(到分钟) */
-  function nowStamp() {
-    var d = new Date();
-    function p(n) { return n < 10 ? ('0' + n) : String(n); }
-    return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) +
-           ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+  /* 预设联动:长期 ⇒ 天数禁用 / 结束日期禁用并清空 + 提示改写 */
+  function applyDurPreset() {
+    var preset = document.querySelector('[name="durPreset"]');
+    var num = document.querySelector('[name="duration"]');
+    var ed = document.querySelector('[name="endDate"]');
+    var lt = preset.value === 'longterm';
+    num.disabled = preset.value !== 'custom';
+    if (preset.value !== 'custom') num.value = '';
+    if (lt) { ed.disabled = true; ed.value = ''; } else { ed.disabled = false; }
+    document.getElementById('durHint').innerHTML = lt
+      ? '<b>长期项目没有结束时间,只能手动结束</b>(不会自动到期 / 不自动停用);模板「出院后第 N 天」<b>不再受周期上限约束</b>。'
+      : '周期天数用于校验模板「出院后第 N 天」的上限。<b>两端都能改</b>(PC 后台 / 小程序端)';
+    document.getElementById('endHint').innerHTML = lt
+      ? '<b>长期项目没有结束日期</b>;要让它有终点,请先取消「长期」、选一个有限周期天数并填写结束日期。'
+      : '结束日期不得早于开始日期';
+    document.getElementById('endReq').style.display = lt ? 'none' : '';
   }
-
   /* ---------- 归属科室下拉 ---------- */
   (function () {
     var sel = document.querySelector('[name="dept"]');
@@ -341,16 +333,18 @@
   (function () {
     var preset = document.querySelector('[name="durPreset"]');
     var num = document.querySelector('[name="duration"]');
-    preset.addEventListener('change', function () {
-      num.disabled = preset.value !== 'custom';
-      if (preset.value !== 'custom') num.value = '';
-    });
+    preset.addEventListener('change', function () { applyDurPreset(); });
     if (isEdit) {
-      preset.value = String(proj.durationDays);
-      if (['90', '180', '365'].indexOf(preset.value) < 0) {
-        preset.value = 'custom'; num.disabled = false; num.value = proj.durationDays;
+      if (proj.longTerm) {
+        preset.value = 'longterm';
+      } else {
+        preset.value = String(proj.durationDays);
+        if (['90', '180', '365'].indexOf(preset.value) < 0) {
+          preset.value = 'custom'; num.disabled = false; num.value = proj.durationDays;
+        }
       }
     }
+    applyDurPreset();
   })();
 
   /* ---------- 回填 ---------- */
@@ -362,18 +356,11 @@
     document.querySelector('[name="endDate"]').value = proj.endDate || '';
     document.querySelector('[name="price"]').value = proj.price != null ? proj.price : '';
     fillLead(String(proj.leadDoctorId || ''));
-    /* ---- 最后修改(只读)---- */
-    document.getElementById('lmBy').value = proj.lastModifiedBy || '—';
-    document.getElementById('lmAt').value = proj.lastModifiedAt || '—';
-    document.getElementById('lmSrc').value = proj.lastModifiedSource === 'mini' ? '小程序端' : '后台';
-    document.getElementById('lmNote').value = proj.lastModifiedNote || '—';
   } else {
     document.getElementById('ttl').textContent = '新建项目';
     var ps = document.querySelector('[name="startDate"]');
     var pe = document.querySelector('[name="endDate"]');
     ps.value = '2026-11-01'; pe.value = '2027-01-30';
-    /* 新建态:还没有「最后修改」记录 ⇒ 整个区块不显示 */
-    document.getElementById('lastModCard').style.display = 'none';
   }
 
   /* ==========================================================
@@ -684,18 +671,19 @@
       }
     }
 
-    /* 周期 */
+    /* 周期(长期 = 没有固定天数 ⇒ 不校验 1–3650) */
+    var longTerm = isLongTerm();
     var dur = durationDays();
-    if (dur < 1 || dur > 3650) {
+    if (!longTerm && (dur < 1 || dur > 3650)) {
       var fi2 = document.querySelector('[name="durPreset"]').closest('.fi');
       fi2.classList.add('has-err');
       fi2.querySelector('.err-msg').textContent = '项目周期需在 1–3650 天之间';
       ok = false;
     }
-    /* 起止日期 */
+    /* 起止日期(长期 ⇒ 没有结束日期,不校验) */
     var sd = document.querySelector('[name="startDate"]').value;
-    var ed = document.querySelector('[name="endDate"]').value;
-    if (sd && ed && ed < sd) {
+    var ed = longTerm ? '' : document.querySelector('[name="endDate"]').value;
+    if (!longTerm && sd && ed && ed < sd) {
       var fi3 = document.querySelector('[name="endDate"]').closest('.fi');
       fi3.classList.add('has-err');
       fi3.querySelector('.err-msg').textContent = '结束日期不得早于开始日期';
@@ -723,12 +711,13 @@
       var t = tpls[i];
       if (!t.sched || !t.sched.type) { bad = { t: t, why: '未选日期维度' }; break; }
       if (!t.target) { bad = { t: t, why: '未选目标人' }; break; }
-      /* 天数校验:出院前 N 天 / 出院后第 N 天 都受项目周期约束(PRD D7) */
+      /* 天数校验:出院前 N 天 / 出院后第 N 天 都受项目周期约束(PRD D7)
+         ⚠️ 长期项目**没有周期上限** ⇒ 不受此约束 */
       if (t.sched.type === 'dayn' || t.sched.type === 'pre') {
         var n = Number(t.sched.days);
         var lbl = t.sched.type === 'pre' ? ('出院前 ' + n + ' 天') : ('出院后第 ' + n + ' 天');
         if (!Number.isInteger(n) || n < 0) { bad = { t: t, why: '天数必须是非负整数' }; break; }
-        if (dur && n > dur) {
+        if (!longTerm && dur && n > dur) {
           bad = { t: t, why: lbl + '超出项目周期(' + dur + ' 天)' }; break;
         }
       }
@@ -743,21 +732,20 @@
     if (!ok) return;
 
     /* ---- 落库 ---- */
+    /* ⚠️ 2026-11-05:两端都能改 ⇒ 末次写入生效 + 每次写入都留审计。
+     *   审计**记录**照写(存储口径归 AR 定),但**不做展示** ——
+     *   用户拍板去掉「最后修改」区块(后台该区块没有实际用处)。 */
+    /* ⚠️ `longTerm` + `durationDays: 0` **只是 mock 写法**,不是存储口径 ——
+     *   「长期」在 DB / API 怎么存由 AR 定;页面一律按 `longTerm` 标记判定。 */
     var payload = {
       name: name,
       tag: document.querySelector('[name="tag"]').value,
-      durationDays: dur,
+      durationDays: longTerm ? 0 : dur,
+      longTerm: longTerm,
       startDate: sd,
-      endDate: ed,
+      endDate: longTerm ? '' : ed,
       price: price === '' ? 0 : Number(price),
-      leadDoctorId: Number(document.querySelector('[name="lead"]').value),
-      /* ⚠️ 2026-11-05:两端都能改 ⇒ 末次写入生效 + 每次写入都留审计。
-       *   本页是**后台**侧,所以来源写 'backend'。
-       *   ⚠️ 审计表结构与字段名归 AR 定,这里只用中文字段名占位(原型不落审计表)。 */
-      lastModifiedBy: '院管甲',
-      lastModifiedAt: nowStamp(),
-      lastModifiedSource: 'backend',
-      lastModifiedNote: '在 PC 后台修改(来源描述:编辑项目属性 / 任务模板)'
+      leadDoctorId: Number(document.querySelector('[name="lead"]').value)
     };
     if (isEdit) {
       BACK_PROJ.updateProject(proj.id, payload);
@@ -772,8 +760,9 @@
         id: 'p_' + Date.now(),
         hospitalId: (Back.currentHospital() || {}).id,
         departmentId: Number(did),
-        name: name, tag: payload.tag, durationDays: dur,
-        price: payload.price, startDate: sd, endDate: ed,
+        name: name, tag: payload.tag,
+        durationDays: payload.durationDays, longTerm: payload.longTerm,
+        price: payload.price, startDate: sd, endDate: payload.endDate,
         leadDoctorId: payload.leadDoctorId,
         status: 1,
         icon: 'assets/icons-png/icon-tab-projects.png',
