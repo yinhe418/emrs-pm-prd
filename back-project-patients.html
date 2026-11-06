@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>参与患者 · 后台管理</title>
+  <link rel="stylesheet" href="assets/back.css">
+</head>
+<body data-page="projects" data-crumb='[{"name":"后台管理"},{"name":"任务"},{"href":"back-projects.html","name":"项目管理"},{"name":"参与患者"}]'>
+
+<main class="back-main">
+
+  <div class="page-head">
+    <h1>参与患者</h1>
+    <div class="sub" id="sub"></div>
+  </div>
+
+  <div id="scopeStrip"></div>
+
+  <div class="flex" style="margin-bottom:14px;">
+    <a class="btn btn-default" id="backBtn" href="back-projects.html">返回项目详情</a>
+  </div>
+
+  <div class="tabs" data-tab-group="pp">
+    <button data-tab="active" class="active">在组 <span class="cnt grey" id="cntActive">0</span></button>
+    <button data-tab="closed">已结管 <span class="cnt grey" id="cntClosed">0</span></button>
+    <button data-tab="all">全部 <span class="cnt grey" id="cntAll">0</span></button>
+  </div>
+
+  <div class="filters">
+    <div class="search-wrap">
+      <img src="assets/icons-png/icon-search.png" alt="">
+      <input class="ipt search-ipt" id="kw" placeholder="患者姓名">
+    </div>
+  </div>
+
+  <div class="card flat">
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th style="width:280px">患者</th>
+            <th style="width:150px">入组日期</th>
+            <th style="width:240px">状态</th>
+            <th class="col-act" style="width:90px">操作</th>
+          </tr>
+        </thead>
+        <tbody id="body"></tbody>
+      </table>
+    </div>
+    <div class="pager">
+      <span>共 <b id="n">0</b> 人</span>
+      <span class="pg-right"><span id="pg"></span>每页 20 条</span>
+    </div>
+  </div>
+</main>
+
+<!-- ========== 结管确认 弹窗 ========== -->
+<div class="modal-mask" id="closeModal">
+  <div class="modal">
+    <div class="modal-head">
+      <img src="assets/icons-png/icon-warning.png" alt="">
+      <h3>结管确认</h3>
+    </div>
+    <div class="modal-body">
+      <div id="closeWho" style="margin-bottom:10px;color:var(--ink)">—</div>
+      <div>结管后:</div>
+      <ul>
+        <li>停止为该患者生成后续任务</li>
+        <li>已生成未完成的任务全部取消</li>
+        <li>历史任务与填报记录全部保留</li>
+      </ul>
+      <div class="fi mt-12">
+        <label><span class="req">*</span>结管原因</label>
+        <select class="sel w-full" id="closeReason">
+          <option value="">请选择结管原因…</option>
+          <option value="疗程完成">疗程完成</option>
+          <option value="患者退出">患者退出</option>
+          <option value="转院 / 转诊">转院 / 转诊</option>
+          <option value="失访">失访</option>
+          <option value="其他">其他</option>
+        </select>
+      </div>
+      <div class="fi mt-12">
+        <label>备注</label>
+        <textarea class="ipt w-full" id="closeNote" rows="2" maxlength="100" placeholder="选填,≤100 字"></textarea>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-default" onclick="Back.modal('closeModal',false)">取消</button>
+      <button class="btn btn-danger" id="closeOk">确认结管</button>
+    </div>
+  </div>
+</div>
+
+<script src="assets/back-api.js"></script>
+<script src="assets/back-data.js"></script>
+<script src="assets/projects.js"></script>
+<script src="assets/back-project-data.js"></script>
+<script src="assets/back-layout.js"></script>
+<script>
+  var PAGE_SIZE = 20;
+  var tab = 'active';
+  var page = 1;
+  var closingPid = null;
+
+  var projId = Back.qs('id') || '90d_health';
+  var proj = BACK_PROJ.byId(projId);
+
+  function esc(s) {
+    if (s === null || s === undefined) return '';
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  if (!proj) {
+    document.querySelector('.back-main').innerHTML =
+      '<div class="page-head"><h1>项目不存在</h1></div>'
+      + '<div class="card"><div class="empty"><img src="assets/icons-png/icon-empty-box.png" alt="">'
+      + '<div class="e-t">找不到这个项目</div>'
+      + '<div class="e-d">它可能已被停用并从当前医院的可见范围里移除。<a href="back-projects.html" style="color:var(--brand)">返回项目列表</a></div>'
+      + '</div></div>';
+  } else {
+    init();
+  }
+
+  function init() {
+    document.title = proj.name + ' · 参与患者 · 后台管理';
+    document.getElementById('sub').innerHTML =
+      '<b>' + esc(proj.name) + '</b> · 归属科室 '
+      + '<b>' + esc((BACK_DATA.dept(proj.departmentId) || {}).name || '—') + '</b>';
+    document.getElementById('backBtn').href = 'back-project-detail.html?id=' + encodeURIComponent(proj.id);
+    /* 面包屑带上当前项目名(顶栏在 DOMContentLoaded 时读取本属性) */
+    document.body.setAttribute('data-crumb', JSON.stringify([
+      { name: '后台管理' },
+      { name: '任务' },
+      { name: '项目管理', href: 'back-projects.html' },
+      { name: proj.name, href: 'back-project-detail.html?id=' + encodeURIComponent(proj.id) },
+      { name: '参与患者' }
+    ]));
+
+    Back.bindTabs('[data-tab-group="pp"]');
+    document.querySelector('[data-tab-group="pp"]').addEventListener('click', function () {
+      var b = this.querySelector('button.active');
+      if (b) { tab = b.getAttribute('data-tab'); page = 1; render(); }
+    });
+    document.getElementById('kw').addEventListener('input', function () { page = 1; render(); });
+    render();
+  }
+
+  /* 本项目下的参与记录(患者 + 该患者在本项目下的那一行) */
+  function rowsOf(pid) {
+    var out = [];
+    (BACK_DATA.patients || []).forEach(function (p) {
+      var rec = null;
+      (p.projs || []).forEach(function (r) {
+        if (String(r.projId) === String(pid)) rec = r;
+      });
+      if (rec) out.push({ p: p, rec: rec });
+    });
+    /* 入组日期倒序(新的在前) */
+    out.sort(function (a, b) {
+      var x = a.rec.enrole || '', y = b.rec.enrole || '';
+      if (x === y) return 0;
+      return x < y ? 1 : -1;
+    });
+    return out;
+  }
+
+  function byStatus(all, status) {
+    if (status === 'all') return all;
+    return all.filter(function (r) { return r.rec.status === status; });
+  }
+
+  function render() {
+    var all = rowsOf(proj.id);
+    document.getElementById('cntActive').textContent = byStatus(all, 'active').length;
+    document.getElementById('cntClosed').textContent = byStatus(all, 'closed').length;
+    document.getElementById('cntAll').textContent = all.length;
+
+    var kw = document.getElementById('kw').value.trim();
+    var rows = byStatus(all, tab).filter(function (r) {
+      if (!kw) return true;
+      var p = r.p;
+      return (p.name || '').indexOf(kw) >= 0 || (p.nickName || '').indexOf(kw) >= 0;
+    });
+
+    document.getElementById('n').textContent = rows.length;
+    renderPager(rows.length);
+
+    var body = document.getElementById('body');
+    if (!rows.length) {
+      body.innerHTML = '<tr><td colspan="4"><div class="empty">'
+        + '<img src="assets/icons-png/icon-empty-box.png" alt="">'
+        + '<div class="e-t">' + (kw ? '没有匹配的患者' : (tab === 'closed' ? '还没有已结管的患者' : '还没有患者参与本项目')) + '</div>'
+        + '<div class="e-d">' + (kw
+            ? '换个姓名再搜一次'
+            : (tab === 'closed'
+                ? '结管后的患者会归档到这里'
+                : '患者在小程序里加入项目后,会出现在这里')) + '</div>'
+        + '</div></td></tr>';
+      return;
+    }
+
+    var start = (page - 1) * PAGE_SIZE;
+    body.innerHTML = rows.slice(start, start + PAGE_SIZE).map(function (r) {
+      var p = r.p, rec = r.rec;
+      var closed = rec.status === 'closed';
+      return '<tr>'
+        + '<td><b>' + esc(p.name || p.nickName || '—') + '</b>'
+        +   '<div class="cell-sub">住院号 ' + esc(p.inNo || '—') + '</div></td>'
+        + '<td>' + esc(rec.enrole || '—') + '</td>'
+        + '<td>' + (closed
+            ? '<span class="badge badge-gray">已结管</span>'
+              + (rec.closeReason ? '<div class="cell-sub">' + esc(rec.closeReason) + '</div>' : '')
+            : '<span class="badge badge-pass">在组</span>') + '</td>'
+        + '<td class="col-act">' + (closed
+            ? '<span class="text-4">—</span>'
+            : '<a class="btn-text" data-close="' + esc(p.id) + '">结管</a>') + '</td>'
+        + '</tr>';
+    }).join('');
+  }
+
+  function renderPager(total) {
+    var box = document.getElementById('pg');
+    var pages = Math.ceil(total / PAGE_SIZE);
+    if (pages <= 1) { box.innerHTML = ''; return; }
+    var html = '';
+    for (var i = 1; i <= pages; i++) {
+      html += '<a class="pg' + (i === page ? ' active' : '') + '" data-pg="' + i + '" '
+            + 'style="margin-right:6px">' + i + '</a>';
+    }
+    box.innerHTML = html;
+  }
+
+  function patientById(pid) {
+    var list = BACK_DATA.patients || [];
+    for (var i = 0; i < list.length; i++) {
+      if (String(list[i].id) === String(pid)) return list[i];
+    }
+    return null;
+  }
+
+  function fmtToday() {
+    var d = new Date();
+    var m = String(d.getMonth() + 1); if (m.length < 2) m = '0' + m;
+    var day = String(d.getDate()); if (day.length < 2) day = '0' + day;
+    return d.getFullYear() + '-' + m + '-' + day;
+  }
+
+  document.addEventListener('click', function (e) {
+    var pg = e.target.closest ? e.target.closest('[data-pg]') : null;
+    if (pg) { page = Number(pg.getAttribute('data-pg')) || 1; render(); return; }
+
+    var a = e.target.closest ? e.target.closest('[data-close]') : null;
+    if (!a) return;
+    var p = patientById(a.getAttribute('data-close'));
+    if (!p) return;
+    closingPid = p.id;
+    document.getElementById('closeWho').innerHTML =
+      '患者 <b>' + esc(p.name || p.nickName || '—') + '</b> · 项目「' + esc(proj.name) + '」';
+    document.getElementById('closeReason').value = '';
+    document.getElementById('closeNote').value = '';
+    Back.modal('closeModal', true);
+  });
+
+  document.getElementById('closeOk').addEventListener('click', function () {
+    var reason = document.getElementById('closeReason').value;
+    if (!reason) { Back.toast('请选择结管原因', 'warn'); return; }
+    var p = patientById(closingPid);
+    if (!p) { Back.modal('closeModal', false); return; }
+    var rec = null;
+    (p.projs || []).forEach(function (r) { if (String(r.projId) === String(proj.id)) rec = r; });
+    if (!rec || rec.status === 'closed') { Back.modal('closeModal', false); return; }
+    var note = document.getElementById('closeNote').value.trim();
+    rec.status = 'closed';
+    rec.closedAt = fmtToday();
+    rec.closeReason = note ? (reason + ' · ' + note) : reason;
+    if ((p.projs || []).every(function (r) { return r.status === 'closed'; })) {
+      p.status = 'closed';
+    }
+    Back.modal('closeModal', false);
+    render();
+    Back.toast('已结管:' + (p.name || p.nickName || ''), 'ok');
+  });
+
+  if (proj) {
+    if (!Back.requireHospitalAndApply()) { document.querySelector('.back-main').innerHTML = ''; }
+    else {
+      var ss = document.getElementById('scopeStrip');
+      if (ss) ss.innerHTML = Back.scopeStrip('');
+    }
+  }
+</script>
+</body>
+</html>
